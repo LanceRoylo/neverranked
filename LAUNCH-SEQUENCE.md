@@ -99,7 +99,7 @@ Per the receipts-pilot containment work: weekly cap of 25 cold sends per categor
 - [ ] **Cold to Honolulu dental**. Same volume cap
 - [ ] **Cold to Hawaii law firms**. Same volume cap
 - [ ] If any cold recipient replies with concern about being measured, route through `/takedowns/` immediately, no debate, 24-hour SLA
-- [ ] If any cold recipient replies with interest, route to free 1-page diagnostic OR scoping call, depending on signal strength
+- [ ] If any cold recipient replies with interest, route to a scoping call
 
 ---
 
@@ -107,7 +107,7 @@ Per the receipts-pilot containment work: weekly cap of 25 cold sends per categor
 
 Beyond outreach, push the already-published teardowns through distribution channels. All low-risk because the teardowns are already public, observational, and graded.
 
-- [ ] **Hacker News submission** of the cross-category teardown (`/teardowns/cross-category/`). Title suggestion: "What 7 AI tools cite for 4 Hawaii business categories (5,000+ citation events)". Submit Tuesday or Wednesday morning HST for best US morning timing.
+- [ ] **Hacker News submission** of the cross-category teardown (`/teardowns/cross-category/`). Title suggestion: "What six AI tools cite for 4 Hawaii business categories (5,000+ citation events)". Submit Tuesday or Wednesday morning HST for best US morning timing.
 - [ ] **Reddit posts** to relevant subreddits: r/marketing (cross-category), r/SEO (the GSC impressions hook), r/Hawaii (Hawaii business angle for the bank teardown). One post per subreddit per week max.
 - [ ] **LinkedIn carousel** breaking down the cross-category gradient. Visual + observational, no competitor names beyond what's already public in the banking teardown.
 - [ ] **Twitter/X thread** if Lance maintains presence: 7-tweet thread walking through the four-category finding.

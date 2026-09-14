@@ -539,6 +539,43 @@ const ALLOW = [
   { path: "dashboard/src/lib/retired-claims.ts", rules: ["retired-seven-tools", "retired-copilot-as-tool", "retired-copilot-attribution", "retracted-htc-score", "retracted-htc-perplexity"] },
   { path: "dashboard/src/lib/memo-inputs.ts", rules: ["retired-seven-tools", "retired-copilot-as-tool", "retired-copilot-attribution"] },
   { path: "dashboard/src/lib/engine-order.ts", rules: ["retired-copilot-as-tool", "retired-copilot-attribution"] },
+
+  // ── Repo-root Markdown, in scope since 2026-09-14 ────────────────────────
+  // Each NAMES a retired claim in order to forbid, record or correct it. Same
+  // principle as /retraction/ and output-grader.ts: a rule has to be able to
+  // state what it rules out.
+  //
+  // CLAUDE.md carries the taxonomy rule itself.
+  { path: "CLAUDE.md", rules: ["retired-copilot-as-tool", "retired-copilot-attribution", "retired-seven-tools"] },
+  // REDESIGN-SPEC.md lists the retracted figures under "NEVER:".
+  { path: "REDESIGN-SPEC.md", rules: ["retracted-htc-score", "retracted-htc-perplexity"] },
+  // ROADMAP.md Phase 2B is the reasoned decision NOT to track that channel and
+  // NVI-SPEC.md's engine table is the same decision as a row. Neither asserts a
+  // measurement; both say we do not measure it. Deleting them would erase the
+  // reasoning and invite someone to re-add the engine.
+  { path: "ROADMAP.md", rules: ["retired-copilot-as-tool", "retired-copilot-attribution"] },
+  { path: "NVI-SPEC.md", rules: ["retired-copilot-as-tool", "retired-copilot-attribution"] },
+  // A dated handoff from before the reclassification, carrying a correction
+  // banner written 2026-09-14. What remains is a filename and a real commit
+  // message, neither rewritable honestly. Its competitor comparisons were
+  // REMOVED rather than dated: a banner does not cure a Lanham claim about
+  // someone else sitting in a public repo.
+  { path: "SESSION-HANDOFF-2026-05-04.md", rules: ["retired-copilot-as-tool", "retired-copilot-attribution", "retired-sku", "retired-product", "retired-engagement-card", "normative-engine-language"] },
+  // REDESIGN-SPEC.md is the document that ORDERS these removals. Its own
+  // "Retired prices never re-appear" line lists the prices, which is the
+  // instruction, not the offence.
+  { path: "REDESIGN-SPEC.md", rules: ["retracted-htc-score", "retracted-htc-perplexity", "retired-engagement-card", "retired-seven-tools", "normative-engine-language", "retired-sku", "retired-product"] },
+  // A superseded build spec, banner added 2026-09-14, costed against archived
+  // SKUs and kept for its reasoning.
+  { path: "NVI-SPEC.md", rules: ["retired-copilot-as-tool", "retired-copilot-attribution", "retired-engagement-card", "retired-sku", "retired-product", "normative-engine-language", "model-knowledge-cite-verb"] },
+  // Dated window handoffs. The two from 2026-08-22 are the damage audits OF
+  // the reclassification: they quote every retired phrase precisely because
+  // their job was to find and remove it. The 2026-05-14 one predates the
+  // retraction by a week and carries a banner saying so; it is kept because
+  // deleting the evidence of an error is not the same as correcting it.
+  { path: "WINDOW-HANDOFF-2026-08-22-COPILOT-SWEEP-AUDIT.md", rules: ["retired-copilot-as-tool", "retired-copilot-attribution", "retired-copilot-first-mover", "retired-seven-tools", "retired-five-citation-grade", "control-counted-as-engine", "model-knowledge-cite-verb", "false-cohort-named-in-full"] },
+  { path: "WINDOW-HANDOFF-2026-08-22-CONSISTENCY-PASS.md", rules: ["retracted-htc-score", "retracted-htc-perplexity", "false-cohort-named-in-full"] },
+  { path: "WINDOW-HANDOFF-2026-05-14-ASB-WINDOW.md", rules: ["retracted-htc-score", "retracted-htc-perplexity"] },
 ];
 
 // ── App-sweep debt, declared not hidden ────────────────────────────────
@@ -652,6 +689,20 @@ const EXTRA_DIRS = ["audits", "content", "reports", "linkedin", "social"]
 // dist/; it renders at request time from TypeScript template literals.
 const APP_DIRS = [join(ROOT, "dashboard", "src")];
 
+// Repo-root Markdown. This repository is PUBLIC: GitHub serves every one of
+// these files to anyone, and AI crawlers read them, so a retired claim in a
+// README is as reachable as one on a page. retire-claim.mjs walked dist/ and
+// the dirs above and never walked a single .md, which is why the 2026-08-22
+// reclassification left "Microsoft Copilot via Bing" sitting in README.md,
+// both explainers, the onboarding script, the Atlas chat script, the dashboard
+// spec and a queued Hacker News title for twenty-three days. Found 2026-09-14.
+//
+// Same failure as every other coverage gap in this file's history: the regexes
+// were right and nothing read the file.
+const ROOT_DOCS = readdirSync(ROOT)
+  .filter((f) => f.endsWith(".md"))
+  .map((f) => join(ROOT, f));
+
 // Captured third-party pages (competitor HTML saved as evidence during an
 // audit) are not our copy and must not be graded as our claims. Scanning
 // them made the gate report a competitor's pricing as our retired SKU.
@@ -684,6 +735,8 @@ for (const dir of EXTRA_DIRS) {
     console.warn(`check-claims: expected source dir not found, skipping ${dir}`);
   }
 }
+
+for (const doc of ROOT_DOCS) files.push(doc);
 
 const hits = [];
 for (const f of files) {

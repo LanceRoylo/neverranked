@@ -11,7 +11,7 @@
 
 NeverRanked is built on a two-layer architecture: the dashboard surfaces observable signals daily, the monthly memo turns signals into prioritized action. Atlas Chat extends the dashboard layer with conversational data access. It answers questions about what the data shows, never about what the customer should do.
 
-The boundary is the strategic crux. If Atlas Chat answers action questions ("what should I do about Y"), it becomes the prescription layer the monthly memo was supposed to own. The recurring $1,500/mo fee loses its anchor. We re-enter the SaaS pattern we pivoted away from. So the spec is more about WHAT CHAT CANNOT DO than what it can.
+The boundary is the strategic crux. If Atlas Chat answers action questions ("what should I do about Y"), it becomes the prescription layer the monthly memo was supposed to own. The recurring Audit fee loses its anchor. We re-enter the SaaS pattern we pivoted away from. So the spec is more about WHAT CHAT CANNOT DO than what it can.
 
 Customer-facing line: *"Ask Atlas anything about your data. Atlas can read every measurement we have on your category; it cannot make recommendations or prioritize work. That part is the monthly memo's job and Lance's."*
 
@@ -53,7 +53,7 @@ These are templated phrases Atlas uses when a question crosses the boundary. Det
 > *"NeverRanked measures; we don't execute. Your team or your agency handles the work the memo points at. I can answer 'is the data showing X' but not 'should I do Y.' Want me to flag this for Lance to discuss approaches?"*
 
 **Punt 4: Out-of-scope (SEO, social media, etc. that isn't AI citation)**
-> *"That's outside what NeverRanked measures. We only measure AI citation share across 7 AI tools. For [topic], you'd want a [different specialist / your team]. If you want me to flag for Lance to recommend someone, reply 'flag it.'"*
+> *"That's outside what NeverRanked measures. We only measure AI citation share across six AI tools plus a Bing organic control. For [topic], you'd want a [different specialist / your team]. If you want me to flag for Lance to recommend someone, reply 'flag it.'"*
 
 **Punt 5: Genuinely doesn't know**
 > *"I don't have data on that. The measurement covers [your locked question set, your cohort, your 7-AI-tool history]. Outside that, I don't have visibility. If you want Lance to look into it, reply 'flag it.'"*

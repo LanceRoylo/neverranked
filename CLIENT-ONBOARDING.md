@@ -34,7 +34,7 @@ Attendees: client point-of-contact, agency point-of-contact (if applicable), Nev
 
 Agenda:
 
-- **Confirm scope.** Which pages, which subdomains, which AI engines (the default seven are ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews, and Gemma. Confirm anything additional).
+- **Confirm scope.** Which pages, which subdomains, which AI engines (the default six AI tools are Perplexity, ChatGPT search, Gemini grounded and Google AI Overviews, which cite sources, plus Claude and Gemma, which answer from training data. A Bing organic control runs beside them, making seven measured surfaces. Confirm anything additional).
 - **Confirm queries.** The client tells us which 10-20 queries matter most. Default: the audit defaults if the client has no preference. For a bank: mortgage research, business banking switch, branch locator, "best Hawaii bank for X". For a venue: live shows, "what's on tonight," reservation booking. For a SaaS: comparison queries, pricing, alternatives.
 - **Install the snippet.** Hand off the snippet URL — `<script src="https://app.neverranked.com/inject/<client_slug>.js" async></script>` — for the client's CMS team or developer to drop into the `<head>` of every page. Same snippet across all pages on the same domain. For multi-domain clients (e.g. `mortgage.asbhawaii.com` as a separate subdomain from `asbhawaii.com`), each domain needs its own one-line install.
 - **Designate approvers.** Single point-of-contact at the client (or agency) who approves schema batches before they go live. Compliance approver, if separate.
@@ -170,7 +170,7 @@ The grader's overall score is weighted as `0.6 × min(node_scores) + 0.4 × mean
 
 ### Duplicate canonical tags
 
-If a page ships multiple `<link rel="canonical">` tags pointing to different URLs, AI engines pick one heuristically and may not pick the one the client wants. The snippet cannot remove existing canonical tags. Source-side fix.
+If a page ships multiple `<link rel="canonical">` tags pointing to different URLs, AI engines resolve one heuristically and it may not be the one the client wants. The snippet cannot remove existing canonical tags. Source-side fix.
 
 ### Hardcoded incorrect meta tags
 

@@ -57,7 +57,7 @@ Observational only. Bullet list, auto-generated daily from the measurement worke
 - *"This question started mentioning competitor masudalehrman.com on Tuesday. Previously empty for all firms in cohort."*
 - *"Your firm dropped from position 2 to position 4 on the question 'fee-only financial advisor Honolulu' over the last 3 days."*
 - *"A new third-party publication (Pacific Business News) was cited by Perplexity for the first time on this question."*
-- *"Cohort competitor fphawaii.com gained 3 mentions on Microsoft Copilot since last week. Previously cited zero times by Copilot."*
+- *"A cohort competitor gained 3 citations on Perplexity since last week. Previously cited zero times there."*
 
 Empty state: *"No significant changes in the last 7 days. The data has been stable."*
 
@@ -65,7 +65,7 @@ Empty state: *"No significant changes in the last 7 days. The data has been stab
 Auto-generated from the same data the memo uses, but observational only. NOT prescriptive. Examples:
 
 - *"This question is currently empty for your firm: 4 cohort competitors appear. Was previously empty for everyone in the cohort."*
-- *"Your firm has zero mentions on Microsoft Copilot for any question in the set. Same is true for 13 of 14 cohort competitors."*
+- *"Your firm has zero citations on Google AI Overviews for any question in the set. Same is true for 13 of 14 cohort competitors."*
 - *"Your firm has zero mentions in Claude or Gemma. 5 cohort competitors have non-zero presence in at least one."*
 
 The list updates daily. Items disappear from the list when the observable condition stops being true. The customer can see what closed without waiting for a memo to claim credit.
@@ -230,7 +230,13 @@ The "what changed (7 days)" and "8-week trend" sections need multiple runs over 
 
 - Slug: `hawaii-theatre` (matches `htc-events-cron.ts`).
 - Fuel already exists: 3 clean `htc_honolulu` runs, hash `7cfdba6e`, measured 2026-06-12, in the outreach dryrun pipeline.
-- The hand-built readout at `/pitch/hawaii-theatre-center/` is the spec for what the numbers must say. Dashboard + Atlas must reconcile to it exactly (HTC owns the category at 47% of venue citations, strongest on Claude 14%, Copilot 0%, Gemma points to a dead .org).
+- The hand-built readout at `/pitch/hawaii-theatre-center/` is the spec for what
+  the numbers must say, and Dashboard + Atlas must reconcile to it exactly. The
+  figures themselves are deliberately NOT repeated here. This repo is public and
+  this client's consent is scoped to capability examples only: no scores and no
+  citation counts. Read them from the readout. The shape to reconcile is a
+  citation-grade leader, a model-knowledge layer that names rather than cites,
+  and a stale third-party profile the model-knowledge layer still points at.
 - **Leak caution:** the 2026-06-01 incident leaked internal `htc_events_*` snippet-maintenance signals into HTC's customer feed (see `admin-alerts.ts`). Keep internal/operational signals OUT of the customer surface. The bridge writes measurement data only.
 
 ### Why this is the prize, not a chore

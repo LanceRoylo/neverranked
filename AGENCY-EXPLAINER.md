@@ -18,13 +18,14 @@ The current state of the company:
 - **Deliverable:** forensic memo plus a prepped punch list.
 - **Boundary:** we do not execute. The customer's team or their
   agency ships the work.
-- **Pricing:** $4,500 kickoff per category, $1,500/month per
+- **Pricing:** Monitor $199/mo; Audit $750/mo after a $950 baseline, waived on
+  a defined term. Per
   category ongoing. Per category, not per client.
-- **Measurement stack:** seven AI surfaces daily. Five
+- **Measurement stack:** seven measured surfaces daily. Four
   citation-grade engines that search the live web (Perplexity,
-  ChatGPT search, Gemini grounded, Microsoft Copilot via Bing,
-  Google AI Overviews) plus two model-knowledge engines (Claude,
-  Gemma).
+  ChatGPT search, Gemini grounded, Google AI Overviews), two
+  model-knowledge engines (Claude, Gemma), and a Bing organic
+  control. Six AI tools plus a control.
 
 For the current honest pitch, see
 [neverranked.com](https://neverranked.com).

@@ -10,7 +10,7 @@
  * Every existing check was engine-shaped and therefore blind to it:
  *
  *   anomaly_engine_row_drop   compares an engine to its own 14-day baseline.
- *                             All seven engines dropped by the same 11, so
+ *                             All seven surfaces dropped by the same 11, so
  *                             every engine stayed in proportion to itself.
  *   anomaly_engine_peer_drop  compares engines to each other. All seven lost
  *                             the same keywords, so the peers agreed.
@@ -112,8 +112,8 @@ export function describeCoverage(s: SweepCoverageSummary): string {
   lines.push(
     "Dark means dispatched and silent, not answered badly. Check that the keyword's " +
       "workflows are being created (cron_runs + worker logs for the 06:00 UTC dispatch) " +
-      "before checking any engine: all seven engines agreeing is evidence the engines " +
-      "are fine and the dispatch is not.",
+      "before checking any engine: every measured surface agreeing is evidence the " +
+      "engines are fine and the dispatch is not.",
   );
   return lines.join("\n");
 }

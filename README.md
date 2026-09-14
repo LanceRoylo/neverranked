@@ -37,13 +37,16 @@ in Lance's local Claude memory.
 
 ## What we measure now
 
-Seven AI surfaces, every day.
+Seven measured surfaces, every day. Six AI tools plus a control.
 
-- **Five citation-grade engines** that search the live web and
+- **Four citation-grade engines** that search the live web and
   cite their sources: Perplexity, ChatGPT search, Gemini grounded,
-  Microsoft Copilot via Bing, Google AI Overviews.
+  Google AI Overviews.
 - **Two model-knowledge engines** that answer purely from training
   data: Claude, Gemma.
+- **One classic-search control**, Bing organic top-5. Not an AI tool.
+  It does not cite or answer, it returns, and it runs beside the others
+  so a move can be separated from noise.
 
 Both layers measure different failure modes. A brand invisible in
 citation is invisible when AI fact-checks itself. A brand invisible
@@ -66,9 +69,12 @@ team or their agency. That separation is structural.
 
 ## Pricing
 
-- $4,500 kickoff per category. One time.
-- $1,500 per month per category, ongoing.
-- Per category, not per client.
+- **Monitor** — $199/mo.
+- **Audit** — $750/mo, after a $950 baseline. The baseline is waived on a
+  defined term.
+
+[Corrected 2026-09-14. This section published the retired kickoff-plus-monthly
+card for six weeks after those SKUs were archived on 2026-08-03.]
 
 This is a research engagement, not a SaaS subscription. There is
 no self-serve dashboard.

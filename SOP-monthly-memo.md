@@ -8,7 +8,7 @@
 
 ## Purpose
 
-The monthly delta memo is the recurring deliverable for the $1,500/month ongoing engagement. It is the moment the customer hears what moved, what did not, and what the data points at for the next month. The memo is Lance's interpretation layer on top of the dashboard's continuous data layer. The dashboard surfaces signals daily. The memo turns signals into prioritized action with strategic framing.
+The monthly delta memo is the recurring deliverable for the ongoing Audit engagement. It is the moment the customer hears what moved, what did not, and what the data points at for the next month. The memo is Lance's interpretation layer on top of the dashboard's continuous data layer. The dashboard surfaces signals daily. The memo turns signals into prioritized action with strategic framing.
 
 A good monthly memo: the customer reads it on Monday, sees their senior strategist on Tuesday, and the strategist already knows what work needs to ship that week. A weak monthly memo: the customer reads it, files it, never references it again.
 
@@ -47,7 +47,7 @@ This timing is deliberate. The 25th gives 5-7 days before the next 1st-of-month 
 Open with a single paragraph the customer reads in 30 seconds. What moved this month? What did not? What does the data point at?
 
 Example shape:
-> *"This month: your firm gained mentions on 3 additional questions (now mentioned on 7 of 18 vs 4 of 18 last month). The gain came primarily from the SmartAsset profile work your team shipped on the 8th. Microsoft Copilot remains at zero, consistent with the cohort-wide pattern. Cohort competitor masudalehrman.com gained 12 mentions; their content push on retirement-planning articles is showing up in Perplexity and Google AI Overviews. Recommended next-month focus below."*
+> *"This month: your firm gained mentions on 3 additional questions (now mentioned on 7 of 18 vs 4 of 18 last month). The gain came primarily from the SmartAsset profile work your team shipped on the 8th. The Bing organic control is unchanged, so the move is not explained by classic search. Cohort competitor masudalehrman.com gained 12 mentions; their content push on retirement-planning articles is showing up in Perplexity and Google AI Overviews. Recommended next-month focus below."*
 
 If the customer reads nothing else, they should know after this paragraph: (1) the direction, (2) the cause, (3) the cohort context, (4) the recommendation framing.
 
@@ -89,7 +89,7 @@ This is the prioritization layer the dashboard cannot provide. Sequencing, what 
 ### 7. Strategic framing (when appropriate)
 
 Sometimes the memo needs to step back from the per-question detail and name a category-level pattern the customer should think about. Examples:
-- "The cohort's Microsoft Copilot gap is starting to close (1 firm gained Copilot presence this month). Worth considering a focused push."
+- "The cohort's Google AI Overviews gap is starting to close (1 firm gained presence there this month). Worth considering a focused push."
 - "Three competitors started citing Wikipedia entries for their named principals this month. We do not yet have a Wikipedia entry for [customer's named principal]; worth considering."
 - "AI tool X just released a new version that weights structured data more heavily. Worth checking your structured data is current."
 
@@ -105,7 +105,7 @@ Skip when not relevant.
 
 If the customer's team shipped work this month that the data does not yet show movement on, name it honestly. Do not soften. Examples:
 - "The named-attorney bylines published in September have not yet shown up in AI citations. This is consistent with the 6-12 month timeline for training-data signals; the August byline shipped first is now appearing in Claude."
-- "The Microsoft Copilot push has not produced any movement. Bing organic ranking has not shifted; the gap remains."
+- "Bing organic ranking has not shifted, and the control is there to separate a real move from noise rather than to be pushed on."
 
 A good memo names what did not work as cleanly as what did. The customer trusts the memo more because of that section.
 

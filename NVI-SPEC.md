@@ -1,6 +1,14 @@
 # Neverranked Visibility Index (NVI) — Build Spec
 
-**Status:** spec, pre-build
+**Status:** SUPERSEDED, historical. [Marked 2026-09-14.]
+
+> This spec is costed against SKUs that no longer exist. The tiers it names
+> were archived on 2026-08-03 and replaced by the two-tier ladder: Monitor
+> $199/mo, and Audit $750/mo after a $950 baseline that is waived on a defined
+> term. Its engine table is also pre-reclassification. Do not price, scope or
+> build from this file. It is kept for the research and the reasoning, one
+> piece of which is still correct and still load-bearing: the decision NOT to
+> add that Microsoft channel, which we have never measured.
 **Date:** 2026-05-03
 **Owner:** Lance
 **Internal test client:** Hello Again (Honolulu coffee)
@@ -338,7 +346,7 @@ For NVI Lite (10 prompts, 1 client, no competitors):
 
 ```
 For each of 10 prompts:
-  For each of 7 engines (ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overview, Gemma):
+  For each of 6 AI tools (ChatGPT, Perplexity, Claude, Gemini, Google AI Overview, Gemma) plus the Bing organic control:
     Run the query
     Store response in citation_runs with nvi_report_id
     Detect client mention -> set client_cited

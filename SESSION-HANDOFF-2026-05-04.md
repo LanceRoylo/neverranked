@@ -1,5 +1,21 @@
 # NeverRanked Session Handoff — 2026-05-04
 
+> **SUPERSEDED. Historical record, corrected 2026-09-14.** This is what was
+> believed and built on 2026-05-04. Three things in it are no longer true and
+> are corrected inline below rather than left to mislead a later reader:
+>
+> 1. **The engine taxonomy.** Reclassified 2026-08-22. There are six AI tools
+>    (four citation-grade, two model-knowledge) plus a Bing organic control:
+>    seven measured surfaces. There is no Copilot data and there never was.
+>    That channel is Bing organic top-5 via a search-data provider.
+> 2. **Schema deployment.** Retired 2026-07-24. NeverRanked measures. It does
+>    not deploy to, or touch, a client site.
+> 3. **The competitor comparisons.** Removed, not merely dated. A comparative
+>    claim about a named vendor is Lanham Act exposure that both policies
+>    exclude, so there is no coverage behind it, and a banner saying it was
+>    true in May does not cure a claim about someone else sitting in a public
+>    repo.
+
 Continuation document for the next Claude session. Read this top-to-bottom before resuming work.
 
 ---
@@ -11,7 +27,7 @@ In a single ~12-hour session we shipped:
 1. **Pulse tier fully automated** ($497/mo). Stripe price wired (`price_1TTTkvChs9v2cUMPSi4Eupiu`), self-serve checkout live at `/checkout/pulse`. Webhook auto-provisions user + plan='pulse' + magic link → `/onboard/pulse` where Claude generates 10 candidate prompts, customer edits + saves, first citation run fires automatically.
 2. **Audit price raised** $500 → $750 with new Stripe price (`price_1TTU3AChs9v2cUMPn3HSrUoC`). Old $500 price archived. Audit credit toward upgrade copy added across all marketing.
 3. **DataForSEO Google AI Overviews tracking** live. Lance's account funded with $50, secrets set as Wrangler env vars (`DATAFORSEO_LOGIN`, `DATAFORSEO_PASSWORD`). First test query live-confirmed Hawaii Theatre is the **#1 cited entity** in Google AI Overviews for "best performing arts venues in Honolulu."
-4. **Bing + Microsoft Copilot tracking** added as the 6th engine via the same DataForSEO auth. NeverRanked now tracks more engines than any competitor (Profound, Athena HQ, Ahrefs Brand Radar all cap at 4-5).
+4. **Bing organic tracking** added via the same DataForSEO auth. [CORRECTED 2026-09-14: recorded at the time as "Copilot", which it never was. It is Bing organic top-5 and it is the classic-search CONTROL, not an AI tool. The competitor comparison that followed this line has been removed.]
 5. **Real-time citation alerts** (Signal+ feature). Diff detection on every weekly citation run; gained/lost citations get color-coded email digests within hours.
 6. **A/B testing complete end-to-end**:
    - Foundation: variant tracking + supersession on `schema_injections` (migration 0060)
@@ -31,19 +47,19 @@ In a single ~12-hour session we shipped:
 
 ## Current state of platform — capability honest read
 
-**Top 3 worldwide on capability** after tonight's work. The **only platform** that ships ALL of:
+What shipped as of this date. [CORRECTED 2026-09-14: the ranking and only-platform claims that stood here were unsubstantiated superiority claims and have been removed.]
 
-- 6-engine citation tracking (Perplexity, ChatGPT, Gemini, Google AI Overviews, Claude, Microsoft Copilot via Bing)
-- Done-for-you schema deployment via 1-line snippet (Profound/Athena/Ahrefs all stop at "here's what to deploy")
+- Citation tracking across Perplexity, ChatGPT, Gemini and Google AI Overviews, which cite, plus Claude and Gemma, which name from training data, plus a Bing organic control
+- Schema deployment via 1-line snippet [RETIRED 2026-07-24: measurement only, no write path to a client site]
 - Multi-pass AI validation on every output (factual + tone + quality + 3-attempt regen)
 - A/B variant impact attribution with statistical confidence (p < 0.05)
 - Prominence + sentiment within citations
 - Real-time citation alerts (Signal+ tier)
 - Productized monthly NVI PDF
-- Pulse self-serve at $497/mo (no competitor in this band)
+- Pulse self-serve at $497/mo [RETIRED SKU]
 
-**Where we lose to bigger names:**
-- Brand recognition (Profound has 100x our awareness)
+**Where we are weak:**
+- Brand recognition
 - Customer count (we have 1 paying — Hawaii Theatre)
 - Industry benchmarks (need 10+ customers in a vertical to be credible)
 - Multi-user accounts + SSO (defer until Enterprise prospect surfaces)

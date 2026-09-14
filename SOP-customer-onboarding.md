@@ -8,7 +8,7 @@
 
 ## Purpose
 
-A customer just signed. They paid the $4,500 kickoff. The clock is now running and they expect the engagement to land the way the sales conversation promised. Onboarding is the workflow that takes a signed-customer state to "first-research-memo-shipped, customer-pleased" state.
+A customer just signed and paid the Audit baseline. The clock is now running and they expect the engagement to land the way the sales conversation promised. Onboarding is the workflow that takes a signed-customer state to "first-research-memo-shipped, customer-pleased" state.
 
 The scoping call (covered in SOP-scoping-call.md) produces the locked 18-question set and the cohort. This SOP covers what happens after that: the technical setup, the customer expectations, and the first 21 days of operational discipline that determine whether the customer renews.
 
@@ -25,7 +25,7 @@ The kickoff promises a research memo three weeks after the scoping call. That ti
 | 3-4 | Customer reviews, requests edits or locks | Customer |
 | 5 | Hash-locked, runner created, cohort registered | Lance |
 | 6 | First measurement run fires | Cron / Lance |
-| 6-19 | Daily measurement runs across 7 AI tools | Cron (automated) |
+| 6-19 | Daily measurement runs across six AI tools plus the Bing organic control | Cron (automated) |
 | 18-20 | Research memo drafted from accumulated data | Lance + Atlas |
 | 21 | Research memo delivered to customer | Lance |
 
@@ -124,7 +124,7 @@ Sections in order:
 2. **The 18 questions and your coverage.** Question-by-question table showing AI tool coverage, position, sentiment.
 3. **Your cohort (named in full).** All 15-40 competitors, mention counts, position bias, AI tool coverage. This is the named, unredacted competitive map.
 4. **Source-type analysis.** Where AI pulls from when answering your category's questions. Lead-gen platforms, directories, publications, Wikipedia, social.
-5. **Per-AI-tool report.** What each of the 7 AI tools cited about you. The cohort-wide Microsoft Copilot gap framing (if applicable to this category).
+5. **Per-tool report.** What each of the six AI tools cited or named about you, and separately what the Bing organic control returned. Keep the two layers apart: citation-grade tools cite URLs, model-knowledge tools name without citing, and the control returns results rather than answering.
 6. **The prepped punch list.** Sequenced by leverage. Each item names: the condition, the closable work, the realistic time-to-impact.
 7. **Cross-category context (if applicable).** Where this category sits in the cross-category gradient. What that means for which surfaces matter most.
 8. **The monthly cadence going forward.** What the customer can expect on the 25th of every month. Pointer to the dashboard.

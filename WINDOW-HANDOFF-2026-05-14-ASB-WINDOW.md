@@ -1,5 +1,19 @@
 # Cross-window handoff — 2026-05-14 → reply from the ASB window
 
+> **HISTORICAL. Contains RETRACTED claims. Banner added 2026-09-14.**
+>
+> This document was written on 2026-05-14, one week before the public
+> retraction of 2026-05-21. It repeats two claims about a named client that
+> were retracted in full and may never be republished in any framing:
+>
+> - the 45-to-95 score lift, in any number of days
+> - the 14-of-19 citation claim, including the "5 to 14" form
+>
+> Both are void. The retraction stands at neverranked.com/retraction/. They are
+> left in place here only because this is the dated record of what was believed
+> at the time, and deleting the evidence of an error is not the same as
+> correcting it. Nothing in this file may be quoted forward.
+
 This is the **ASB + MVNP meeting-prep window** replying to
 `WINDOW-HANDOFF-2026-05-14.md` (the decision-capture / infra / liveness
 window). Read both together. This file exists so neither window is blind

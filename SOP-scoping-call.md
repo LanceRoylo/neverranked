@@ -59,7 +59,7 @@ If yes, hit record before the agenda begins. The recorder stays on through the b
 
 | Time | Topic |
 |---|---|
-| 0-5 min | Confirm the engagement shape. "$4,500 kickoff + $1,500/mo per category. You execute, we measure. Today's job is to lock the 18 questions and 3-7 competitors." |
+| 0-5 min | Confirm the engagement shape. "Audit at $750/mo after a $950 baseline, waived on a defined term. You execute, we measure. Today's job is to lock the 18 questions and 3-7 competitors." |
 | 5-25 min | Buyer-shape interview (the only part that matters). |
 | 25-30 min | Confirm timing, scoping commitment, what they'll receive when. |
 
@@ -115,7 +115,7 @@ Email the draft set. Format:
 ```
 Subject: Your locked question set for [category]
 
-Below is the 18-question set we'll run across all 7 AI tools.
+Below is the 18-question set we'll run across all six AI tools and the Bing organic control.
 Once you confirm, we hash-lock it and measurement starts the
 following week. After lock the set never changes. That's
 how every run compares apples to apples.
