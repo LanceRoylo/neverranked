@@ -521,6 +521,24 @@ const ALLOW = [
   // Guard message naming the retired SKU as the reason the drip is off.
   { path: "dashboard/src/nurture-drip.ts", rules: ["retired-sku"] },
   { path: "terms/index.html", rules: ["retired-sku", "retired-product"] },
+  // Three guards added 2026-09-12/13 that each have to name a retired claim in
+  // order to refuse it. Same principle as output-grader.ts above: a detector
+  // has to name what it detects.
+  //
+  //   retired-claims.ts   IS the refusal list. Every entry is a permanent
+  //                       retraction it exists to block.
+  //   memo-inputs.ts      sanitizePlanForAuthoring() substitutes the retired
+  //                       wording out of a stored client plan. The left side of
+  //                       each .replace() is the phrase being removed.
+  //   engine-order.ts     resolveEngineKey() carries the old spellings as
+  //                       ALIASES so historical snapshots still resolve. The
+  //                       alias maps the dead label onto "Bing organic
+  //                       (control)"; it does not assert the label is true.
+  //
+  // These broke the site build from 2026-09-12 until this entry was added.
+  { path: "dashboard/src/lib/retired-claims.ts", rules: ["retired-seven-tools", "retired-copilot-as-tool", "retired-copilot-attribution", "retracted-htc-score", "retracted-htc-perplexity"] },
+  { path: "dashboard/src/lib/memo-inputs.ts", rules: ["retired-seven-tools", "retired-copilot-as-tool", "retired-copilot-attribution"] },
+  { path: "dashboard/src/lib/engine-order.ts", rules: ["retired-copilot-as-tool", "retired-copilot-attribution"] },
 ];
 
 // ── App-sweep debt, declared not hidden ────────────────────────────────
