@@ -53,7 +53,17 @@ export interface MemoInputs {
     prior_share_pct: number;
     share_delta_pp: number;
     questions_added_since_prior: number;
+    /** Spelled out because the author cannot see how these were computed and
+     *  has twice combined a figure from here with one computed on a different
+     *  denominator. */
+    basis: string;
   };
+  /** The denominator behind any venue-share or cohort-share percentage.
+   *  Present ONLY on the snapshot path, and deliberately NOT the same base as
+   *  like_for_like: venue share is citations among venues across EVERY question
+   *  in the window, while like_for_like is cited runs over total runs on the
+   *  subset measured in both windows. They cannot appear in one sentence. */
+  venue_share_basis?: string;
   by_question: Array<{
     keyword: string;
     category: string;
@@ -279,6 +289,7 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
         prior_share_pct: pct(lflPriCited, lflPriRuns),
         share_delta_pp: +(pct(lflCurCited, lflCurRuns) - pct(lflPriCited, lflPriRuns)).toFixed(1),
         questions_added_since_prior: Array.from(q.values()).filter((v) => v.pr === 0 && v.cr > 0).length,
+        basis: "the questions measured in BOTH windows; share is cited runs over total runs on those questions only",
       }
     : undefined;
 
@@ -301,6 +312,8 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
     share_delta_pp: +(pct(curCited, curRuns) - pct(priCited, priRuns)).toFixed(1),
   };
   let cohort = { rank: rankLegacy, members: cohortMembersLegacy, customer_mentions: curCited };
+  /** Set only on the snapshot path, where a venue-share percentage exists. */
+  let venue_share_basis: string | undefined;
   let offsite: MemoInputs["offsite"] = { source_types: [], hosts: [] };
 
   // ── Canonical override: source headline + per-engine from the snapshot ──
@@ -431,6 +444,17 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
       };
     }).sort((a, b) => b.current_share_pct - a.current_share_pct);
 
+    // Venue share is computed across EVERY question in the window. It cannot be
+    // restricted to the like-for-like subset from a snapshot, because
+    // keyword_breakdown stores only {questions_with_owned, total_questions} and
+    // carries no per-question competitor attribution. Narrowing it would mean
+    // changing what buildReadoutSnapshot writes, which changes a paying
+    // customer's delivered numbers, so the basis is DECLARED instead of
+    // silently assumed. See the rule in memo-generator.ts that forbids pairing
+    // this percentage with a like_for_like question count.
+    venue_share_basis =
+      "every question measured in this window, not the like-for-like subset; " +
+      "share is this venue's citations as a proportion of all citations that went to venues";
     const priVenue = priSnap ? (priSnap.tc.htc_venue_share_pct ?? null) : null;
     overall = {
       current: { runs: venueTotal, cited: ownedCitations, share_pct: venueShare },
@@ -493,6 +517,7 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
     by_question,
     by_category,
     ...(like_for_like ? { like_for_like } : {}),
+    ...(venue_share_basis ? { venue_share_basis } : {}),
     cohort,
     offsite,
     prior_memo: priorMemo ?? null,
