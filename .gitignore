@@ -42,3 +42,10 @@ MONTAIC-INTEGRATION-ANSWERS.md
 
 # Customer/prospect drafts — never publish to this public repo
 outreach-drafts/
+
+# Strategy and revenue notes do not belong in a PUBLIC repo. They live in
+# ~/Projects/neverranked-docs/strategy/. HANDOFF-revenue-priority.md sat
+# untracked here until 2026-09-14; it was never committed, but one `git add -A`
+# would have published it.
+HANDOFF-*.md
+REVENUE-*.md
