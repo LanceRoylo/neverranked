@@ -14,6 +14,12 @@ export interface Env {
   BROWSER?: Fetcher;
   ADMIN_SECRET: string;
   ADMIN_EMAIL: string;
+  /** Where MONEY goes. Kept separate from ADMIN_EMAIL because on 2026-09-15
+   *  ADMIN_EMAIL was repointed to a mailbox chosen for machine readability,
+   *  and that quietly took billing failures with it. Operational noise and a
+   *  failed payment do not belong in the same inbox. Falls back to
+   *  ADMIN_EMAIL when unset, so nothing is ever silently undelivered. */
+  BILLING_EMAIL?: string;
   RESEND_API_KEY?: string;
   STRIPE_SECRET_KEY?: string;
   STRIPE_WEBHOOK_SECRET?: string;

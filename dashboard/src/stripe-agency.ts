@@ -295,8 +295,11 @@ export async function handleAgencyInvoiceFailed(event: any, env: Env): Promise<v
   const now = Math.floor(Date.now() / 1000);
   const shouldPause = attemptCount >= 3;
 
-  // Ops notification (unchanged from before)
-  if (env.RESEND_API_KEY && env.ADMIN_EMAIL) {
+  // Billing notification. Deliberately NOT ADMIN_EMAIL: that address now points
+  // at the operational mailbox, and a failed payment must land where a human
+  // actually looks rather than in the alert stream.
+  const billingTo = env.BILLING_EMAIL || env.ADMIN_EMAIL;
+  if (env.RESEND_API_KEY && billingTo) {
     try {
       await sendViaResend(env, {
         method: "POST",
@@ -306,7 +309,7 @@ export async function handleAgencyInvoiceFailed(event: any, env: Env): Promise<v
         },
         body: JSON.stringify({
           from: "NeverRanked <reports@neverranked.com>",
-          to: [env.ADMIN_EMAIL],
+          to: [billingTo],
           subject: `Agency payment failed (attempt ${attemptCount}${shouldPause ? " — PAUSED" : ""}): ${agency.name}`,
           html: `
             <p>Agency invoice failed.</p>
