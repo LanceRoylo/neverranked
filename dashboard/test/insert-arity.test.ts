@@ -176,3 +176,59 @@ test("citation_runs, the one that broke, is checked on both axes", () => {
     if (i.binds !== null) assert.equal(i.placeholders, i.binds, `${i.file}: ${i.placeholders} ? vs ${i.binds} binds`);
   }
 });
+
+// ── Every prepared statement, not just INSERTs ────────────────────────────
+//
+// The same mistake is possible on an UPDATE or a SELECT: change the WHERE
+// clause, forget a bind. A sweep on 2026-09-15 found 1,197 literal statements
+// with a .bind() and zero mismatches, so this starts from a clean baseline and
+// exists to keep it.
+
+interface Prepared { file: string; placeholders: number; binds: number; sql: string }
+
+function findPrepared(file: string): { checked: Prepared[]; dynamic: number } {
+  const s = readFileSync(file, "utf8");
+  const checked: Prepared[] = [];
+  let dynamic = 0;
+  const re = /\.prepare\s*\(/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(s))) {
+    const g = balanced(s, m.index + m[0].length - 1);
+    if (!g) continue;
+    const sql = g.inner.trim();
+    const isLiteral = sql.startsWith("`") || sql.startsWith('"') || sql.startsWith("'");
+    // DECLARED BLIND SPOT. A query assembled from a variable or carrying a
+    // ${...} placeholder run cannot be counted without executing the code.
+    // Counted and reported rather than quietly skipped.
+    if (!isLiteral || sql.includes("${")) { dynamic++; continue; }
+
+    const numbered = new Set(sql.match(/\?\d+/g) ?? []);
+    const placeholders = numbered.size > 0 ? numbered.size : (sql.match(/\?(?!\d)/g) ?? []).length;
+
+    const bindMatch = /^\s*\.bind\s*\(/.exec(s.slice(g.end));
+    if (!bindMatch) continue;
+    const bg = balanced(s, g.end + bindMatch[0].length - 1);
+    if (!bg) continue;
+    checked.push({ file, placeholders, binds: splitTop(bg.inner).length, sql: sql.replace(/\s+/g, " ").slice(0, 80) });
+  }
+  return { checked, dynamic };
+}
+
+const PREPARED = walk(SRC).map(findPrepared);
+const LITERAL = PREPARED.flatMap((p) => p.checked);
+const DYNAMIC = PREPARED.reduce((n, p) => n + p.dynamic, 0);
+
+test("every literal prepared statement binds one argument per placeholder", () => {
+  assert.ok(LITERAL.length > 500, `only found ${LITERAL.length} statements, parser is probably broken`);
+  const bad = LITERAL.filter((p) => p.placeholders !== p.binds)
+    .map((p) => `${p.file}: ${p.placeholders} placeholders vs ${p.binds} binds | ${p.sql}`);
+  assert.deepEqual(bad, [], "Placeholder and bind counts disagree:\n" + bad.join("\n"));
+});
+
+test("the dynamic-SQL blind spot is declared, not hidden", () => {
+  // Queries built by interpolation cannot be checked statically. The number is
+  // asserted so it cannot grow quietly: a large jump means new unverifiable
+  // SQL, which is worth a look even when nothing is broken.
+  assert.ok(DYNAMIC > 0, "expected some dynamic SQL; a zero here means the detector stopped working");
+  assert.ok(DYNAMIC < 120, `dynamic SQL grew to ${DYNAMIC}; statements that cannot be checked should not be multiplying`);
+});
