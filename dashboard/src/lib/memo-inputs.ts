@@ -13,6 +13,7 @@
 import type { Env } from "../types";
 import { cohortRank } from "./cohort-rank";
 import { isReadoutShapeSnapshot } from "./snapshot-shape";
+import { computeNoiseBand, fetchDailyRates } from "./noise-floor";
 
 const DAY = 86400;
 
@@ -64,6 +65,17 @@ export interface MemoInputs {
    *  in the window, while like_for_like is cited runs over total runs on the
    *  subset measured in both windows. They cannot appear in one sentence. */
   venue_share_basis?: string;
+  /** How far this client's own reported figure moves day to day with nobody
+   *  doing anything. A movement smaller than band_pp may not be called a
+   *  movement. Null means the band could not be computed, which BLOCKS movement
+   *  claims rather than permitting them. */
+  noise_floor?: {
+    band_pp: number;
+    sd_pp: number;
+    days: number;
+    observed_range_pp: number;
+    basis: string;
+  } | null;
   by_question: Array<{
     keyword: string;
     category: string;
@@ -312,6 +324,12 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
     share_delta_pp: +(pct(curCited, curRuns) - pct(priCited, priRuns)).toFixed(1),
   };
   let cohort = { rank: rankLegacy, members: cohortMembersLegacy, customer_mentions: curCited };
+  // How far this client's own number moves on its own. Computed over 21 days
+  // rather than the report month: a band derived from the same weeks it polices
+  // shrinks whenever the month was quiet, which is exactly when a small fake
+  // movement is most tempting to write.
+  const noiseBand = computeNoiseBand(await fetchDailyRates(env, slug, 21));
+
   /** Set only on the snapshot path, where a venue-share percentage exists. */
   let venue_share_basis: string | undefined;
   let offsite: MemoInputs["offsite"] = { source_types: [], hosts: [] };
@@ -518,6 +536,13 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
     by_category,
     ...(like_for_like ? { like_for_like } : {}),
     ...(venue_share_basis ? { venue_share_basis } : {}),
+    noise_floor: noiseBand && {
+      band_pp: noiseBand.bandPp,
+      sd_pp: noiseBand.sdPp,
+      days: noiseBand.days,
+      observed_range_pp: noiseBand.observedRangePp,
+      basis: noiseBand.basis,
+    },
     cohort,
     offsite,
     prior_memo: priorMemo ?? null,
