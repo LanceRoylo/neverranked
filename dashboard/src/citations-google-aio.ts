@@ -34,6 +34,9 @@ export interface AIOResult {
   text: string;
   urls: string[];
   entities: CitedEntity[];
+  /** DataForSEO reports what each task actually cost, so these rows are
+   *  recorded as `reported` rather than modelled from a rate table. */
+  usage?: { inputTokens?: number; outputTokens?: number; providerCostUsd?: number };
 }
 
 interface DfsTaskResult {

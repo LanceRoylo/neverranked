@@ -13,6 +13,7 @@ import { isReadoutShapeSnapshot } from "./lib/snapshot-shape";
 import { classifySource, hostOf } from "./lib/classify-source";
 import { keywordRunVerdict } from "./lib/keyword-run-verdict";
 import { LAYER1_ENGINE_KEYS } from "./lib/engine-layer";
+import { recordSpend } from "./lib/engine-spend";
 import { attributeVenueUrl, cohortLabelMap, matchCohortMember, pathOf, regionOf, umbrellaLabelMap, UMBRELLA_DOMAINS } from "./lib/venue-attribution";
 import { isControlEngine } from "./lib/engine-layer";
 
@@ -244,6 +245,10 @@ export interface EngineResult {
    *  Only meaningful where an engine reports the two separately. */
   retrievedUrls?: string[];
   entities: CitedEntity[];
+  /** Token usage as the provider reported it, plus the provider's own cost
+   *  where it gives one. Absent means the call reported nothing, which is
+   *  recorded as zero rather than guessed. */
+  usage?: { inputTokens?: number; outputTokens?: number; providerCostUsd?: number };
   /** Set ONLY when the call did not complete. Absent on a real empty answer. */
   failure?: { engine: string; status: number; detail: string };
 }
@@ -628,6 +633,7 @@ async function queryOpenAI(
   };
   const data = (await resp.json()) as {
     choices: { message: { content: string; annotations?: OpenAIAnnotation[] } }[];
+    usage?: { prompt_tokens?: number; completion_tokens?: number };
   };
 
   const message = data.choices?.[0]?.message;
@@ -642,7 +648,10 @@ async function queryOpenAI(
   // engines now return free-text + URL list of citations.
   const entities = extractEntitiesFromText(text, urls);
 
-  return { text, urls, entities };
+  return {
+    text, urls, entities,
+    usage: { inputTokens: data.usage?.prompt_tokens, outputTokens: data.usage?.completion_tokens },
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -719,6 +728,7 @@ async function queryGemini(
   type GroundingChunk = { web?: { uri?: string; title?: string } };
   const rawJson = await resp.text();
   let data: {
+    usageMetadata?: { promptTokenCount?: number; candidatesTokenCount?: number };
     candidates: {
       content: { parts: { text: string }[] };
       groundingMetadata?: {
@@ -772,7 +782,13 @@ async function queryGemini(
   // day the citation definition does.
   const entities = extractEntitiesFromText(text, urls);
 
-  return { text, urls, citedStrict, retrievedUrls: urls, entities };
+  return {
+    text, urls, citedStrict, retrievedUrls: urls, entities,
+    usage: {
+      inputTokens: data.usageMetadata?.promptTokenCount,
+      outputTokens: data.usageMetadata?.candidatesTokenCount,
+    },
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -787,7 +803,7 @@ async function queryClaude(
   // check. That is one flag-flip away from reading undefined.length. An empty
   // list is also the true statement about a model-knowledge engine, which
   // retrieves nothing and therefore cites nothing.
-): Promise<{ text: string; urls: string[]; entities: CitedEntity[] }> {
+): Promise<{ text: string; urls: string[]; entities: CitedEntity[]; usage?: EngineResult["usage"] }> {
   const resp = await fetch(ANTHROPIC_ENDPOINT, {
     method: "POST",
     headers: {
@@ -874,7 +890,7 @@ async function queryGemma(
   // urls is always empty and returned anyway, same reason as queryClaude: a
   // model-knowledge engine retrieves nothing, and skipReason only avoids
   // reading this field by short-circuit.
-): Promise<{ text: string; urls: string[]; entities: CitedEntity[]; failure?: EngineResult["failure"] }> {
+): Promise<{ text: string; urls: string[]; entities: CitedEntity[]; failure?: EngineResult["failure"]; usage?: EngineResult["usage"] }> {
   const resp = await fetch(provider.endpoint, {
     method: "POST",
     headers: {
@@ -1174,6 +1190,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
           `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
            VALUES (?, 'perplexity', ?, ?, ?, ?, ?, ?, 'web')`
         ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), JSON.stringify(r.citedStrict ?? r.urls), JSON.stringify(r.retrievedUrls ?? r.urls), cited ? 1 : 0, prom, now).run();
+        await recordSpend(env, "perplexity", r.usage, kw.id, now);
         await maybeAlert(env, clientSlug, kw.id, "perplexity", insertRes, cited, prom);
         totalQueries++;
         if (cited) clientCitations++;
@@ -1207,6 +1224,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
           `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
            VALUES (?, 'openai', ?, ?, ?, ?, ?, ?, 'web')`
         ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), JSON.stringify(r.urls), null, cited ? 1 : 0, prom, now).run();
+        await recordSpend(env, "openai", r.usage, kw.id, now);
         await maybeAlert(env, clientSlug, kw.id, "openai", insertRes, cited, prom);
         totalQueries++;
         if (cited) clientCitations++;
@@ -1236,6 +1254,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
           `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
            VALUES (?, 'gemini', ?, ?, ?, ?, ?, ?, 'web')`
         ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), JSON.stringify(r.citedStrict ?? r.urls), JSON.stringify(r.retrievedUrls ?? r.urls), cited ? 1 : 0, prom, now).run();
+        await recordSpend(env, "gemini", r.usage, kw.id, now);
         await maybeAlert(env, clientSlug, kw.id, "gemini", insertRes, cited, prom);
         totalQueries++;
         if (cited) clientCitations++;
@@ -1268,6 +1287,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
           `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
            VALUES (?, 'anthropic', ?, ?, '[]', ?, ?, ?, 'training')`
         ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), '[]', '[]', cited ? 1 : 0, prom, now).run();
+        await recordSpend(env, "anthropic", r.usage, kw.id, now);
         await maybeAlert(env, clientSlug, kw.id, "anthropic", insertRes, cited, prom);
         totalQueries++;
         if (cited) clientCitations++;
@@ -1297,6 +1317,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
           `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
            VALUES (?, 'google_ai_overview', ?, ?, ?, ?, ?, ?, 'web')`
         ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), JSON.stringify(r.urls), null, cited ? 1 : 0, prom, now).run();
+        await recordSpend(env, "google_ai_overview", r.usage, kw.id, now);
         await maybeAlert(env, clientSlug, kw.id, "google_ai_overview", insertRes, cited, prom);
         totalQueries++;
         if (cited) clientCitations++;
@@ -1324,6 +1345,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
           `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
            VALUES (?, 'bing', ?, ?, ?, ?, ?, ?, 'web')`
         ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), null, JSON.stringify(r.urls), cited ? 1 : 0, prom, now).run();
+        await recordSpend(env, "bing", r.usage, kw.id, now);
         await maybeAlert(env, clientSlug, kw.id, "bing", insertRes, cited, prom);
         totalQueries++;
         if (cited) clientCitations++;
@@ -1358,6 +1380,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
           `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
            VALUES (?, 'gemma', ?, ?, '[]', ?, ?, ?, 'training')`
         ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), '[]', '[]', cited ? 1 : 0, prom, now).run();
+        await recordSpend(env, "gemma", r.usage, kw.id, now);
         await maybeAlert(env, clientSlug, kw.id, "gemma", insertRes, cited, prom);
         totalQueries++;
         if (cited) clientCitations++;
@@ -1743,6 +1766,7 @@ export async function runOneKeywordCitations(
       `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
        VALUES (?, 'perplexity', ?, ?, ?, ?, ?, ?, 'web')`
     ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), JSON.stringify(r.citedStrict ?? r.urls), JSON.stringify(r.retrievedUrls ?? r.urls), cited ? 1 : 0, prom, tick()).run();
+    await recordSpend(env, "perplexity", r.usage, kw.id, tick());
     engines.perplexity = (engines.perplexity || 0) + 1;
     rowsInserted++;
   };
@@ -1759,6 +1783,7 @@ export async function runOneKeywordCitations(
       `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
        VALUES (?, 'openai', ?, ?, ?, ?, ?, ?, 'web')`
     ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), JSON.stringify(r.urls), null, cited ? 1 : 0, prom, tick()).run();
+        await recordSpend(env, "openai", r.usage, kw.id, tick());
     engines.openai = (engines.openai || 0) + 1;
     rowsInserted++;
   };
@@ -1773,6 +1798,7 @@ export async function runOneKeywordCitations(
       `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
        VALUES (?, 'gemini', ?, ?, ?, ?, ?, ?, 'web')`
     ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), JSON.stringify(r.citedStrict ?? r.urls), JSON.stringify(r.retrievedUrls ?? r.urls), cited ? 1 : 0, prom, tick()).run();
+        await recordSpend(env, "gemini", r.usage, kw.id, tick());
     engines.gemini = (engines.gemini || 0) + 1;
     rowsInserted++;
   };
@@ -1793,6 +1819,7 @@ export async function runOneKeywordCitations(
       `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
        VALUES (?, 'anthropic', ?, ?, '[]', ?, ?, ?, 'training')`
     ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), '[]', '[]', cited ? 1 : 0, prom, tick()).run();
+        await recordSpend(env, "anthropic", r.usage, kw.id, tick());
     engines.anthropic = (engines.anthropic || 0) + 1;
     rowsInserted++;
   };
@@ -1808,6 +1835,7 @@ export async function runOneKeywordCitations(
       `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
        VALUES (?, 'google_ai_overview', ?, ?, ?, ?, ?, ?, 'web')`
     ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), JSON.stringify(r.urls), null, cited ? 1 : 0, prom, tick()).run();
+        await recordSpend(env, "google_ai_overview", r.usage, kw.id, tick());
     engines.google_ai_overview = (engines.google_ai_overview || 0) + 1;
     rowsInserted++;
   };
@@ -1823,6 +1851,7 @@ export async function runOneKeywordCitations(
       `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
        VALUES (?, 'bing', ?, ?, ?, ?, ?, ?, 'web')`
     ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), null, JSON.stringify(r.urls), cited ? 1 : 0, prom, tick()).run();
+        await recordSpend(env, "bing", r.usage, kw.id, tick());
     engines.bing = (engines.bing || 0) + 1;
     rowsInserted++;
   };
@@ -1845,6 +1874,7 @@ export async function runOneKeywordCitations(
       `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
        VALUES (?, 'gemma', ?, ?, '[]', ?, ?, ?, 'training')`
     ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), '[]', '[]', cited ? 1 : 0, prom, tick()).run();
+        await recordSpend(env, "gemma", r.usage, kw.id, tick());
     engines.gemma = (engines.gemma || 0) + 1;
     rowsInserted++;
   };

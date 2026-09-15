@@ -333,6 +333,29 @@ export async function maybeSendAutomationDigest(env: Env): Promise<void> {
   lines.push(`  Paying clients:  ${payingClients}${unpaidClients > 0 ? `  (plus ${unpaidClients} unpaid pilot${unpaidClients === 1 ? "" : "s"})` : ""}`);
   lines.push(``);
 
+  // Cost of measurement, beside revenue, because the two only mean anything
+  // together. Added 2026-09-15 after the OpenAI balance hit zero mid-sweep and
+  // the first anyone knew was the instrument going dark.
+  try {
+    const { spendByEngine, totalsAreReconciled } = await import("./lib/engine-spend");
+    const spend = await spendByEngine(env, 30);
+    if (spend.length) {
+      const total = spend.reduce((a, b) => a + b.costUsd, 0);
+      const reconciled = totalsAreReconciled(spend.map((s) => s.engine));
+      lines.push(`MEASUREMENT COST (last 30 days)`);
+      lines.push(`  Total:           $${total.toFixed(2)}${reconciled ? "" : "   (indicative: rates not yet checked against a bill)"}`);
+      for (const e of spend.filter((x) => x.costUsd > 0).slice(0, 4)) {
+        lines.push(`  - ${e.engine.padEnd(22)} $${e.costUsd.toFixed(2)}  over ${e.calls} calls${e.allReported ? "  (provider-reported)" : ""}`);
+      }
+      if (mrrCents > 0) {
+        lines.push(`  Share of MRR:    ${((100 * total) / (mrrCents / 100)).toFixed(1)}%`);
+      }
+      lines.push(``);
+    }
+  } catch (e) {
+    console.log(`[automation-digest] spend section failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+
   lines.push(`TRAFFIC`);
   lines.push(`  Free-scan events recorded:   ${newLeads}`);
   lines.push(`  Email captures recorded:     ${newCaptures}`);

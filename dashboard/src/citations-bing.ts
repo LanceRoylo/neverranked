@@ -24,6 +24,8 @@ export interface BingResult {
   text: string;
   urls: string[];
   entities: CitedEntity[];
+  /** DataForSEO reports per-task cost, so these rows can be `reported`. */
+  usage?: { inputTokens?: number; outputTokens?: number; providerCostUsd?: number };
 }
 
 interface DfsBingItem {
