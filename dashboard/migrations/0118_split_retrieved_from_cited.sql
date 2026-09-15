@@ -1,0 +1,29 @@
+-- 0118: separate what an engine RETRIEVED from what its answer CITED.
+--
+-- Found 2026-09-15. On two of the four citation-grade engines, cited_urls did
+-- not mean what its name says:
+--
+--   gemini      every groundingChunks[].web.uri was written to cited_urls. That
+--               is the set Google Search supplied to ground the answer. The API
+--               separately reports, via groundingSupports, which chunks each
+--               sentence actually rests on. That field was referenced nowhere.
+--   perplexity  the search_results list (retrieval) and the url_citation
+--               annotations (real citations) were merged into one array.
+--
+-- openai and google_ai_overview were already correct: annotations and displayed
+-- references respectively. anthropic and gemma cite nothing by design, and bing
+-- is the classic-search control, which returns rather than cites.
+--
+-- Retrieved is a superset of cited, so every published Gemini and Perplexity
+-- citation figure is computed on a looser definition than its label claims.
+--
+-- WHY TWO NEW COLUMNS RATHER THAN A CORRECTION IN PLACE.
+-- Historical rows cannot be recomputed: raw API responses were never retained,
+-- only the merged list. And changing cited_urls today would leave September
+-- half measured on one definition and half on another, which lands on a paying
+-- client's first monthly readout. So both sets are captured from now, reporting
+-- keeps reading cited_urls until the 2026-10-01 cutover, and the interval
+-- between now and then is what tells us how large the correction will be
+-- BEFORE it reaches a client.
+ALTER TABLE citation_runs ADD COLUMN cited_urls_strict TEXT;
+ALTER TABLE citation_runs ADD COLUMN retrieved_urls TEXT;

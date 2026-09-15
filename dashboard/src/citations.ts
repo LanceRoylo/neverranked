@@ -201,9 +201,48 @@ export function resolveGemmaProvider(
  * 429s". Same skip behaviour, same clean citation_runs, but the failure is
  * now sayable. dryrun/engines.mjs got this discipline on 2026-08-22; this
  * file did not. */
+/**
+ * Which grounding chunks does the answer actually rest on?
+ *
+ * Pure, exported, and tested because this is the function that decides whether
+ * a figure means "cited" or "retrieved", and that distinction was wrong in
+ * production from before 2026-04-14 until 2026-09-15.
+ *
+ * Returns null when the supports array is absent or empty, which means "cannot
+ * tell" and NOT "nothing was cited". The caller must fall back to the merged
+ * set on null. Returning an empty array there would report zero citations for
+ * every Gemini run, which is a larger error than the one this fixes.
+ */
+export function citedChunkIndices(
+  supports: { groundingChunkIndices?: number[] }[] | undefined,
+  chunkCount: number,
+): number[] | null {
+  if (!Array.isArray(supports) || supports.length === 0) return null;
+  const used = new Set<number>();
+  for (const sup of supports) {
+    for (const idx of sup?.groundingChunkIndices || []) {
+      if (Number.isInteger(idx) && idx >= 0 && idx < chunkCount) used.add(idx);
+    }
+  }
+  return [...used].sort((a, b) => a - b);
+}
+
 export interface EngineResult {
   text: string;
+  /** The historical field. Until the 2026-10-01 cutover this is what every
+   *  report reads, and on gemini and perplexity it means "retrieved OR cited".
+   *  Do not change its meaning before the cutover: a definition that changes
+   *  mid-month lands on a client's monthly readout as a movement they did not
+   *  make. */
   urls: string[];
+  /** What the ANSWER actually rests on. On openai this is the url_citation
+   *  annotations, on google_ai_overview the displayed references, on gemini the
+   *  chunks named by groundingSupports, on perplexity the url_citation
+   *  annotations only. Absent means "same as urls". */
+  citedStrict?: string[];
+  /** What the engine FETCHED to ground the answer but may never have used.
+   *  Only meaningful where an engine reports the two separately. */
+  retrievedUrls?: string[];
   entities: CitedEntity[];
   /** Set ONLY when the call did not complete. Absent on a real empty answer. */
   failure?: { engine: string; status: number; detail: string };
@@ -315,27 +354,41 @@ type PerplexityAgentResponse = {
   }[];
 };
 
-function parsePerplexityAgentOutput(data: PerplexityAgentResponse): { text: string; urls: string[] } {
+export function parsePerplexityAgentOutput(data: PerplexityAgentResponse): { text: string; urls: string[]; citedStrict: string[]; retrievedUrls: string[] } {
   let text = "";
+  // `urls` stays the historical merged set so nothing downstream moves before
+  // the cutover. The two sets it is made of are now also kept apart.
   const urls: string[] = [];
   const seen = new Set<string>();
+  const retrievedUrls: string[] = [];
+  const retrievedSeen = new Set<string>();
+  const citedStrict: string[] = [];
+  const citedSeen = new Set<string>();
   const addUrl = (u?: string) => {
     if (u && !seen.has(u)) { seen.add(u); urls.push(u); }
   };
+  const addRetrieved = (u?: string) => {
+    if (u && !retrievedSeen.has(u)) { retrievedSeen.add(u); retrievedUrls.push(u); }
+  };
+  const addCited = (u?: string) => {
+    if (u && !citedSeen.has(u)) { citedSeen.add(u); citedStrict.push(u); }
+  };
   for (const item of data.output || []) {
     if (item.type === "search_results") {
-      for (const r of item.results || []) addUrl(r.url);
+      // Retrieval. The agent searched and got these back. It is not a claim
+      // that the answer used any of them.
+      for (const r of item.results || []) { addUrl(r.url); addRetrieved(r.url); }
     } else if (item.type === "message") {
       for (const part of item.content || []) {
         if (part.type !== "output_text") continue;
         text += part.text || "";
         for (const a of part.annotations || []) {
-          if (a.type === "url_citation") addUrl(a.url || a.url_citation?.url);
+          if (a.type === "url_citation") { addUrl(a.url || a.url_citation?.url); addCited(a.url || a.url_citation?.url); }
         }
       }
     }
   }
-  return { text, urls };
+  return { text, urls, citedStrict, retrievedUrls };
 }
 
 async function queryPerplexity(
@@ -375,12 +428,14 @@ async function queryPerplexity(
     return { text: "", urls: [], entities: [], failure: { engine: "perplexity", status: 200, detail: `agent failed: ${String(pmsg).slice(0, 260)}` } };
   }
 
-  const { text, urls } = parsePerplexityAgentOutput(data);
+  const { text, urls, citedStrict, retrievedUrls } = parsePerplexityAgentOutput(data);
 
-  // Extract entity names from the response text
+  // Entities stay keyed to the historical merged set so entity extraction does
+  // not silently change at the same time as the citation definition. One
+  // change at a time.
   const entities = extractEntitiesFromText(text, urls);
 
-  return { text, urls, entities };
+  return { text, urls, citedStrict, retrievedUrls, entities };
 }
 
 // ---------------------------------------------------------------------------
@@ -600,7 +655,10 @@ async function queryOpenAI(
  * Pre-2026-04-29 we called Gemini without grounding tools, which
  * meant the model answered from training data. Now we attach the
  * google_search tool, so Gemini does live Google Search retrieval
- * and returns groundingMetadata with the URLs it actually used.
+ * and returns groundingMetadata. NOTE: groundingChunks is what Search
+ * RETRIEVED, not what the answer used. groundingSupports names the chunks
+ * each span actually rests on. This comment used to claim chunks were the
+ * URLs it actually used, which is what the metric got wrong.
  *
  * Note: when grounding is enabled, responseMimeType=application/json
  * is not supported -- Gemini emits free text with grounding markers.
@@ -663,7 +721,13 @@ async function queryGemini(
   let data: {
     candidates: {
       content: { parts: { text: string }[] };
-      groundingMetadata?: { groundingChunks?: GroundingChunk[] };
+      groundingMetadata?: {
+        groundingChunks?: GroundingChunk[];
+        /** Maps a span of the answer to the chunk indices that support it.
+         *  This is the field that separates cited from merely retrieved, and it
+         *  was never read until 2026-09-15. */
+        groundingSupports?: { groundingChunkIndices?: number[] }[];
+      };
       finishReason?: string;
     }[];
   };
@@ -689,10 +753,26 @@ async function queryGemini(
   }
   const urls = await resolveGroundingUrls(rawUrls);
 
-  // Same entity extraction as Perplexity / OpenAI search-preview.
+  // Which of those chunks does the answer actually rest on? groundingSupports
+  // maps spans of the answer to chunk indices. A chunk no support references
+  // was fetched and not used, and counting it as a citation is how a retrieval
+  // set came to be published under the word "cited".
+  //
+  // Fail CLOSED to the merged set: if the field is absent (older API shape, or
+  // a response with no supports at all), citedStrict is left undefined and the
+  // caller falls back to `urls`. An empty array here would silently report zero
+  // citations, which is a worse error than the one being fixed.
+  const usedIdx = citedChunkIndices(cand?.groundingMetadata?.groundingSupports, rawUrls.length);
+  const citedStrict = usedIdx === null
+    ? undefined
+    : await resolveGroundingUrls(usedIdx.map((i) => rawUrls[i]));
+
+  // Same entity extraction as Perplexity / OpenAI search-preview. Keyed to the
+  // merged set deliberately, so entity extraction does not change on the same
+  // day the citation definition does.
   const entities = extractEntitiesFromText(text, urls);
 
-  return { text, urls, entities };
+  return { text, urls, citedStrict, retrievedUrls: urls, entities };
 }
 
 // ---------------------------------------------------------------------------
@@ -1091,9 +1171,9 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
           }
         }
         const insertRes = await env.DB.prepare(
-          `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
+          `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
            VALUES (?, 'perplexity', ?, ?, ?, ?, ?, ?, 'web')`
-        ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), cited ? 1 : 0, prom, now).run();
+        ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), JSON.stringify(r.citedStrict ?? r.urls), JSON.stringify(r.retrievedUrls ?? r.urls), cited ? 1 : 0, prom, now).run();
         await maybeAlert(env, clientSlug, kw.id, "perplexity", insertRes, cited, prom);
         totalQueries++;
         if (cited) clientCitations++;
@@ -1124,9 +1204,9 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
           }
         }
         const insertRes = await env.DB.prepare(
-          `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
+          `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
            VALUES (?, 'openai', ?, ?, ?, ?, ?, ?, 'web')`
-        ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), cited ? 1 : 0, prom, now).run();
+        ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), JSON.stringify(r.urls), null, cited ? 1 : 0, prom, now).run();
         await maybeAlert(env, clientSlug, kw.id, "openai", insertRes, cited, prom);
         totalQueries++;
         if (cited) clientCitations++;
@@ -1153,9 +1233,9 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
           }
         }
         const insertRes = await env.DB.prepare(
-          `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
+          `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
            VALUES (?, 'gemini', ?, ?, ?, ?, ?, ?, 'web')`
-        ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), cited ? 1 : 0, prom, now).run();
+        ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), JSON.stringify(r.citedStrict ?? r.urls), JSON.stringify(r.retrievedUrls ?? r.urls), cited ? 1 : 0, prom, now).run();
         await maybeAlert(env, clientSlug, kw.id, "gemini", insertRes, cited, prom);
         totalQueries++;
         if (cited) clientCitations++;
@@ -1185,9 +1265,9 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
         // Anthropic still LLM-only (web search tool integration is a Phase 3
         // upgrade). grounding_mode='training' so analytics distinguish.
         const insertRes = await env.DB.prepare(
-          `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
+          `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
            VALUES (?, 'anthropic', ?, ?, '[]', ?, ?, ?, 'training')`
-        ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), cited ? 1 : 0, prom, now).run();
+        ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), '[]', '[]', cited ? 1 : 0, prom, now).run();
         await maybeAlert(env, clientSlug, kw.id, "anthropic", insertRes, cited, prom);
         totalQueries++;
         if (cited) clientCitations++;
@@ -1214,9 +1294,9 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
           }
         }
         const insertRes = await env.DB.prepare(
-          `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
+          `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
            VALUES (?, 'google_ai_overview', ?, ?, ?, ?, ?, ?, 'web')`
-        ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), cited ? 1 : 0, prom, now).run();
+        ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), JSON.stringify(r.urls), null, cited ? 1 : 0, prom, now).run();
         await maybeAlert(env, clientSlug, kw.id, "google_ai_overview", insertRes, cited, prom);
         totalQueries++;
         if (cited) clientCitations++;
@@ -1241,9 +1321,9 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
           }
         }
         const insertRes = await env.DB.prepare(
-          `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
+          `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
            VALUES (?, 'bing', ?, ?, ?, ?, ?, ?, 'web')`
-        ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), cited ? 1 : 0, prom, now).run();
+        ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), null, JSON.stringify(r.urls), cited ? 1 : 0, prom, now).run();
         await maybeAlert(env, clientSlug, kw.id, "bing", insertRes, cited, prom);
         totalQueries++;
         if (cited) clientCitations++;
@@ -1275,9 +1355,9 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
           }
         }
         const insertRes = await env.DB.prepare(
-          `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
+          `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
            VALUES (?, 'gemma', ?, ?, '[]', ?, ?, ?, 'training')`
-        ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), cited ? 1 : 0, prom, now).run();
+        ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), '[]', '[]', cited ? 1 : 0, prom, now).run();
         await maybeAlert(env, clientSlug, kw.id, "gemma", insertRes, cited, prom);
         totalQueries++;
         if (cited) clientCitations++;
@@ -1660,9 +1740,9 @@ export async function runOneKeywordCitations(
     const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
     const cited = prom !== null;
     await env.DB.prepare(
-      `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
+      `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
        VALUES (?, 'perplexity', ?, ?, ?, ?, ?, ?, 'web')`
-    ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), cited ? 1 : 0, prom, tick()).run();
+    ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), JSON.stringify(r.citedStrict ?? r.urls), JSON.stringify(r.retrievedUrls ?? r.urls), cited ? 1 : 0, prom, tick()).run();
     engines.perplexity = (engines.perplexity || 0) + 1;
     rowsInserted++;
   };
@@ -1676,9 +1756,9 @@ export async function runOneKeywordCitations(
     const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
     const cited = prom !== null;
     await env.DB.prepare(
-      `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
+      `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
        VALUES (?, 'openai', ?, ?, ?, ?, ?, ?, 'web')`
-    ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), cited ? 1 : 0, prom, tick()).run();
+    ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), JSON.stringify(r.urls), null, cited ? 1 : 0, prom, tick()).run();
     engines.openai = (engines.openai || 0) + 1;
     rowsInserted++;
   };
@@ -1690,9 +1770,9 @@ export async function runOneKeywordCitations(
     const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
     const cited = prom !== null;
     await env.DB.prepare(
-      `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
+      `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
        VALUES (?, 'gemini', ?, ?, ?, ?, ?, ?, 'web')`
-    ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), cited ? 1 : 0, prom, tick()).run();
+    ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), JSON.stringify(r.citedStrict ?? r.urls), JSON.stringify(r.retrievedUrls ?? r.urls), cited ? 1 : 0, prom, tick()).run();
     engines.gemini = (engines.gemini || 0) + 1;
     rowsInserted++;
   };
@@ -1710,9 +1790,9 @@ export async function runOneKeywordCitations(
     const prom = computeProminence(r.entities, [], clientDomain, businessName);
     const cited = prom !== null;
     await env.DB.prepare(
-      `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
+      `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
        VALUES (?, 'anthropic', ?, ?, '[]', ?, ?, ?, 'training')`
-    ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), cited ? 1 : 0, prom, tick()).run();
+    ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), '[]', '[]', cited ? 1 : 0, prom, tick()).run();
     engines.anthropic = (engines.anthropic || 0) + 1;
     rowsInserted++;
   };
@@ -1725,9 +1805,9 @@ export async function runOneKeywordCitations(
     const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
     const cited = prom !== null;
     await env.DB.prepare(
-      `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
+      `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
        VALUES (?, 'google_ai_overview', ?, ?, ?, ?, ?, ?, 'web')`
-    ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), cited ? 1 : 0, prom, tick()).run();
+    ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), JSON.stringify(r.urls), null, cited ? 1 : 0, prom, tick()).run();
     engines.google_ai_overview = (engines.google_ai_overview || 0) + 1;
     rowsInserted++;
   };
@@ -1740,9 +1820,9 @@ export async function runOneKeywordCitations(
     const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
     const cited = prom !== null;
     await env.DB.prepare(
-      `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
+      `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
        VALUES (?, 'bing', ?, ?, ?, ?, ?, ?, 'web')`
-    ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), cited ? 1 : 0, prom, tick()).run();
+    ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), null, JSON.stringify(r.urls), cited ? 1 : 0, prom, tick()).run();
     engines.bing = (engines.bing || 0) + 1;
     rowsInserted++;
   };
@@ -1762,9 +1842,9 @@ export async function runOneKeywordCitations(
     const prom = computeProminence(r.entities, [], clientDomain, businessName);
     const cited = prom !== null;
     await env.DB.prepare(
-      `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
+      `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
        VALUES (?, 'gemma', ?, ?, '[]', ?, ?, ?, 'training')`
-    ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), cited ? 1 : 0, prom, tick()).run();
+    ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), '[]', '[]', cited ? 1 : 0, prom, tick()).run();
     engines.gemma = (engines.gemma || 0) + 1;
     rowsInserted++;
   };
