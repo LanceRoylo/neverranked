@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { citedChunkIndices, parsePerplexityAgentOutput } from "../src/citations";
 
 /* Cited is not retrieved.
@@ -136,4 +137,21 @@ test("an answer with no annotations cites nothing even when search returned page
   assert.equal(r.retrievedUrls.length, 2);
   // And the historical field still reports 2, which is exactly the overcount.
   assert.equal(r.urls.length, 2);
+});
+
+
+// ── The fallback must stay visible ────────────────────────────────────────
+
+test("an absent supports field writes NULL, it does not copy the merged set", () => {
+  // Pinned against the source because this is a storage decision, not a pure
+  // function. The first version wrote `citedStrict ?? urls`, which made a
+  // silent fallback identical to a genuine reading where the answer used every
+  // retrieved chunk. Opposite findings, same bytes, no way to tell them apart.
+  const src = readFileSync("src/citations.ts", "utf8");
+  assert.doesNotMatch(
+    src,
+    /JSON\.stringify\(r\.citedStrict \?\? r\.urls\)/,
+    "cited_urls_strict must not fall back to the merged set: NULL means the engine did not tell us",
+  );
+  assert.match(src, /r\.citedStrict \? JSON\.stringify\(r\.citedStrict\) : null/);
 });

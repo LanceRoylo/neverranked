@@ -764,7 +764,15 @@ async function queryGemini(
   const urls = await resolveGroundingUrls(rawUrls);
 
   // Which of those chunks does the answer actually rest on? groundingSupports
-  // maps spans of the answer to chunk indices. A chunk no support references
+  // maps spans of the answer to chunk indices.
+  //
+  // WHEN THIS IS ABSENT, cited_urls_strict IS WRITTEN NULL, NOT COPIED.
+  // The first version fell back to the merged set, which made a silent
+  // fallback indistinguishable from a genuine reading where the answer used
+  // every retrieved chunk. Those are opposite findings and the column could
+  // not tell them apart. NULL now means "the engine did not tell us", a value
+  // means "measured", and the 2026-10-01 cutover can count how often each
+  // happened before it changes what anyone is shown. A chunk no support references
   // was fetched and not used, and counting it as a citation is how a retrieval
   // set came to be published under the word "cited".
   //
@@ -1189,7 +1197,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
         const insertRes = await env.DB.prepare(
           `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
            VALUES (?, 'perplexity', ?, ?, ?, ?, ?, ?, ?, ?, 'web')`
-        ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), JSON.stringify(r.citedStrict ?? r.urls), JSON.stringify(r.retrievedUrls ?? r.urls), cited ? 1 : 0, prom, now).run();
+        ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), (r.citedStrict ? JSON.stringify(r.citedStrict) : null), JSON.stringify(r.retrievedUrls ?? r.urls), cited ? 1 : 0, prom, now).run();
         await recordSpend(env, "perplexity", r.usage, kw.id, now);
         await maybeAlert(env, clientSlug, kw.id, "perplexity", insertRes, cited, prom);
         totalQueries++;
@@ -1253,7 +1261,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
         const insertRes = await env.DB.prepare(
           `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
            VALUES (?, 'gemini', ?, ?, ?, ?, ?, ?, ?, ?, 'web')`
-        ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), JSON.stringify(r.citedStrict ?? r.urls), JSON.stringify(r.retrievedUrls ?? r.urls), cited ? 1 : 0, prom, now).run();
+        ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), (r.citedStrict ? JSON.stringify(r.citedStrict) : null), JSON.stringify(r.retrievedUrls ?? r.urls), cited ? 1 : 0, prom, now).run();
         await recordSpend(env, "gemini", r.usage, kw.id, now);
         await maybeAlert(env, clientSlug, kw.id, "gemini", insertRes, cited, prom);
         totalQueries++;
@@ -1765,7 +1773,7 @@ export async function runOneKeywordCitations(
     await env.DB.prepare(
       `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
        VALUES (?, 'perplexity', ?, ?, ?, ?, ?, ?, ?, ?, 'web')`
-    ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), JSON.stringify(r.citedStrict ?? r.urls), JSON.stringify(r.retrievedUrls ?? r.urls), cited ? 1 : 0, prom, tick()).run();
+    ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), (r.citedStrict ? JSON.stringify(r.citedStrict) : null), JSON.stringify(r.retrievedUrls ?? r.urls), cited ? 1 : 0, prom, tick()).run();
     await recordSpend(env, "perplexity", r.usage, kw.id, tick());
     engines.perplexity = (engines.perplexity || 0) + 1;
     rowsInserted++;
@@ -1797,7 +1805,7 @@ export async function runOneKeywordCitations(
     await env.DB.prepare(
       `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
        VALUES (?, 'gemini', ?, ?, ?, ?, ?, ?, ?, ?, 'web')`
-    ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), JSON.stringify(r.citedStrict ?? r.urls), JSON.stringify(r.retrievedUrls ?? r.urls), cited ? 1 : 0, prom, tick()).run();
+    ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), (r.citedStrict ? JSON.stringify(r.citedStrict) : null), JSON.stringify(r.retrievedUrls ?? r.urls), cited ? 1 : 0, prom, tick()).run();
         await recordSpend(env, "gemini", r.usage, kw.id, tick());
     engines.gemini = (engines.gemini || 0) + 1;
     rowsInserted++;
