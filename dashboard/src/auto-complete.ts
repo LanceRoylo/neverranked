@@ -27,7 +27,11 @@ export async function autoCompleteRoadmapItems(
 ): Promise<number> {
   // Get all non-complete roadmap items
   const items = (await env.DB.prepare(
-    "SELECT * FROM roadmap_items WHERE client_slug = ? AND status != 'done'"
+    // 'cancelled' is as finished as 'done' for iteration. It exists because
+  // marking a retired client's open items 'done' would assert work that was
+  // never performed, and this codebase's worst failures have all been a label
+  // that did not match reality.
+  "SELECT * FROM roadmap_items WHERE client_slug = ? AND status NOT IN ('done', 'cancelled')"
   ).bind(clientSlug).all<RoadmapItem>()).results;
 
   if (items.length === 0) return 0;

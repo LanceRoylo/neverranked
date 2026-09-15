@@ -295,7 +295,7 @@ export async function reconcileRoadmapForClient(
  *  resolves their roadmap automatically. */
 export async function reconcileAllRoadmaps(env: Env): Promise<ReconcileResult> {
   const slugs = (await env.DB.prepare(
-    "SELECT DISTINCT client_slug FROM roadmap_items WHERE status != 'done'"
+    "SELECT DISTINCT client_slug FROM roadmap_items WHERE status NOT IN ('done', 'cancelled')"
   ).all<{ client_slug: string }>()).results.map((r) => r.client_slug);
 
   const result: ReconcileResult = {
