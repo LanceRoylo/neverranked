@@ -457,7 +457,9 @@ async function buildScoreProjection(clientSlug: string, currentScore: number, en
 
   if (items.length === 0) return "";
 
-  const remaining = items.filter(i => i.status !== "done");
+  // Cancelled work is finished, not outstanding. Counting it as remaining
+  // understates a client's position in a projection they are shown.
+  const remaining = items.filter(i => i.status !== "done" && i.status !== "cancelled");
   const done = items.filter(i => i.status === "done");
 
   if (remaining.length === 0) return "";

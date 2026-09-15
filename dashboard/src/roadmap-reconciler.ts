@@ -183,7 +183,10 @@ export async function reconcileRoadmapForClient(
 ): Promise<{ markedDone: number; markedInProgress: number }> {
   const items = (await env.DB.prepare(
     "SELECT id, client_slug, title, category, status FROM roadmap_items " +
-    "WHERE client_slug = ? AND status != 'done' AND category IN ('schema','content','authority')"
+    // 'cancelled' is terminal. Without it this path can flip a cancelled item to
+    // done and assert work nobody performed, which is the precise thing the
+    // cancelled status exists to avoid.
+    "WHERE client_slug = ? AND status NOT IN ('done', 'cancelled') AND category IN ('schema','content','authority')"
   ).bind(clientSlug).all<ItemRow>()).results;
   if (items.length === 0) return { markedDone: 0, markedInProgress: 0 };
 

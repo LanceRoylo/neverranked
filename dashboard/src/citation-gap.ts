@@ -320,7 +320,7 @@ export async function syncRoadmapItemsFromGaps(
   // description field.
   const openItems = (await env.DB.prepare(
     `SELECT id, title, source_domain FROM roadmap_items
-     WHERE client_slug = ? AND status != 'done' AND refresh_source = ? AND source_domain IS NOT NULL`
+     WHERE client_slug = ? AND status NOT IN ('done', 'cancelled') AND refresh_source = ? AND source_domain IS NOT NULL`
   ).bind(slug, ROADMAP_REFRESH_SOURCE).all<{ id: number; title: string; source_domain: string }>()).results;
 
   // Map open items by source_domain for fast lookup.

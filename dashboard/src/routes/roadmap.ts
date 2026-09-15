@@ -7,6 +7,7 @@
  */
 
 import type { Env, User, RoadmapItem, RoadmapPhase } from "../types";
+import { isOpenStatus, isTerminalStatus } from "../lib/roadmap-status";
 import { layout, html, redirect, esc } from "../render";
 import { regenerateRoadmap } from "../auto-provision";
 import { canAccessClient } from "../agency";
@@ -672,7 +673,10 @@ function modeBadge(mode: VerificationMode, injectionStatus?: string): string {
 }
 
 function completionSourceLabel(item: RoadmapItem): string {
-  if (item.status !== "done") return "";
+  // Cancelled is finished too, and saying so beats showing nothing: an item
+  // with no label and no controls just looks broken.
+  if (item.status === "cancelled") return "Cancelled";
+  if (!isTerminalStatus(item.status)) return "";
   const when = item.completed_at
     ? new Date(item.completed_at * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric" })
     : "";
@@ -731,7 +735,8 @@ function buildItemList(items: RoadmapItem[], clientSlug: string, user: User, now
     const dueStr = item.due_date
       ? new Date(item.due_date * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric" })
       : null;
-    const overdue = item.due_date && item.due_date < now && item.status !== "done";
+    // A cancelled item cannot be overdue: it is finished, not late.
+    const overdue = item.due_date && item.due_date < now && isOpenStatus(item.status);
     const hasNote = item.client_note && item.client_note.trim();
     const sourceLabel = completionSourceLabel(item);
     const checkboxTitle = mode === "auto"
@@ -739,9 +744,9 @@ function buildItemList(items: RoadmapItem[], clientSlug: string, user: User, now
       : "Mark complete. Honor system -- only check when you've actually done the work.";
 
     return `
-      <div style="padding:12px 16px;background:var(--bg-edge);border-radius:4px;${item.status === 'done' ? 'opacity:.6' : ''}">
+      <div style="padding:12px 16px;background:var(--bg-edge);border-radius:4px;${isTerminalStatus(item.status) ? 'opacity:.6' : ''}">
         <div style="display:flex;align-items:center;gap:14px">
-          ${item.status !== "done" && (user.role === "client" || user.role === "admin" || user.role === "agency_admin") ? `
+          ${isOpenStatus(item.status) && (user.role === "client" || user.role === "admin" || user.role === "agency_admin") ? `
             <form method="POST" action="/roadmap/${clientSlug}/update/${item.id}" style="display:flex;flex-shrink:0">
               <button type="submit" name="status" value="done" style="width:20px;height:20px;border-radius:4px;border:1.5px solid var(--line);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color .2s,background .2s" title="${checkboxTitle}" onmouseover="this.style.borderColor='var(--gold)';this.style.background='var(--gold-wash)'" onmouseout="this.style.borderColor='var(--line)';this.style.background='none'"></button>
             </form>
@@ -750,16 +755,16 @@ function buildItemList(items: RoadmapItem[], clientSlug: string, user: User, now
           ` : `<div style="width:20px;height:20px;flex-shrink:0"></div>`}
           <div style="flex:1;min-width:0">
             <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-              <div style="font-size:13px;color:var(--text);${item.status === 'done' ? 'text-decoration:line-through;color:var(--text-faint)' : ''}">${esc(item.title)}</div>
+              <div style="font-size:13px;color:var(--text);${isTerminalStatus(item.status) ? 'text-decoration:line-through;color:var(--text-faint)' : ''}">${esc(item.title)}</div>
               ${ownershipBadge(item.category, plan)}
-              ${item.status !== "done" ? modeBadge(mode) : ""}
+              ${isOpenStatus(item.status) ? modeBadge(mode) : ""}
             </div>
             ${item.description ? `<div style="font-size:11px;color:var(--text-faint);margin-top:3px;white-space:pre-wrap;line-height:1.65">${esc(item.description)}</div>` : ''}
             ${item.status === "done" && sourceLabel ? `<div style="font-size:10px;color:var(--text-faint);margin-top:4px;font-family:var(--label);letter-spacing:.06em">${esc(sourceLabel)}</div>` : ""}
           </div>
           <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
-            ${dueStr && item.status !== "done" ? `<span style="font-size:10px;font-family:var(--label);letter-spacing:.1em;${overdue ? 'color:var(--red)' : 'color:var(--text-faint)'}">${overdue ? 'OVERDUE ' : ''}${dueStr}</span>` : ''}
-            ${item.status !== "done" && (user._viewAsClient || (user.role !== "admin" && user.role !== "agency_admin")) ? `
+            ${dueStr && isOpenStatus(item.status) ? `<span style="font-size:10px;font-family:var(--label);letter-spacing:.1em;${overdue ? 'color:var(--red)' : 'color:var(--text-faint)'}">${overdue ? 'OVERDUE ' : ''}${dueStr}</span>` : ''}
+            ${isOpenStatus(item.status) && (user._viewAsClient || (user.role !== "admin" && user.role !== "agency_admin")) ? `
               <span class="status status-${item.status === 'in_progress' ? 'in_progress' : 'pending'}" style="font-size:9px" title="${esc(st.hint)}">${st.label}</span>
             ` : ""}
           </div>
@@ -769,7 +774,7 @@ function buildItemList(items: RoadmapItem[], clientSlug: string, user: User, now
             ${esc(item.client_note!)}
           </div>
         ` : ''}
-        ${item.status !== "done" ? `
+        ${isOpenStatus(item.status) ? `
           <details style="margin-top:6px;margin-left:34px">
             <summary style="cursor:pointer;font-size:10px;color:var(--text-faint);font-family:var(--label);letter-spacing:.1em;text-transform:uppercase">${hasNote ? 'Edit note' : 'Add note'}</summary>
             <form method="POST" action="/roadmap/${clientSlug}/update/${item.id}" style="margin-top:6px;display:flex;gap:6px">
@@ -778,7 +783,7 @@ function buildItemList(items: RoadmapItem[], clientSlug: string, user: User, now
             </form>
           </details>
         ` : ''}
-        ${(user.role === "admin" || user.role === "agency_admin") && !user._viewAsClient && item.status !== "done" ? `
+        ${(user.role === "admin" || user.role === "agency_admin") && !user._viewAsClient && isOpenStatus(item.status) ? `
           <details style="margin-top:6px;margin-left:34px;opacity:.55" data-admin-only>
             <summary style="cursor:pointer;font-size:10px;color:var(--text-faint);font-family:var(--label);letter-spacing:.1em;text-transform:uppercase">Admin &middot; ${st.label}</summary>
             <div style="margin-top:8px;padding:8px 10px;background:rgba(232,199,103,.04);border-left:2px solid var(--gold-dim);border-radius:0 2px 2px 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center">

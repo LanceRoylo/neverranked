@@ -377,7 +377,12 @@ export interface RoadmapItem {
   // The old union said "complete" and omitted "blocked", so twelve real
   // comparisons in routes/roadmap.ts read as always-false to a compiler.
   // Verified 2026-09-09 against D1: done 602, pending 254, in_progress 5.
-  status: "pending" | "in_progress" | "done" | "blocked";
+  /** "done" and "cancelled" are both TERMINAL; see lib/roadmap-status.ts.
+   *  "cancelled" was added 2026-09-15 when a retired client's open items had
+   *  to be closed without asserting work nobody performed. It was written to
+   *  production before this union knew about it, which typecheck caught.
+   *  "blocked" is NOT terminal: it is stalled, and stalled work is open. */
+  status: "pending" | "in_progress" | "done" | "blocked" | "cancelled";
   sort_order: number;
   due_date: number | null;
   completed_at: number | null;

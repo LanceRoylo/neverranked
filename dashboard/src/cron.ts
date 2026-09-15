@@ -477,7 +477,7 @@ export async function sendWeeklyDigests(
       // Limit 3 each to match the recently-completed line cap and
       // keep the email block scannable.
       const newGapItems = (await env.DB.prepare(
-        "SELECT title FROM roadmap_items WHERE client_slug = ? AND refresh_source = 'citation_gap' AND created_at > ? AND status != 'done' ORDER BY created_at DESC LIMIT 3"
+        "SELECT title FROM roadmap_items WHERE client_slug = ? AND refresh_source = 'citation_gap' AND created_at > ? AND status NOT IN ('done', 'cancelled') ORDER BY created_at DESC LIMIT 3"
       ).bind(d.clientSlug, oneWeekAgo).all<{ title: string }>()).results;
       const gapResolved = (await env.DB.prepare(
         "SELECT title FROM roadmap_items WHERE client_slug = ? AND completed_by = 'citation_gap' AND completed_at > ? ORDER BY completed_at DESC LIMIT 3"
@@ -2805,7 +2805,7 @@ export async function runSnippetSweep(env: Env): Promise<void> {
           // Count pending roadmap items so the reframe can name a specific
           // number ("the 12 schema items in the roadmap that we'd push").
           const pending = await env.DB.prepare(
-            "SELECT COUNT(*) AS cnt FROM roadmap_items WHERE client_slug = ? AND category = 'schema' AND status != 'done'"
+            "SELECT COUNT(*) AS cnt FROM roadmap_items WHERE client_slug = ? AND category = 'schema' AND status NOT IN ('done', 'cancelled')"
           ).bind(d.client_slug).first<{ cnt: number }>();
           const sent = await sendSnippetDay21Reframe(env, {
             agency, domain: d, daysSinceDelivery,
