@@ -826,6 +826,32 @@ export async function runCitationDispatch(env: Env): Promise<void> {
         },
       });
       console.log(`[cron daily] dispatched weekly-extras workflow (snapshot+gsc+backup, Monday)`);
+
+      // Replicate sweep, weekly, same day. Asks a small rotating sample the
+      // same question three times in a row so the instrument's own instability
+      // can be measured instead of bounded. Runs AFTER the dispatch above and
+      // in its own try, because a failure here must not cost the snapshot.
+      //
+      // Bounded by MAX_CALLS_PER_RUN rather than by good intentions: roughly
+      // 108 calls a week against a baseline near 14,650 a month.
+      try {
+        const { logCronRun } = await import("./lib/cron-log");
+        const { runReplicateSweep } = await import("./citations");
+        const started = Date.now();
+        // Whole weeks since the Unix epoch. Deterministic, so re-running a week
+        // samples the same questions, and monotonic, so the sample rotates.
+        const weekIndex = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000));
+        const r = await runReplicateSweep(env, weekIndex);
+        await logCronRun(env, "replicate_sweep", r.truncated ? "partial" : "success", Date.now() - started,
+          `batch=${r.batchId} calls=${r.calls} groups=${r.groups}${r.truncated ? " TRUNCATED" : ""}`);
+        console.log(`[cron daily] replicate sweep: ${r.groups} groups from ${r.calls} calls`);
+      } catch (e) {
+        console.log(`[cron daily] replicate sweep failed: ${e instanceof Error ? e.message : String(e)}`);
+        try {
+          const { logCronRun } = await import("./lib/cron-log");
+          await logCronRun(env, "replicate_sweep", "failure", undefined, e instanceof Error ? e.message : String(e));
+        } catch { /* logging is best-effort */ }
+      }
     } else {
       console.log(`[cron daily] skipping weekly-extras (not Monday, UTC day=${new Date().getUTCDay()})`);
     }

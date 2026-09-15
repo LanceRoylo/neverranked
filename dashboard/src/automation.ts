@@ -356,6 +356,24 @@ export async function maybeSendAutomationDigest(env: Env): Promise<void> {
     console.log(`[automation-digest] spend section failed: ${e instanceof Error ? e.message : String(e)}`);
   }
 
+  // Instrument stability, from the weekly replicate sweep. Silent until enough
+  // groups exist to say anything, because a disagreement rate computed from a
+  // handful of readings is worse than no number at all.
+  try {
+    const { readReplicateGroups, agreementStats } = await import("./lib/replicate-sample");
+    const st = agreementStats(await readReplicateGroups(env, 60));
+    if (st.groups >= 20) {
+      lines.push(`INSTRUMENT STABILITY (last 60 days)`);
+      lines.push(`  Same question, asked 3x back to back, disagreed with itself on ${(100 * st.disagreementRate).toFixed(1)}% of ${st.groups} question-engine pairs.`);
+      for (const e of st.byEngine.slice(0, 3)) {
+        lines.push(`  - ${e.engine.padEnd(22)} ${(100 * e.rate).toFixed(1)}%  (${e.split}/${e.groups})`);
+      }
+      lines.push(``);
+    }
+  } catch (e) {
+    console.log(`[automation-digest] stability section failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+
   lines.push(`TRAFFIC`);
   lines.push(`  Free-scan events recorded:   ${newLeads}`);
   lines.push(`  Email captures recorded:     ${newCaptures}`);
