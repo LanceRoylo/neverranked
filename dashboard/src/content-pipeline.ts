@@ -329,7 +329,37 @@ function extractQaIssues(qaJson: string): string {
  * still go through the customer's explicit Publish click. After that,
  * a cleanly-approved + QA-passing draft auto-ships here.
  */
+/**
+ * PUBLISHING TO A CLIENT SITE IS RETIRED. Gated 2026-09-15.
+ *
+ * The positioning is published and unambiguous: "NeverRanked MEASURES. It does
+ * not deploy to, or touch, client sites." Hosted schema injection was retired
+ * 2026-07-24 behind a code constant for exactly that reason.
+ *
+ * This path survived that retirement and nobody noticed. maybeAutoPublish()
+ * auto-approves a draft once a client is past the trust window, calls
+ * publishDraft() into their WordPress or Webflow with no human in the loop, and
+ * then runContentOutcomeScan() counts how many citations the URL we published
+ * earned and writes the result back. That is writing to a client site AND
+ * grading our own work, which is the referee wearing a jersey and marking his
+ * own team's goals.
+ *
+ * It was dormant when found: zero rows in cms_connections, wp_connections and
+ * scheduled_drafts. Dormant is not the same as safe. The only thing standing
+ * between the published position and a live write path was that nobody had
+ * connected a CMS yet, and connecting one is a form submission.
+ *
+ * So the gate is a code constant, the same treatment inject.ts got: turning
+ * this back on is a deliberate edit with a diff and a reviewer, not an UPDATE
+ * against a table nobody watches.
+ *
+ * Drafting, QA and scheduling still run. What stops is the write to someone
+ * else's property, and the scan that grades what we wrote.
+ */
+export const CLIENT_SITE_PUBLISHING_RETIRED = true;
+
 async function maybeAutoPublish(item: ScheduledDraft, env: Env): Promise<void> {
+  if (CLIENT_SITE_PUBLISHING_RETIRED) return;
   if (!item.draft_id) return;
   // Paused clients never auto-publish. Their approved drafts are still
   // publishable manually via the one-click Publish button.
@@ -449,6 +479,9 @@ export async function runContentPipeline(env: Env): Promise<void> {
  * observations piggy-back on the existing GSC snapshots if present.
  */
 export async function runContentOutcomeScan(env: Env): Promise<void> {
+  // Measuring how many citations OUR OWN published content earned is the
+  // self-grading half of the same problem. It stops with the publishing.
+  if (CLIENT_SITE_PUBLISHING_RETIRED) return;
   const now = Math.floor(Date.now() / 1000);
   // Scan anything published in the last 90 days that we haven't checked
   // in the past 6 days. The longer we track a post the more the outcome

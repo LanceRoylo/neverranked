@@ -750,6 +750,16 @@ export async function handleDraftPublish(clientSlug: string, draftId: number, us
     return redirect(`/drafts/${encodeURIComponent(clientSlug)}/${draftId}?pub_error=${encodeURIComponent("Draft must be approved before publishing.")}`);
   }
 
+  // Retired 2026-09-15 alongside the automatic path. A manual button that writes
+  // to a client's site contradicts the published position just as squarely as a
+  // cron that does. The only difference is who clicks. The flag is IMPORTED
+  // rather than re-declared: one fact in one place, because a second copy is how
+  // the automatic path outlived the 2026-07-24 retirement in the first place.
+  const { CLIENT_SITE_PUBLISHING_RETIRED } = await import("../content-pipeline");
+  if (CLIENT_SITE_PUBLISHING_RETIRED) {
+    return redirect(`/drafts/${encodeURIComponent(clientSlug)}/${draftId}?pub_error=${encodeURIComponent("Publishing to a client site is retired. NeverRanked measures and does not deploy. Copy the draft and hand it to whoever owns the site.")}`);
+  }
+
   const { getConnection, publishDraft } = await import("../wordpress");
   const conn = await getConnection(clientSlug, env);
   if (!conn) {
