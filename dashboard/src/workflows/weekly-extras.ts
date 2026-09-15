@@ -45,6 +45,8 @@ export type WeeklyExtrasParams = {
   // on Mondays only; manual button always sets true (with lookback=1
   // for fresh feedback).
   runSnapshot?: boolean;
+  /** Weekly replicate sweep: one step per group, each with a fresh budget. */
+  runReplicates?: boolean;
   // Days of citation_runs history to roll into the snapshot. 7 for
   // Monday weekly rollup, 1 for manual same-day verification.
   snapshotLookbackDays?: number;
@@ -59,6 +61,7 @@ export class WeeklyExtrasWorkflow extends WorkflowEntrypoint<Env, WeeklyExtrasPa
     const runSnapshot = event.payload?.runSnapshot ?? false;
     const snapshotLookbackDays = event.payload?.snapshotLookbackDays ?? 7;
     const runGscAndBackup = event.payload?.runGscAndBackup ?? false;
+    const runReplicates = event.payload?.runReplicates ?? false;
 
     // Plan: list out which clients we're snapshotting.
     const plan = await step.do("plan", async () => {
@@ -161,6 +164,32 @@ export class WeeklyExtrasWorkflow extends WorkflowEntrypoint<Env, WeeklyExtrasPa
           await buildClientSnapshot(this.env, slug, snapshotLookbackDays);
         });
       }
+    }
+
+    // Replicate sweep. One step.do() per group, each with its own fresh CPU
+    // budget, for the same reason the citation path fans out: a long sequence
+    // of API calls in a single step truncates at the ceiling and exits
+    // reporting success. Three readings still happen back to back WITHIN a
+    // step, which is what makes them replicates rather than three samples.
+    if (runReplicates) {
+      const { planReplicateSweep, runReplicateGroup } = await import("../citations");
+      const weekIndex = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000));
+      const plan = await step.do("replicate-plan", async () => planReplicateSweep(this.env, weekIndex));
+      let complete = 0;
+      for (const item of plan) {
+        const wrote = await step.do(`replicate-${item.keywordId}-${item.engine}`, async () =>
+          runReplicateGroup(this.env, item));
+        if (wrote === 3) complete++;
+      }
+      await step.do("replicate-log", async () => {
+        const { logCronRun } = await import("../lib/cron-log");
+        // Groups PLANNED vs groups COMPLETE, both recorded. A gap means readings
+        // were lost, and that has to be visible rather than inferred from a
+        // smaller sample later.
+        await logCronRun(this.env, "replicate_sweep", complete === plan.length ? "success" : "partial", undefined,
+          `planned=${plan.length} complete=${complete}`);
+        return complete;
+      });
     }
 
     // Real-time citation alert digests. Citations steps wrote alert

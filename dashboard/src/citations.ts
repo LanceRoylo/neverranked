@@ -1935,23 +1935,36 @@ export interface CitationRunPlan {
 }
 
 /**
- * Replicate sweep. Ask the same question three times in the same minute and
- * record whether the answers agree.
+ * Replicate sweep, split into a PLAN and a per-group RUN.
  *
- * LIVES IN THIS FILE ON PURPOSE. It reuses computeProminence, skipReason and
- * resolveBusinessName rather than reimplementing them. If the replicate path
- * decided "cited" even slightly differently from the production path, the
- * disagreement rate would be measuring the difference between two pieces of my
- * code instead of the instrument, which is worse than not measuring it.
+ * WHY SPLIT. The first version did every call inline in the cron handler: up to
+ * 81 sequential API calls at nine to sixteen seconds each. This codebase has
+ * already paid for that shape once. From the fan-out note below:
+ * runWeeklyCitations() inside a single step.do() "silently hit the per-step 30s
+ * CPU ceiling after ~1.5 keywords and exited successfully with most data
+ * missing". An audit caught the repeat before it ran.
  *
- * Writes ONLY to replicate_runs. Nothing a customer sees reads that table.
+ * It would have been worse here than there. Partial groups are dropped by
+ * design, so a truncated sweep produces fewer groups rather than broken ones,
+ * the cron log records success, and the noise floor gets computed from a
+ * silently biased sample. A guard reporting success while measuring nothing,
+ * built by the person who spent the day removing them.
+ *
+ * So the workflow runs one step.do() per group, each with its own fresh budget,
+ * exactly like the citation fan-out. Three readings still happen back to back
+ * inside a single step, which is what makes them replicates.
  */
-export async function runReplicateSweep(
-  env: Env,
-  weekIndex: number,
-): Promise<{ batchId: string; calls: number; groups: number; truncated: boolean }> {
+export interface ReplicatePlanItem {
+  batchId: string;
+  keywordId: number;
+  keyword: string;
+  engine: string;
+  clientDomain: string;
+  businessName: string | null;
+}
+
+export async function planReplicateSweep(env: Env, weekIndex: number): Promise<ReplicatePlanItem[]> {
   const { pickSample, REPLICATES, MAX_CALLS_PER_RUN } = await import("./lib/replicate-sample");
-  const { recordSpend } = await import("./lib/engine-spend");
 
   const candidates = (await env.DB.prepare(
     "SELECT id AS keywordId, client_slug AS clientSlug, keyword FROM citation_keywords WHERE active = 1 ORDER BY id",
@@ -1959,74 +1972,78 @@ export async function runReplicateSweep(
 
   const chosen = pickSample(candidates, weekIndex);
   const byId = new Map(candidates.map((c) => [c.keywordId, c]));
+  const batchId = `w${weekIndex}`;
 
-  const batchId = `w${weekIndex}-${Math.floor(Date.now() / 1000)}`;
-  let calls = 0;
-  let groups = 0;
-  let truncated = false;
+  const engines: string[] = [];
+  if (env.PERPLEXITY_API_KEY) engines.push("perplexity");
+  if (env.OPENAI_API_KEY) engines.push("openai");
+  if (env.GEMINI_API_KEY) engines.push("gemini");
 
-  // Resolve each client's matching inputs once, exactly as the sweep does.
-  const clientCtx = new Map<string, { domain: string; name: string | null }>();
-  for (const c of chosen) {
-    if (clientCtx.has(c.clientSlug)) continue;
-    const domain = await env.DB.prepare(
-      "SELECT * FROM domains WHERE client_slug = ? AND is_competitor = 0 AND active = 1 LIMIT 1",
-    ).bind(c.clientSlug).first<Domain>();
-    const config = await env.DB.prepare(
-      "SELECT * FROM injection_configs WHERE client_slug = ?",
-    ).bind(c.clientSlug).first<InjectionConfig>();
-    clientCtx.set(c.clientSlug, {
-      domain: domain?.domain || "",
-      name: await resolveBusinessName(env, c.clientSlug, config),
-    });
-  }
-
+  const ctx = new Map<string, { domain: string; name: string | null }>();
+  const out: ReplicatePlanItem[] = [];
   for (const pick of chosen) {
-    const kw = byId.get(pick.keywordId);
-    const ctx = clientCtx.get(pick.clientSlug);
-    if (!kw || !ctx || !ctx.domain) continue;
-
-    // Citation-grade only. Model-knowledge engines cite nothing, and the
-    // control returns rather than answers, so neither has a citation to be
-    // unstable about.
-    const engines: Array<[string, () => Promise<EngineResult>]> = [];
-    if (env.PERPLEXITY_API_KEY) engines.push(["perplexity", () => queryPerplexity(kw.keyword, env.PERPLEXITY_API_KEY!)]);
-    if (env.OPENAI_API_KEY) engines.push(["openai", () => queryOpenAI(kw.keyword, env.OPENAI_API_KEY!)]);
-    if (env.GEMINI_API_KEY) engines.push(["gemini", () => queryGemini(kw.keyword, env.GEMINI_API_KEY!, env)]);
-
-    for (const [engine, call] of engines) {
-      if (calls + REPLICATES > MAX_CALLS_PER_RUN) { truncated = true; break; }
-      let wrote = 0;
-      for (let rep = 0; rep < REPLICATES; rep++) {
-        let r: EngineResult;
-        try {
-          r = await call();
-        } catch {
-          continue; // a lost reading drops the group; it is never counted as agreement
-        }
-        calls++;
-        const ts = Math.floor(Date.now() / 1000);
-        await recordSpend(env, engine, r.usage, kw.keywordId, ts);
-        if (await skipReason(env, engine, kw.keyword, r, false)) continue;
-        const prom = computeProminence(r.entities, r.urls, ctx.domain, ctx.name);
-        try {
-          await env.DB.prepare(
-            `INSERT OR IGNORE INTO replicate_runs
-               (batch_id, keyword_id, engine, rep_index, run_at, client_cited, cited_urls)
-             VALUES (?, ?, ?, ?, ?, ?, ?)`,
-          ).bind(batchId, kw.keywordId, engine, rep, ts, prom !== null ? 1 : 0, JSON.stringify(r.urls)).run();
-          wrote++;
-        } catch (e) {
-          console.log(`[replicate] insert failed ${engine}/${kw.keywordId}: ${e instanceof Error ? e.message : String(e)}`);
-        }
-      }
-      if (wrote === REPLICATES) groups++;
+    if (!ctx.has(pick.clientSlug)) {
+      const domain = await env.DB.prepare(
+        "SELECT * FROM domains WHERE client_slug = ? AND is_competitor = 0 AND active = 1 LIMIT 1",
+      ).bind(pick.clientSlug).first<Domain>();
+      const config = await env.DB.prepare(
+        "SELECT * FROM injection_configs WHERE client_slug = ?",
+      ).bind(pick.clientSlug).first<InjectionConfig>();
+      ctx.set(pick.clientSlug, {
+        domain: domain?.domain || "",
+        name: await resolveBusinessName(env, pick.clientSlug, config),
+      });
     }
-    if (truncated) break;
+    const c = ctx.get(pick.clientSlug)!;
+    const kw = byId.get(pick.keywordId);
+    if (!kw || !c.domain) continue;
+    for (const engine of engines) {
+      if ((out.length + 1) * REPLICATES > MAX_CALLS_PER_RUN) return out;
+      out.push({ batchId, keywordId: kw.keywordId, keyword: kw.keyword, engine, clientDomain: c.domain, businessName: c.name });
+    }
   }
+  return out;
+}
 
-  console.log(`[replicate] batch ${batchId}: ${calls} calls, ${groups} complete groups${truncated ? " (TRUNCATED at the call ceiling)" : ""}`);
-  return { batchId, calls, groups, truncated };
+/**
+ * One group: the same question asked REPLICATES times back to back on one
+ * engine. Reuses computeProminence, skipReason and resolveBusinessName via the
+ * plan rather than reimplementing them, so "cited" means here exactly what it
+ * means in the production sweep.
+ */
+export async function runReplicateGroup(env: Env, item: ReplicatePlanItem): Promise<number> {
+  const { REPLICATES } = await import("./lib/replicate-sample");
+  const { recordSpend } = await import("./lib/engine-spend");
+
+  const call = async (): Promise<EngineResult | null> => {
+    try {
+      if (item.engine === "perplexity" && env.PERPLEXITY_API_KEY) return await queryPerplexity(item.keyword, env.PERPLEXITY_API_KEY);
+      if (item.engine === "openai" && env.OPENAI_API_KEY) return await queryOpenAI(item.keyword, env.OPENAI_API_KEY);
+      if (item.engine === "gemini" && env.GEMINI_API_KEY) return await queryGemini(item.keyword, env.GEMINI_API_KEY, env);
+    } catch { /* a lost reading drops the group; never counted as agreement */ }
+    return null;
+  };
+
+  let wrote = 0;
+  for (let rep = 0; rep < REPLICATES; rep++) {
+    const r = await call();
+    if (!r) continue;
+    const ts = Math.floor(Date.now() / 1000);
+    await recordSpend(env, item.engine, r.usage, item.keywordId, ts);
+    if (await skipReason(env, item.engine, item.keyword, r, false)) continue;
+    const prom = computeProminence(r.entities, r.urls, item.clientDomain, item.businessName);
+    try {
+      await env.DB.prepare(
+        `INSERT OR IGNORE INTO replicate_runs
+           (batch_id, keyword_id, engine, rep_index, run_at, client_cited, cited_urls)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      ).bind(item.batchId, item.keywordId, item.engine, rep, ts, prom !== null ? 1 : 0, JSON.stringify(r.urls)).run();
+      wrote++;
+    } catch (e) {
+      console.log(`[replicate] insert failed ${item.engine}/${item.keywordId}: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
+  return wrote;
 }
 
 export async function planCitationRun(
