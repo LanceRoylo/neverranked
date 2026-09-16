@@ -152,7 +152,7 @@ interface ReportFacts {
   excludedEngines?: Array<{ name?: string; reason?: string }>;
   venue?: { rows?: ChartRow[] };
   sources?: ChartRow[];
-  topSources?: { host: string; pct: number }[]; // specific third-party domains AI cited
+  topSources?: { host: string; pct: number }[]; // specific third-party domains AI pulled from
   questions?: { appeared?: Array<{ q: string; engines: string[] }>; disappeared?: Array<{ q: string; engines: string[] }> };
   // Per-engine x per-question citation grid (see report-facts.ts buildCitationGrid).
   grid?: {
@@ -186,9 +186,9 @@ function renderQuestionMovement(qs: NonNullable<ReportFacts["questions"]>, note?
   const disappeared = (qs.disappeared || []).filter((e) => e && typeof e.q === "string" && Array.isArray(e.engines));
   if (!appeared.length && !disappeared.length) return "";
   const groups: string[] = [];
-  if (appeared.length) groups.push(`<div class="qm-h win">Newly cited</div>${appeared.map((e, i) => row(e, "win", i)).join("")}`);
-  if (disappeared.length) groups.push(`<div class="qm-h loss">No longer cited</div>${disappeared.map((e, i) => row(e, "loss", appeared.length + i)).join("")}`);
-  const cap = `Each line is one real question we ask the AI tools every month, and the tools where your citation status flipped since last month. A plus means a tool that ignored you now cites you for that question. A minus means the reverse. These flips show up before the totals move.`;
+  if (appeared.length) groups.push(`<div class="qm-h win">Newly showing</div>${appeared.map((e, i) => row(e, "win", i)).join("")}`);
+  if (disappeared.length) groups.push(`<div class="qm-h loss">No longer showing</div>${disappeared.map((e, i) => row(e, "loss", appeared.length + i)).join("")}`);
+  const cap = `Each line is one real question we ask the AI tools every month, and the tools where your status flipped since last month. A plus means a tool that showed nothing of you now shows you for that question. A minus means the reverse. These flips show up before the totals move.`;
   return `<section class="nr-chart"><h3 class="nr-ctitle">Questions won and lost</h3><div class="nr-bars">${groups.join("")}</div>${chartText(cap, note)}</section>`;
 }
 
@@ -304,8 +304,15 @@ function renderCitationGrid(
       const strong = s >= 0.5 ? " cg-strong" : "";
       // Verb follows the row's layer. A model-knowledge tool cites nothing, so
       // "cited you" would be false about it no matter what the number says.
+      //
+      // 2026-09-15: the same is now true of the search layer. None of the four
+      // web-searching engines gives us a citation signal distinct from
+      // retrieval (Perplexity returns no annotations at all; Gemini's supports
+      // name every chunk; ChatGPT and AIO never had one extracted). This cell
+      // is URL-derived, so it says the engine pulled from the site. It does
+      // not say the answer rested on it, because we cannot see that.
       // Em dash replaced with a colon: house style, and this is customer copy.
-      const verb = grid.layers?.[r] === "model_knowledge" ? "named you in" : "cited you on";
+      const verb = grid.layers?.[r] === "model_knowledge" ? "named you in" : "pulled from your site on";
       const n = countsOrdered[r]?.[c] ?? 0;
       const thin = markThin && n > 0 && n < THIN_CHECKS;
       if (thin) thinCells++;
@@ -325,7 +332,7 @@ function renderCitationGrid(
     rows += `<text x="${cx}" y="${y + CELL / 2 + 4}" class="cg-count">${hit}<tspan class="cg-count-den">/${answered}</tspan></text>`;
   });
 
-  const svg = `<svg viewBox="0 0 ${W} ${H}" class="cg-svg" role="img" preserveAspectRatio="xMinYMin meet" aria-label="Coverage grid: each AI tool by each tracked question, gold where the tool cited you (search tools) or named you (model-knowledge tools) this month.">`
+  const svg = `<svg viewBox="0 0 ${W} ${H}" class="cg-svg" role="img" preserveAspectRatio="xMinYMin meet" aria-label="Coverage grid: each AI tool by each tracked question, gold where the tool pulled from your site (search tools) or named you (model-knowledge tools) this month.">`
     + `<g class="cg-heads">${head}</g>${rows}</svg>`;
 
   // Numbered legend maps each column back to its question.
@@ -336,7 +343,7 @@ function renderCitationGrid(
   // The old caption used "named" and "won a citation" for the same square, in
   // one sentence, across rows that measure two different things. Each row now
   // states its own basis.
-  const cap = `Each row is one AI tool, each numbered column is one question we ask it every day. The search tools can cite sources, so a gold square there means that tool pointed at your site. The model-knowledge tools cite nothing at all, so a gold square there means it said your name. Brighter means it happened on a larger share of that month's checks. A dark square means the tool answered without you. A faint outline means that tool did not answer that question this month. A smaller square means we only got one or two checks in on that question, so read it as a hint rather than a pattern. The number on the right is how many of the questions it answered where you appeared. The columns are ordered, strongest on the left, so any run of questions nobody picks you up on gathers at the right-hand edge rather than being scattered through the grid.`;
+  const cap = `Each row is one AI tool, each numbered column is one question we ask it every day. The search tools go and read pages, so a gold square there means that tool pulled from your site. The model-knowledge tools read nothing at all, so a gold square there means it said your name. Brighter means it happened on a larger share of that month's checks. A dark square means the tool answered without you. A faint outline means that tool did not answer that question this month. A smaller square means we only got one or two checks in on that question, so read it as a hint rather than a pattern. The number on the right is how many of the questions it answered where you appeared. The columns are ordered, strongest on the left, so any run of questions nobody picks you up on gathers at the right-hand edge rather than being scattered through the grid.`;
 
   return `<section class="nr-chart"><h3 class="nr-ctitle">Where the six AI tools and the search control put you, question by question</h3>`
     + `<div class="cg-scroll">${svg}</div>`
@@ -408,12 +415,12 @@ function renderDumbbell(engines: ChartEngine[], prior: string, note?: string): s
       <div class="dumb-vals">${prev}<span class="to">&rarr;</span><span class="cur"><span class="cnt" data-v="${cur}">${cur}</span>%</span></div>
     </div>`;
   }).join("");
-  const cap = `Each AI tool shows two dots. The hollow dot is ${prior} and the gold dot is this month. When the gold dot sits to the right of the hollow one, that tool cites you more than it did. To the left means less. The line is the size of the move.`;
+  const cap = `Each AI tool shows two dots. The hollow dot is ${prior} and the gold dot is this month. When the gold dot sits to the right of the hollow one, that tool pulled from your site more than it did. To the left means less. The line is the size of the move.`;
   const names = disclosed.map((e) => e.name);
   const excluded = names.length
     ? `<p class="nr-note">${esc(names.length === 1 ? names[0] : names.join(" and "))} ${names.length === 1 ? "is" : "are"} left out of this chart on purpose. ${names.length === 1 ? "It returned" : "They returned"} plenty of sources this month, but not one of them was any venue in your category, yours or a competitor's. That points at how ${names.length === 1 ? "that tool" : "those tools"} sourced answers this month rather than at anything on your side, so scoring it as a zero would be misleading.</p>`
     : "";
-  return `<section class="nr-chart"><h3 class="nr-ctitle">Where each AI tool cites you</h3><div class="nr-bars">${rows}</div>${chartText(cap, note)}${excluded}</section>`;
+  return `<section class="nr-chart"><h3 class="nr-ctitle">Where each AI tool reads you</h3><div class="nr-bars">${rows}</div>${chartText(cap, note)}${excluded}</section>`;
 }
 
 // 100% stacked bar for the source-type composition (part-to-whole). One bar
@@ -447,7 +454,7 @@ export function renderCharts(factsJson: string | null): string {
   // citation-grade tool's pct is the share of its cited sources pointing at
   // the customer; a model-knowledge tool's is the share of its answers that
   // name them. Both caption below is false for the other, and the dumbbell's
-  // own caption ("that tool cites you more than it did") is Layer 1 language.
+  // own caption ("that tool pulled from your site more") is Layer 1 language.
   // Engines with no layer recorded (every bridge-written snapshot) are
   // citation-grade, so hawaii-theatre renders exactly as it does today.
   const engines = allEngines.filter((e) => e.layer !== "model_knowledge");
@@ -459,9 +466,9 @@ export function renderCharts(factsJson: string | null): string {
     } else {
       const sorted = [...engines].sort((a, b) => num(b.pct) - num(a.pct));
       const max = Math.max(...sorted.map((e) => num(e.pct)), 1);
-      const bars = sorted.map((e, i) => barRow(e.name, num(e.pct), max, i, { title: `${e.name}: ${num(e.pct)}% of its citations point to you` })).join("");
-      const cap = `Each bar is the share of that AI tool's citations that point to your own site. Higher is better. This is your baseline; next month shows the movement.`;
-      blocks.push(chartBlock("Where each AI tool cites you", bars, cap, notes.engines));
+      const bars = sorted.map((e, i) => barRow(e.name, num(e.pct), max, i, { title: `${e.name}: ${num(e.pct)}% of the pages it pulled were yours` })).join("");
+      const cap = `Each bar is the share of the pages that AI tool pulled from that were your own site. Higher is better. This is your baseline; next month shows the movement.`;
+      blocks.push(chartBlock("Where each AI tool reads you", bars, cap, notes.engines));
     }
   }
 
@@ -522,7 +529,7 @@ export function renderCharts(factsJson: string | null): string {
     const hiddenPct = hidden.reduce((a, r) => a + num(r.pct), 0);
 
     const max = Math.max(...shown.map((r) => num(r.pct)), 1);
-    const bars = shown.map((r, i) => barRow(r.label, num(r.pct), max, i, { hl: !!r.you, title: `${r.label}: ${num(r.pct)}% of citations in your category` })).join("");
+    const bars = shown.map((r, i) => barRow(r.label, num(r.pct), max, i, { hl: !!r.you, title: `${r.label}: ${num(r.pct)}% of pages pulled in your category` })).join("");
     const tail = hidden.length
       ? ` ${hidden.length} more ${hidden.length === 1 ? "venue was" : "venues were"} named at least once and together account for ${hiddenPct}% of the category's citations. They are left off the chart to keep it readable, not because they scored zero.`
       : "";
@@ -543,7 +550,7 @@ export function renderCharts(factsJson: string | null): string {
     blocks.push(renderStack(sources, notes.sources));
   }
 
-  // 4. The specific third-party sites AI cited (answers "which ones?" for the
+  // 4. The specific third-party sites AI pulled from (answers "which ones?" for the
   // buckets above). Each host is a clickable link — the off-site punch list.
   const topSources = Array.isArray(f.topSources) ? f.topSources.filter((r) => r && typeof r.host === "string") : [];
   if (topSources.length) {
@@ -556,9 +563,9 @@ export function renderCharts(factsJson: string | null): string {
       const labelHtml = isHost
         ? `<a href="https://${host}" target="_blank" rel="noopener noreferrer nofollow">${esc(host)}</a>`
         : esc(host);
-      return barRow(host, num(r.pct), max, i, { labelHtml, title: `${host}: ${num(r.pct)}% of cited sources` });
+      return barRow(host, num(r.pct), max, i, { labelHtml, title: `${host}: ${num(r.pct)}% of sources pulled` });
     }).join("");
-    const cap = `Each percent is that site's share of every source the AI tools cited in your category, the same base as the chart above, so these are the biggest individual names inside the independent web. They are the off-site places to get listed and accurate. This is the top of a long tail, not the full picture, and each is a domain, not a single page.`;
+    const cap = `Each percent is that site's share of every page the AI tools pulled from in your category, the same base as the chart above, so these are the biggest individual names inside the independent web. They are the off-site places to get listed and accurate. This is the top of a long tail, not the full picture, and each is a domain, not a single page.`;
     blocks.push(chartBlock("The specific sites AI pulls from", bars, cap, notes.topSources));
   }
 

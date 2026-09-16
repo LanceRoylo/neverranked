@@ -155,3 +155,67 @@ test("an absent supports field writes NULL, it does not copy the merged set", ()
   );
   assert.match(src, /r\.citedStrict \? JSON\.stringify\(r\.citedStrict\) : null/);
 });
+
+// ── The columns must not be written in the wrong order ────────────────────
+//
+// FOUND 2026-09-15, in production, on four insert sites. The bind list read
+//
+//     JSON.stringify(r.urls), JSON.stringify(r.urls), null
+//
+// against columns (cited_urls, cited_urls_strict, retrieved_urls), so the
+// merged retrieval set went into the STRICT column and the retrieval column
+// got NULL. Right arity, right types, wrong order: every arity check passed,
+// nothing threw, and both columns are JSON arrays of URLs so no reader could
+// tell. It is the exact error this file exists to prevent, re-entered through
+// a door the file was not watching.
+//
+// openai and google_ai_overview have no citation signal extracted at all, so
+// their strict column must be NULL -- the same shape bing has always used.
+
+test("no insert writes the merged URL set into cited_urls_strict", () => {
+  const src = readFileSync("src/citations.ts", "utf8");
+  assert.doesNotMatch(
+    src,
+    /JSON\.stringify\(r\.urls\),\s*JSON\.stringify\(r\.urls\),\s*null/,
+    "cited_urls_strict is being bound the merged set with retrieved_urls set NULL: the two columns are swapped",
+  );
+});
+
+test("an engine with no citation signal binds NULL to strict, not a copy", () => {
+  const src = readFileSync("src/citations.ts", "utf8");
+  // bing has always been correct and is the reference shape.
+  const correct = src.match(/JSON\.stringify\(r\.urls\),\s*null,\s*JSON\.stringify\(r\.urls\)/g) ?? [];
+  assert.ok(
+    correct.length >= 6,
+    `expected at least 6 sites binding (urls, null, urls) -- bing x2, openai x2, google_ai_overview x2 -- found ${correct.length}`,
+  );
+});
+
+// ── What the vendor actually returns ──────────────────────────────────────
+//
+// MEASURED 2026-09-15 against the live Perplexity Agent API with the exact
+// request body queryPerplexity sends: `annotations` comes back as an EMPTY
+// LIST, every time. There are no inline [1][2] markers in the text either.
+// All 67 rows that night stored [].
+//
+// So the PPLX fixture above is a shape the API can return, not one it does.
+// The tests that use it prove the parser handles annotations correctly IF they
+// arrive. They prove nothing about whether they arrive, and for eleven days
+// they read as a passing citation test over a column that was empty in
+// production. A fixture you wrote yourself pins your belief about a vendor,
+// never the vendor.
+//
+// This is why the 2026-10-01 strict cutover was cancelled: on Perplexity it
+// would have reported zero citations for every client.
+
+test("perplexity yields no citations when the vendor sends no annotations", () => {
+  const r = parsePerplexityAgentOutput({
+    output: [
+      { type: "search_results", results: [{ url: "https://a.com/1" }, { url: "https://b.com/2" }] },
+      // The real shape: annotations present and empty.
+      { type: "message", content: [{ type: "output_text", text: "Answer.", annotations: [] }] },
+    ],
+  } as unknown as Parameters<typeof parsePerplexityAgentOutput>[0]);
+  assert.deepEqual(r.citedStrict, [], "no annotations means no citations, and that is the live case");
+  assert.equal(r.retrievedUrls.length, 2, "retrieval is what this engine actually gives us");
+});
