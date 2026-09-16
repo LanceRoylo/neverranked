@@ -16,6 +16,7 @@ import { resolveEngineKey } from "./engine-order";
 import { snapshotUsableForMonth } from "./snapshot-selection";
 import { engineLayer, type EngineLayer } from "./engine-layer";
 import { resolveBusinessName, nameMatches } from "../citations";
+import { buildPresenceSql, toEnginePresence, type EnginePresence } from "./answer-presence";
 import type { InjectionConfig } from "../types";
 
 /** Did a model-knowledge run NAME the business? Reads the entities the model
@@ -78,6 +79,26 @@ export interface ReportFacts {
     noCohortSignal?: boolean;
     layer?: "citation" | "model_knowledge";
   }>;
+  /** Did the AI NAME the business in its answer? Web-searching engines only.
+   *
+   *  A different question from `engines` above, which counts how often the
+   *  customer's own site was among the pages a tool pulled. Being read is the
+   *  mechanism; being named is what the customer is actually asking about, and
+   *  the two are far apart: measured at 15% and 38-45% on the same month of the
+   *  same client.
+   *
+   *  The model-knowledge tools are deliberately absent. They already have this
+   *  measure, read from the structured names they are prompted to return, and
+   *  putting a text scan beside an entity parse under one heading would be two
+   *  methods wearing one number.
+   *
+   *  Two rates, never one. Every unreadable row is one where the name was not
+   *  found in the part we stored, so dropping them can only push the rate up.
+   *  `namedPct` is the ceiling and `lowerPct` the floor. */
+  presence?: {
+    engines: Array<{ name: string; namedPct: number; lowerPct: number; judged: number; unknown: number; total: number }>;
+    overall: { namedPct: number; lowerPct: number; judged: number; unknown: number; total: number };
+  };
   /** Surfaces held out of this report, with the reason, so the customer sees
    *  WHY a tool is missing instead of inferring it was never measured. A
    *  silent omission from a measurement report is its own failure: the reader
@@ -547,6 +568,72 @@ async function buildCitationGrid(env: Env, slug: string, monthKey: string, measu
 
 /** Derive the report's chart facts from the customer's latest snapshot + the
  *  prior delivered report's facts (for per-engine deltas). null if no snapshot. */
+/** Per-engine "did the answer name them", web-searching surfaces only.
+ *
+ *  Counted in D1 rather than here: a month is thousands of runs and an answer
+ *  can be 12,000 characters, so scoring in the Worker would move tens of
+ *  megabytes per render. Only counts come back.
+ *
+ *  Returns undefined rather than zeros on every failure path. A zero here
+ *  would read as "no AI ever names you", which is a finding, and we must not
+ *  publish a finding we did not measure. */
+async function buildPresence(
+  env: Env,
+  slug: string,
+  windowStart: number,
+  windowEnd: number,
+  businessName: string,
+): Promise<ReportFacts["presence"]> {
+  const q = buildPresenceSql({ clientSlug: slug, businessName, windowStart, windowEnd });
+  if (!q) {
+    console.log(`[report-facts] ${slug}: business name "${businessName}" is not safe for a boundary-free match; presence omitted.`);
+    return undefined;
+  }
+  let rows: Array<{ engine: string; total: number; named: number; unknown_count: number }>;
+  try {
+    rows = (await env.DB.prepare(q.sql).bind(...q.binds).all<{
+      engine: string; total: number; named: number; unknown_count: number;
+    }>()).results;
+  } catch (e) {
+    console.log(`[report-facts] ${slug}: presence query failed: ${e}`);
+    return undefined;
+  }
+
+  // Layer 1 only. engineLayer is the single source for which is which.
+  const searchRows = rows.filter((r) => engineLayer(r.engine) !== "model_knowledge" && r.engine !== "bing");
+  if (!searchRows.length) return undefined;
+
+  const per: EnginePresence[] = searchRows.map(toEnginePresence);
+  const judged = per.reduce((n, p) => n + p.judged, 0);
+  if (judged === 0) {
+    console.log(`[report-facts] ${slug}: presence has no readable rows; omitted rather than reported as zero.`);
+    return undefined;
+  }
+  const named = per.reduce((n, p) => n + p.named, 0);
+  const unknown = per.reduce((n, p) => n + p.unknown, 0);
+  const total = per.reduce((n, p) => n + p.total, 0);
+
+  const pct = (x: number) => Math.round(x * 100);
+  return {
+    engines: per
+      .filter((p) => p.judged > 0)
+      .map((p) => ({
+        name: p.engine,
+        namedPct: pct(p.rateJudged as number),
+        lowerPct: pct(p.rateAll as number),
+        judged: p.judged,
+        unknown: p.unknown,
+        total: p.total,
+      }))
+      .sort((a, b) => b.namedPct - a.namedPct),
+    overall: {
+      namedPct: pct(named / judged),
+      lowerPct: pct(named / total),
+      judged, unknown, total,
+    },
+  };
+}
+
 export async function buildReportFacts(env: Env, slug: string, monthKey: string): Promise<ReportFacts | null> {
   const mb = monthBounds(monthKey);
 
@@ -646,6 +733,29 @@ export async function buildReportFacts(env: Env, slug: string, monthKey: string)
   // the grid renders a month the movement section refuses to compare.
   const measurementStart = await getMeasurementStart(env, slug);
 
+  // Whether the AI named them. Same month window and the same engagement
+  // clamp the grid uses, so the two sections cannot describe different
+  // periods inside one document.
+  let presence: ReportFacts["presence"];
+  try {
+    const pb = monthBounds(monthKey);
+    if (pb) {
+      const pStart = Math.max(pb.start, measurementStart ?? 0);
+      if (pStart < pb.end) {
+        const injCfgP = await env.DB.prepare(
+          "SELECT * FROM injection_configs WHERE client_slug = ?",
+        ).bind(slug).first<InjectionConfig>();
+        const nameP = await resolveBusinessName(env, slug, injCfgP);
+        if (nameP) presence = await buildPresence(env, slug, pStart, pb.end, nameP);
+        else console.log(`[report-facts] ${slug}: no business name; presence omitted rather than reported as zero.`);
+      }
+    }
+  } catch (e) {
+    // Never blanks a report. An absent section is a missing section; a zero
+    // would be a false finding.
+    console.log(`[report-facts] ${slug}: presence build failed, omitting: ${e}`);
+  }
+
   // Coverage for the report month, computed ONCE and shared with the grid.
   //
   // WHY THE BARS NEED THIS. `engines` above comes straight out of
@@ -724,6 +834,7 @@ export async function buildReportFacts(env: Env, slug: string, monthKey: string)
     topSources,
     ...(questions ? { questions } : {}),
     ...(grid ? { grid } : {}),
+    ...(presence ? { presence } : {}),
   };
 }
 

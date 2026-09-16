@@ -157,3 +157,106 @@ export function presenceStats(
     rateAll: total === 0 ? null : named / total,
   };
 }
+
+// ── Counting a month without hauling a month of text into the Worker ──────
+//
+// A month is ~3,000 runs and an answer can now be 12,000 characters, so
+// SELECTing response_text to score it in TypeScript would move tens of
+// megabytes per page render. The counting therefore happens in D1 and only
+// the counts come back.
+//
+// That means a second implementation of the same rule, which is how two
+// definitions of one number start disagreeing -- the failure this whole area
+// is about. Two things hold them together: the SQL is built HERE, beside the
+// function it mirrors, and it is only ever built for a name the boundary rule
+// cannot need. SQL LIKE has no word boundaries, so a bare short token such as
+// "Kai" would match inside "Kailua". A multi-word name cannot: nothing
+// contains "prince waikiki" except a mention of it. Names that are neither
+// multi-word nor long are REFUSED rather than counted loosely.
+
+/** Is this name safe to match with a boundary-free LIKE? */
+export function nameIsSqlSafe(name: string): boolean {
+  const n = normalize(name);
+  return n.includes(" ") || n.length >= 8;
+}
+
+export interface PresenceSql { sql: string; binds: unknown[] }
+
+/**
+ * Per-engine presence counts for one client over one window.
+ * Returns null when any candidate name is unsafe for a boundary-free match,
+ * because a loose count is worse than no count.
+ */
+export function buildPresenceSql(opts: {
+  clientSlug: string;
+  businessName: string;
+  aliases?: string[];
+  windowStart: number;
+  windowEnd: number;
+}): PresenceSql | null {
+  const names = [opts.businessName, ...(opts.aliases ?? [])]
+    .filter((n): n is string => typeof n === "string" && n.trim().length > 0)
+    .map(normalize);
+  if (!names.length || !names.every(nameIsSqlSafe)) return null;
+
+  // \ escapes the LIKE metacharacters, declared with ESCAPE below. A business
+  // called "50% Off Cafe" would otherwise match far more than itself.
+  const pattern = (n: string) => `%${n.replace(/[\\%_]/g, "\\$&")}%`;
+  const anyMatch = names.map(() => `LOWER(cr.response_text) LIKE ? ESCAPE '\\'`).join(" OR ");
+  const noMatch = names.map(() => `LOWER(cr.response_text) NOT LIKE ? ESCAPE '\\'`).join(" AND ");
+
+  const sql =
+    `SELECT cr.engine AS engine,
+            COUNT(*) AS total,
+            SUM(CASE WHEN ${anyMatch} THEN 1 ELSE 0 END) AS named,
+            SUM(CASE WHEN ${noMatch}
+                      AND length(cr.response_text) >= (CASE WHEN cr.run_at < ? THEN ? ELSE ? END)
+                     THEN 1 ELSE 0 END) AS unknown_count
+       FROM citation_runs cr JOIN citation_keywords ck ON ck.id = cr.keyword_id
+      WHERE ck.client_slug = ? AND cr.run_at >= ? AND cr.run_at < ?
+      GROUP BY cr.engine`;
+
+  const binds: unknown[] = [
+    ...names.map(pattern),
+    ...names.map(pattern),
+    RESPONSE_TEXT_CAP_RAISED_AT,
+    LEGACY_RESPONSE_TEXT_CAP - 10,
+    RESPONSE_TEXT_CAP - 10,
+    opts.clientSlug,
+    opts.windowStart,
+    opts.windowEnd,
+  ];
+  return { sql, binds };
+}
+
+export interface EnginePresence {
+  engine: string;
+  named: number;
+  unknown: number;
+  total: number;
+  judged: number;
+  /** Upper bound. Null when nothing in the window was readable. */
+  rateJudged: number | null;
+  /** Lower bound. */
+  rateAll: number | null;
+}
+
+/** Shape a raw count row. Kept here so the bounds are computed in exactly one
+ *  place no matter which query produced the counts. */
+export function toEnginePresence(row: {
+  engine: string; total: number; named: number; unknown_count: number;
+}): EnginePresence {
+  const total = Number(row.total) || 0;
+  const named = Number(row.named) || 0;
+  const unknown = Number(row.unknown_count) || 0;
+  const judged = Math.max(0, total - unknown);
+  return {
+    engine: row.engine,
+    named,
+    unknown,
+    total,
+    judged,
+    rateJudged: judged === 0 ? null : named / judged,
+    rateAll: total === 0 ? null : named / total,
+  };
+}

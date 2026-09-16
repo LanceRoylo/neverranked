@@ -20,6 +20,7 @@
  * - Auth is identical to the cockpit: admin, or the customer's own client_slug.
  */
 import type { Env } from "../types";
+import { ENGINE_ORDER } from "../lib/engine-order";
 import { getUser } from "../auth";
 import { redirect, esc } from "../render";
 
@@ -153,6 +154,12 @@ interface ReportFacts {
   venue?: { rows?: ChartRow[] };
   sources?: ChartRow[];
   topSources?: { host: string; pct: number }[]; // specific third-party domains AI pulled from
+  /** Did the answer name the business. Web-searching surfaces only; two rates
+   *  because rows whose stored answer was cut off count as unread, not absent. */
+  presence?: {
+    engines: { name: string; namedPct: number; lowerPct: number; judged: number; unknown: number; total: number }[];
+    overall: { namedPct: number; lowerPct: number; judged: number; unknown: number; total: number };
+  };
   questions?: { appeared?: Array<{ q: string; engines: string[] }>; disappeared?: Array<{ q: string; engines: string[] }> };
   // Per-engine x per-question citation grid (see report-facts.ts buildCitationGrid).
   grid?: {
@@ -467,9 +474,48 @@ export function renderCharts(factsJson: string | null): string {
       const sorted = [...engines].sort((a, b) => num(b.pct) - num(a.pct));
       const max = Math.max(...sorted.map((e) => num(e.pct)), 1);
       const bars = sorted.map((e, i) => barRow(e.name, num(e.pct), max, i, { title: `${e.name}: ${num(e.pct)}% of the pages it pulled were yours` })).join("");
-      const cap = `Each bar is the share of the pages that AI tool pulled from that were your own site. Higher is better. This is your baseline; next month shows the movement.`;
+      const cap = `Each bar is the share of the pages that AI tool pulled from that were your own site. Higher is better. This is your baseline, and next month shows the movement.`;
       blocks.push(chartBlock("Where each AI tool reads you", bars, cap, notes.engines));
     }
+  }
+
+  // 1b. Did the AI say your name. Placed directly under the "reads you" bars
+  // because the pair is the point: being read is the mechanism, being named is
+  // the outcome, and on real data they are far apart (15% against 38-45% on
+  // the same month of the same client).
+  //
+  // Web-searching tools only. The model-knowledge tools have their own section
+  // using the structured names they are prompted to return; a text scan shown
+  // beside an entity parse under one heading would be two methods wearing one
+  // number.
+  //
+  // A RANGE, not a figure. Rows whose stored answer was cut off before the name
+  // could appear are counted as unreadable, not as absent. Dropping them can
+  // only push the rate up, so the honest statement has both ends.
+  const pres = f.presence;
+  if (pres && Array.isArray(pres.engines) && pres.engines.length && pres.overall) {
+    const lo = num(pres.overall.lowerPct);
+    const hi = num(pres.overall.namedPct);
+    const rows = pres.engines.filter((e) => e && typeof e.name === "string");
+    const maxP = Math.max(...rows.map((e) => num(e.namedPct)), 1);
+    const bars = rows.map((e, i) => {
+      const label = ENGINE_ORDER.find((x) => x.key === e.name)?.label ?? String(e.name);
+      const l = num(e.lowerPct), h = num(e.namedPct);
+      const title = l === h
+        ? `${label}: named you in ${h}% of its answers`
+        : `${label}: named you in ${l}-${h}% of its answers (${e.unknown} answer${e.unknown === 1 ? "" : "s"} too long to read in full)`;
+      return barRow(label, h, maxP, i, { title });
+    }).join("");
+    const spread = lo === hi ? `${hi}%` : `${lo}% to ${hi}%`;
+    const cap =
+      `This is the one that matters most: when someone asks an AI about your category, ` +
+      `does it say your name? Across every question and every web-searching tool this month, ` +
+      `the answer was yes ${spread} of the time. ` +
+      `It is a range because ${pres.overall.unknown} of ${pres.overall.total} answers ran longer than we store, ` +
+      `so your name could have appeared in a part we did not keep. We count those as unread rather than as a no. ` +
+      `The bars above show how often each tool pulled a page from your site, which is how a tool comes to know about you. ` +
+      `Being named is the result. Being read is how a tool gets there.`;
+    blocks.push(chartBlock("Where AI says your name", bars, cap, undefined));
   }
 
   // 1a. What we did not report this month, and why. Rendered directly under

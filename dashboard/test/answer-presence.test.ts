@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { namedInAnswer, presenceStats, looksTruncated, RESPONSE_TEXT_CAP, capForRun, RESPONSE_TEXT_CAP_RAISED_AT } from "../src/lib/answer-presence";
+import { namedInAnswer, presenceStats, looksTruncated, RESPONSE_TEXT_CAP, capForRun, RESPONSE_TEXT_CAP_RAISED_AT, nameIsSqlSafe, buildPresenceSql, toEnginePresence } from "../src/lib/answer-presence";
 
 const NAME = "Prince Waikiki";
 
@@ -126,4 +126,63 @@ test("extractEntitiesFromText still does not read its text argument", () => {
 test("capForRun picks the cap in force when the row was written", () => {
   assert.equal(capForRun(RESPONSE_TEXT_CAP_RAISED_AT - 1), 4000);
   assert.equal(capForRun(RESPONSE_TEXT_CAP_RAISED_AT), RESPONSE_TEXT_CAP);
+});
+
+// ── The SQL mirror ────────────────────────────────────────────────────────
+
+test("a multi-word name is safe for a boundary-free LIKE", () => {
+  assert.equal(nameIsSqlSafe("Prince Waikiki"), true);
+  assert.equal(nameIsSqlSafe("Halekulani"), true); // 10 chars, no substring risk
+});
+
+test("a short bare token is refused, not counted loosely", () => {
+  // The whole reason the TS matcher has a boundary rule. SQL LIKE has none, so
+  // a name this short must never reach it.
+  assert.equal(nameIsSqlSafe("Kai"), false);
+  assert.equal(nameIsSqlSafe("Duke"), false);
+  assert.equal(buildPresenceSql({
+    clientSlug: "x", businessName: "Kai", windowStart: 0, windowEnd: 1,
+  }), null);
+});
+
+test("one unsafe alias refuses the whole query", () => {
+  // Not "drop the bad one and carry on": a partial count reported as a count
+  // is the error this module exists to prevent.
+  assert.equal(buildPresenceSql({
+    clientSlug: "x", businessName: "Prince Waikiki", aliases: ["Kai"], windowStart: 0, windowEnd: 1,
+  }), null);
+});
+
+test("LIKE metacharacters in a name are escaped", () => {
+  const q = buildPresenceSql({
+    clientSlug: "x", businessName: "50% Off Cafe", windowStart: 0, windowEnd: 1,
+  });
+  assert.ok(q, "multi-word name should build");
+  assert.ok(q!.binds.some((b) => typeof b === "string" && b.includes("50\\%")), "the % must be escaped");
+  assert.match(q!.sql, /ESCAPE/);
+});
+
+test("the query binds both caps so old rows are judged against the old one", () => {
+  const q = buildPresenceSql({
+    clientSlug: "prince-waikiki", businessName: "Prince Waikiki", windowStart: 100, windowEnd: 200,
+  })!;
+  assert.ok(q.binds.includes(RESPONSE_TEXT_CAP_RAISED_AT), "cutover instant must be bound");
+  assert.ok(q.binds.includes(3990), "legacy cap threshold must be bound");
+  assert.ok(q.binds.includes(RESPONSE_TEXT_CAP - 10), "current cap threshold must be bound");
+  assert.deepEqual(q.binds.slice(-3), ["prince-waikiki", 100, 200]);
+});
+
+test("counts become bounds in exactly one place", () => {
+  const p = toEnginePresence({ engine: "openai", total: 281, named: 124, unknown_count: 105 });
+  assert.equal(p.judged, 176);
+  assert.equal(p.rateJudged, 124 / 176);
+  assert.equal(p.rateAll, 124 / 281);
+  assert.ok((p.rateJudged as number) > (p.rateAll as number));
+});
+
+test("an engine with nothing readable reports null, not zero", () => {
+  const p = toEnginePresence({ engine: "gemma", total: 12, named: 0, unknown_count: 12 });
+  assert.equal(p.judged, 0);
+  assert.equal(p.rateJudged, null);
+  assert.equal(p.rateAll, 0);
 });
