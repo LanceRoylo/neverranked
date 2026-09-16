@@ -7,6 +7,7 @@
  */
 
 import type { Env, CitationKeyword, CitedEntity, Domain, InjectionConfig } from "./types";
+import { RESPONSE_TEXT_CAP } from "./lib/answer-presence";
 import { resolveGroundingUrls } from "./gemini-resolver";
 import { detectAndRecordAlerts } from "./lib/citation-alerts";
 import { isReadoutShapeSnapshot } from "./lib/snapshot-shape";
@@ -1197,7 +1198,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
         const insertRes = await env.DB.prepare(
           `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
            VALUES (?, 'perplexity', ?, ?, ?, ?, ?, ?, ?, ?, 'web')`
-        ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), (r.citedStrict ? JSON.stringify(r.citedStrict) : null), JSON.stringify(r.retrievedUrls ?? r.urls), cited ? 1 : 0, prom, now).run();
+        ).bind(kw.id, r.text.slice(0, RESPONSE_TEXT_CAP), JSON.stringify(r.entities), JSON.stringify(r.urls), (r.citedStrict ? JSON.stringify(r.citedStrict) : null), JSON.stringify(r.retrievedUrls ?? r.urls), cited ? 1 : 0, prom, now).run();
         await recordSpend(env, "perplexity", r.usage, kw.id, now);
         await maybeAlert(env, clientSlug, kw.id, "perplexity", insertRes, cited, prom);
         totalQueries++;
@@ -1231,7 +1232,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
         const insertRes = await env.DB.prepare(
           `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
            VALUES (?, 'openai', ?, ?, ?, ?, ?, ?, ?, ?, 'web')`
-        ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), null, JSON.stringify(r.urls), cited ? 1 : 0, prom, now).run();
+        ).bind(kw.id, r.text.slice(0, RESPONSE_TEXT_CAP), JSON.stringify(r.entities), JSON.stringify(r.urls), null, JSON.stringify(r.urls), cited ? 1 : 0, prom, now).run();
         await recordSpend(env, "openai", r.usage, kw.id, now);
         await maybeAlert(env, clientSlug, kw.id, "openai", insertRes, cited, prom);
         totalQueries++;
@@ -1261,7 +1262,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
         const insertRes = await env.DB.prepare(
           `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
            VALUES (?, 'gemini', ?, ?, ?, ?, ?, ?, ?, ?, 'web')`
-        ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), (r.citedStrict ? JSON.stringify(r.citedStrict) : null), JSON.stringify(r.retrievedUrls ?? r.urls), cited ? 1 : 0, prom, now).run();
+        ).bind(kw.id, r.text.slice(0, RESPONSE_TEXT_CAP), JSON.stringify(r.entities), JSON.stringify(r.urls), (r.citedStrict ? JSON.stringify(r.citedStrict) : null), JSON.stringify(r.retrievedUrls ?? r.urls), cited ? 1 : 0, prom, now).run();
         await recordSpend(env, "gemini", r.usage, kw.id, now);
         await maybeAlert(env, clientSlug, kw.id, "gemini", insertRes, cited, prom);
         totalQueries++;
@@ -1294,7 +1295,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
         const insertRes = await env.DB.prepare(
           `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
            VALUES (?, 'anthropic', ?, ?, '[]', ?, ?, ?, ?, ?, 'training')`
-        ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), '[]', '[]', cited ? 1 : 0, prom, now).run();
+        ).bind(kw.id, r.text.slice(0, RESPONSE_TEXT_CAP), JSON.stringify(r.entities), '[]', '[]', cited ? 1 : 0, prom, now).run();
         await recordSpend(env, "anthropic", r.usage, kw.id, now);
         await maybeAlert(env, clientSlug, kw.id, "anthropic", insertRes, cited, prom);
         totalQueries++;
@@ -1324,7 +1325,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
         const insertRes = await env.DB.prepare(
           `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
            VALUES (?, 'google_ai_overview', ?, ?, ?, ?, ?, ?, ?, ?, 'web')`
-        ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), null, JSON.stringify(r.urls), cited ? 1 : 0, prom, now).run();
+        ).bind(kw.id, r.text.slice(0, RESPONSE_TEXT_CAP), JSON.stringify(r.entities), JSON.stringify(r.urls), null, JSON.stringify(r.urls), cited ? 1 : 0, prom, now).run();
         await recordSpend(env, "google_ai_overview", r.usage, kw.id, now);
         await maybeAlert(env, clientSlug, kw.id, "google_ai_overview", insertRes, cited, prom);
         totalQueries++;
@@ -1352,7 +1353,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
         const insertRes = await env.DB.prepare(
           `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
            VALUES (?, 'bing', ?, ?, ?, ?, ?, ?, ?, ?, 'web')`
-        ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), null, JSON.stringify(r.urls), cited ? 1 : 0, prom, now).run();
+        ).bind(kw.id, r.text.slice(0, RESPONSE_TEXT_CAP), JSON.stringify(r.entities), JSON.stringify(r.urls), null, JSON.stringify(r.urls), cited ? 1 : 0, prom, now).run();
         await recordSpend(env, "bing", r.usage, kw.id, now);
         await maybeAlert(env, clientSlug, kw.id, "bing", insertRes, cited, prom);
         totalQueries++;
@@ -1387,7 +1388,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
         const insertRes = await env.DB.prepare(
           `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
            VALUES (?, 'gemma', ?, ?, '[]', ?, ?, ?, ?, ?, 'training')`
-        ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), '[]', '[]', cited ? 1 : 0, prom, now).run();
+        ).bind(kw.id, r.text.slice(0, RESPONSE_TEXT_CAP), JSON.stringify(r.entities), '[]', '[]', cited ? 1 : 0, prom, now).run();
         await recordSpend(env, "gemma", r.usage, kw.id, now);
         await maybeAlert(env, clientSlug, kw.id, "gemma", insertRes, cited, prom);
         totalQueries++;
@@ -1773,7 +1774,7 @@ export async function runOneKeywordCitations(
     await env.DB.prepare(
       `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
        VALUES (?, 'perplexity', ?, ?, ?, ?, ?, ?, ?, ?, 'web')`
-    ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), (r.citedStrict ? JSON.stringify(r.citedStrict) : null), JSON.stringify(r.retrievedUrls ?? r.urls), cited ? 1 : 0, prom, tick()).run();
+    ).bind(kw.id, r.text.slice(0, RESPONSE_TEXT_CAP), JSON.stringify(r.entities), JSON.stringify(r.urls), (r.citedStrict ? JSON.stringify(r.citedStrict) : null), JSON.stringify(r.retrievedUrls ?? r.urls), cited ? 1 : 0, prom, tick()).run();
     await recordSpend(env, "perplexity", r.usage, kw.id, tick());
     engines.perplexity = (engines.perplexity || 0) + 1;
     rowsInserted++;
@@ -1790,7 +1791,7 @@ export async function runOneKeywordCitations(
     await env.DB.prepare(
       `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
        VALUES (?, 'openai', ?, ?, ?, ?, ?, ?, ?, ?, 'web')`
-    ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), null, JSON.stringify(r.urls), cited ? 1 : 0, prom, tick()).run();
+    ).bind(kw.id, r.text.slice(0, RESPONSE_TEXT_CAP), JSON.stringify(r.entities), JSON.stringify(r.urls), null, JSON.stringify(r.urls), cited ? 1 : 0, prom, tick()).run();
         await recordSpend(env, "openai", r.usage, kw.id, tick());
     engines.openai = (engines.openai || 0) + 1;
     rowsInserted++;
@@ -1805,7 +1806,7 @@ export async function runOneKeywordCitations(
     await env.DB.prepare(
       `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
        VALUES (?, 'gemini', ?, ?, ?, ?, ?, ?, ?, ?, 'web')`
-    ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), (r.citedStrict ? JSON.stringify(r.citedStrict) : null), JSON.stringify(r.retrievedUrls ?? r.urls), cited ? 1 : 0, prom, tick()).run();
+    ).bind(kw.id, r.text.slice(0, RESPONSE_TEXT_CAP), JSON.stringify(r.entities), JSON.stringify(r.urls), (r.citedStrict ? JSON.stringify(r.citedStrict) : null), JSON.stringify(r.retrievedUrls ?? r.urls), cited ? 1 : 0, prom, tick()).run();
         await recordSpend(env, "gemini", r.usage, kw.id, tick());
     engines.gemini = (engines.gemini || 0) + 1;
     rowsInserted++;
@@ -1826,7 +1827,7 @@ export async function runOneKeywordCitations(
     await env.DB.prepare(
       `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
        VALUES (?, 'anthropic', ?, ?, '[]', ?, ?, ?, ?, ?, 'training')`
-    ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), '[]', '[]', cited ? 1 : 0, prom, tick()).run();
+    ).bind(kw.id, r.text.slice(0, RESPONSE_TEXT_CAP), JSON.stringify(r.entities), '[]', '[]', cited ? 1 : 0, prom, tick()).run();
         await recordSpend(env, "anthropic", r.usage, kw.id, tick());
     engines.anthropic = (engines.anthropic || 0) + 1;
     rowsInserted++;
@@ -1842,7 +1843,7 @@ export async function runOneKeywordCitations(
     await env.DB.prepare(
       `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
        VALUES (?, 'google_ai_overview', ?, ?, ?, ?, ?, ?, ?, ?, 'web')`
-    ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), null, JSON.stringify(r.urls), cited ? 1 : 0, prom, tick()).run();
+    ).bind(kw.id, r.text.slice(0, RESPONSE_TEXT_CAP), JSON.stringify(r.entities), JSON.stringify(r.urls), null, JSON.stringify(r.urls), cited ? 1 : 0, prom, tick()).run();
         await recordSpend(env, "google_ai_overview", r.usage, kw.id, tick());
     engines.google_ai_overview = (engines.google_ai_overview || 0) + 1;
     rowsInserted++;
@@ -1858,7 +1859,7 @@ export async function runOneKeywordCitations(
     await env.DB.prepare(
       `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
        VALUES (?, 'bing', ?, ?, ?, ?, ?, ?, ?, ?, 'web')`
-    ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), null, JSON.stringify(r.urls), cited ? 1 : 0, prom, tick()).run();
+    ).bind(kw.id, r.text.slice(0, RESPONSE_TEXT_CAP), JSON.stringify(r.entities), JSON.stringify(r.urls), null, JSON.stringify(r.urls), cited ? 1 : 0, prom, tick()).run();
         await recordSpend(env, "bing", r.usage, kw.id, tick());
     engines.bing = (engines.bing || 0) + 1;
     rowsInserted++;
@@ -1881,7 +1882,7 @@ export async function runOneKeywordCitations(
     await env.DB.prepare(
       `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
        VALUES (?, 'gemma', ?, ?, '[]', ?, ?, ?, ?, ?, 'training')`
-    ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), '[]', '[]', cited ? 1 : 0, prom, tick()).run();
+    ).bind(kw.id, r.text.slice(0, RESPONSE_TEXT_CAP), JSON.stringify(r.entities), '[]', '[]', cited ? 1 : 0, prom, tick()).run();
         await recordSpend(env, "gemma", r.usage, kw.id, tick());
     engines.gemma = (engines.gemma || 0) + 1;
     rowsInserted++;
