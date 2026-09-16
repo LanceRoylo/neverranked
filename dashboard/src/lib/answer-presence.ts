@@ -118,17 +118,26 @@ export function namedInAnswer(input: PresenceInput): boolean | null {
 
 /** Summarise a set of runs without ever counting a null as a no.
  *
- *  Reporting one rate here would be misleading, and the bias has a direction.
- *  Every unknown is by construction a row where the name was NOT found in the
- *  part we hold. Dropping them therefore removes only not-yet-found rows, which
- *  pushes the rate UP. Measured on one client's September: 45.0% over judged
- *  rows against 38.4% over all rows, and the gap is almost entirely one engine
- *  whose answers were truncated far more often than its peers.
+ *  THREE rates, and only two of them are bounds. Corrected 2026-09-16 after
+ *  `rateJudged` was described as the upper bound and used as one. It is not.
  *
- *  So both ends are returned. `rateJudged` is the upper bound, `rateAll` the
- *  lower, and the truth is between them. A caller that wants one number for a
- *  customer should say the range or say the lower one, never the upper alone.
- */
+ *  An unknown row is one where the name was not found in the part of the answer
+ *  we stored. Those rows are therefore SELECTED for not containing the name
+ *  early, which is the opposite of missing at random. `rateJudged` drops them
+ *  and so silently assumes they behave like the rows we could read. Nothing
+ *  supports that: the readable rows are the shorter answers.
+ *
+ *  The two real bounds assume the extremes instead, and the truth is inside:
+ *    rateFloor   = named / total              every unread answer lacks the name
+ *    rateCeiling = (named + unknown) / total  every unread answer contains it
+ *
+ *  Measured on one client's September: floor 38.4%, rateJudged 45.0%, ceiling
+ *  53.0%. Quoting 45% as the ceiling understates the uncertainty by eight
+ *  points in the direction that flatters the client.
+ *
+ *  FOR A CUSTOMER, USE THE FLOOR. It is the only figure that is true whatever
+ *  the unread answers say, it can only be revised upward, and it is one number
+ *  rather than a range that invites "so you don't actually know". */
 export function presenceStats(
   results: Array<boolean | null>,
 ): {
@@ -136,10 +145,13 @@ export function presenceStats(
   judged: number;
   unknown: number;
   total: number;
-  /** Upper bound: named / rows we could read. Null when nothing was readable. */
+  /** NOT a bound. named / rows we could read, i.e. what you get by assuming the
+   *  unread rows behave like the read ones. Kept for diagnostics only. */
   rateJudged: number | null;
-  /** Lower bound: named / all rows, counting every unknown as a no. */
-  rateAll: number | null;
+  /** Lower bound. Every unread answer assumed not to name them. */
+  rateFloor: number | null;
+  /** Upper bound. Every unread answer assumed to name them. */
+  rateCeiling: number | null;
 } {
   let named = 0, judged = 0, unknown = 0;
   for (const r of results) {
@@ -154,7 +166,8 @@ export function presenceStats(
     unknown,
     total,
     rateJudged: judged === 0 ? null : named / judged,
-    rateAll: total === 0 ? null : named / total,
+    rateFloor: total === 0 ? null : named / total,
+    rateCeiling: total === 0 ? null : (named + unknown) / total,
   };
 }
 
@@ -235,10 +248,12 @@ export interface EnginePresence {
   unknown: number;
   total: number;
   judged: number;
-  /** Upper bound. Null when nothing in the window was readable. */
+  /** NOT a bound. See presenceStats. Diagnostics only. */
   rateJudged: number | null;
-  /** Lower bound. */
-  rateAll: number | null;
+  /** Lower bound: every unread answer assumed not to name them. */
+  rateFloor: number | null;
+  /** Upper bound: every unread answer assumed to name them. */
+  rateCeiling: number | null;
 }
 
 /** Shape a raw count row. Kept here so the bounds are computed in exactly one
@@ -257,6 +272,7 @@ export function toEnginePresence(row: {
     total,
     judged,
     rateJudged: judged === 0 ? null : named / judged,
-    rateAll: total === 0 ? null : named / total,
+    rateFloor: total === 0 ? null : named / total,
+    rateCeiling: total === 0 ? null : (named + unknown) / total,
   };
 }

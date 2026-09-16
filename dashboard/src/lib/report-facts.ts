@@ -96,8 +96,8 @@ export interface ReportFacts {
    *  found in the part we stored, so dropping them can only push the rate up.
    *  `namedPct` is the ceiling and `lowerPct` the floor. */
   presence?: {
-    engines: Array<{ name: string; namedPct: number; lowerPct: number; judged: number; unknown: number; total: number }>;
-    overall: { namedPct: number; lowerPct: number; judged: number; unknown: number; total: number };
+    engines: Array<{ name: string; floorPct: number; ceilingPct: number; unknown: number; total: number }>;
+    overall: { floorPct: number; ceilingPct: number; unknown: number; total: number };
   };
   /** Surfaces held out of this report, with the reason, so the customer sees
    *  WHY a tool is missing instead of inferring it was never measured. A
@@ -614,22 +614,24 @@ async function buildPresence(
   const total = per.reduce((n, p) => n + p.total, 0);
 
   const pct = (x: number) => Math.round(x * 100);
+  // The FLOOR is what gets published. rateJudged is deliberately not carried
+  // out of this function: it is not a bound and it reads high, so anything that
+  // can reach a customer must not be able to pick it up by accident.
   return {
     engines: per
-      .filter((p) => p.judged > 0)
+      .filter((p) => p.total > 0)
       .map((p) => ({
         name: p.engine,
-        namedPct: pct(p.rateJudged as number),
-        lowerPct: pct(p.rateAll as number),
-        judged: p.judged,
+        floorPct: pct(p.rateFloor as number),
+        ceilingPct: pct(p.rateCeiling as number),
         unknown: p.unknown,
         total: p.total,
       }))
-      .sort((a, b) => b.namedPct - a.namedPct),
+      .sort((a, b) => b.floorPct - a.floorPct),
     overall: {
-      namedPct: pct(named / judged),
-      lowerPct: pct(named / total),
-      judged, unknown, total,
+      floorPct: pct(named / total),
+      ceilingPct: pct((named + unknown) / total),
+      unknown, total,
     },
   };
 }

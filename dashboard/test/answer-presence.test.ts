@@ -92,22 +92,38 @@ test("an alias counts", () => {
 
 // ── Aggregation must not count unknowns as noes ───────────────────────────
 
-test("both bounds are reported, because dropping unknowns biases upward", () => {
+test("the two real bounds sit either side of rateJudged", () => {
   const s = presenceStats([true, true, false, null, null]);
   assert.deepEqual({ named: s.named, judged: s.judged, unknown: s.unknown, total: s.total },
     { named: 2, judged: 3, unknown: 2, total: 5 });
-  assert.equal(s.rateJudged, 2 / 3);  // upper: unknowns dropped
-  assert.equal(s.rateAll, 2 / 5);     // lower: unknowns counted as no
-  assert.ok((s.rateJudged as number) > (s.rateAll as number), "the bias always runs this way");
+  assert.equal(s.rateFloor, 2 / 5);      // no unread answer names them
+  assert.equal(s.rateCeiling, 4 / 5);    // every unread answer names them
+  assert.equal(s.rateJudged, 2 / 3);     // neither: assumes unread behave like read
+  assert.ok((s.rateFloor as number) < (s.rateJudged as number), "floor is below");
+  assert.ok((s.rateJudged as number) < (s.rateCeiling as number), "ceiling is above");
 });
 
-test("all-unknown yields null rates, never zero", () => {
-  // A zero here would be a false finding of total absence built entirely out of
-  // rows we could not read.
+test("rateJudged is NOT the ceiling", () => {
+  // Corrected 2026-09-16. rateJudged was described as the upper bound and used
+  // as one. Unread rows are selected for not containing the name early, so
+  // dropping them assumes something nothing supports. On Prince's September
+  // this understated the real ceiling by eight points, in the direction that
+  // flatters the client.
+  const s = presenceStats([...Array(124).fill(true), ...Array(52).fill(false), ...Array(105).fill(null)]);
+  assert.equal(Math.round((s.rateJudged as number) * 100), 70);
+  assert.equal(Math.round((s.rateCeiling as number) * 100), 81);
+  assert.ok((s.rateCeiling as number) > (s.rateJudged as number),
+    "the ceiling must exceed rateJudged whenever anything is unread");
+});
+
+test("all-unknown yields a zero floor and a ceiling of one", () => {
+  // Nothing readable: they might never be named, or always be. Both bounds say
+  // exactly that, and neither is a finding.
   const s = presenceStats([null, null, null]);
   assert.equal(s.rateJudged, null);
   assert.equal(s.judged, 0);
-  assert.equal(s.rateAll, 0 / 3);
+  assert.equal(s.rateFloor, 0);
+  assert.equal(s.rateCeiling, 1);
 });
 
 // ── The defect that made this module necessary ────────────────────────────
@@ -173,16 +189,18 @@ test("the query binds both caps so old rows are judged against the old one", () 
 });
 
 test("counts become bounds in exactly one place", () => {
+  // openai's real September counts.
   const p = toEnginePresence({ engine: "openai", total: 281, named: 124, unknown_count: 105 });
   assert.equal(p.judged, 176);
+  assert.equal(p.rateFloor, 124 / 281);
+  assert.equal(p.rateCeiling, 229 / 281);
   assert.equal(p.rateJudged, 124 / 176);
-  assert.equal(p.rateAll, 124 / 281);
-  assert.ok((p.rateJudged as number) > (p.rateAll as number));
+  assert.ok((p.rateFloor as number) < (p.rateCeiling as number));
 });
 
-test("an engine with nothing readable reports null, not zero", () => {
-  const p = toEnginePresence({ engine: "gemma", total: 12, named: 0, unknown_count: 12 });
-  assert.equal(p.judged, 0);
-  assert.equal(p.rateJudged, null);
-  assert.equal(p.rateAll, 0);
+test("an engine whose answers were never truncated has floor == ceiling", () => {
+  // perplexity: 0 unread, so there is no uncertainty left to express.
+  const p = toEnginePresence({ engine: "perplexity", total: 507, named: 194, unknown_count: 0 });
+  assert.equal(p.rateFloor, p.rateCeiling);
+  assert.equal(p.rateJudged, p.rateFloor);
 });

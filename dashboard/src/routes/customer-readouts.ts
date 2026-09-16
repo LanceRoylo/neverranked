@@ -157,8 +157,8 @@ interface ReportFacts {
   /** Did the answer name the business. Web-searching surfaces only; two rates
    *  because rows whose stored answer was cut off count as unread, not absent. */
   presence?: {
-    engines: { name: string; namedPct: number; lowerPct: number; judged: number; unknown: number; total: number }[];
-    overall: { namedPct: number; lowerPct: number; judged: number; unknown: number; total: number };
+    engines: { name: string; floorPct: number; ceilingPct: number; unknown: number; total: number }[];
+    overall: { floorPct: number; ceilingPct: number; unknown: number; total: number };
   };
   questions?: { appeared?: Array<{ q: string; engines: string[] }>; disappeared?: Array<{ q: string; engines: string[] }> };
   // Per-engine x per-question citation grid (see report-facts.ts buildCitationGrid).
@@ -494,25 +494,27 @@ export function renderCharts(factsJson: string | null): string {
   // only push the rate up, so the honest statement has both ends.
   const pres = f.presence;
   if (pres && Array.isArray(pres.engines) && pres.engines.length && pres.overall) {
-    const lo = num(pres.overall.lowerPct);
-    const hi = num(pres.overall.namedPct);
+    const floor = num(pres.overall.floorPct);
+    const ceil = num(pres.overall.ceilingPct);
     const rows = pres.engines.filter((e) => e && typeof e.name === "string");
-    const maxP = Math.max(...rows.map((e) => num(e.namedPct)), 1);
+    const maxP = Math.max(...rows.map((e) => num(e.floorPct)), 1);
     const bars = rows.map((e, i) => {
       const label = ENGINE_ORDER.find((x) => x.key === e.name)?.label ?? String(e.name);
-      const l = num(e.lowerPct), h = num(e.namedPct);
-      const title = l === h
-        ? `${label}: named you in ${h}% of its answers`
-        : `${label}: named you in ${l}-${h}% of its answers (${e.unknown} answer${e.unknown === 1 ? "" : "s"} too long to read in full)`;
-      return barRow(label, h, maxP, i, { title });
+      const lo = num(e.floorPct), hi = num(e.ceilingPct);
+      const title = lo === hi
+        ? `${label}: named you in ${lo}% of its answers`
+        : `${label}: named you in at least ${lo}% of its answers, and up to ${hi}% once ${e.unknown} answer${e.unknown === 1 ? "" : "s"} too long to store are allowed for`;
+      return barRow(label, lo, maxP, i, { title });
     }).join("");
-    const spread = lo === hi ? `${hi}%` : `${lo}% to ${hi}%`;
     const cap =
-      `This is the one that matters most: when someone asks an AI about your category, ` +
+      `This is the one that matters most. When someone asks an AI about your category, ` +
       `does it say your name? Across every question and every web-searching tool this month, ` +
-      `the answer was yes ${spread} of the time. ` +
-      `It is a range because ${pres.overall.unknown} of ${pres.overall.total} answers ran longer than we store, ` +
-      `so your name could have appeared in a part we did not keep. We count those as unread rather than as a no. ` +
+      `the answer was yes on at least ${floor}% of answers. ` +
+      `"At least" is exact, not modest: ${pres.overall.unknown} of ${pres.overall.total} answers ran longer than we keep, ` +
+      `so your name may also be in a part we did not store. Counting every one of those in your favour would put the figure at ${ceil}%. ` +
+      `We publish the number that holds either way. ` +
+      `One thing to expect, said now rather than after the fact: we have since increased how much of each answer we keep, ` +
+      `so next month is measured on whole answers and will probably read higher for that reason alone, not because anything changed for you. ` +
       `The bars above show how often each tool pulled a page from your site, which is how a tool comes to know about you. ` +
       `Being named is the result. Being read is how a tool gets there.`;
     blocks.push(chartBlock("Where AI says your name", bars, cap, undefined));
