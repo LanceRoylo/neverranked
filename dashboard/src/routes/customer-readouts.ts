@@ -492,11 +492,28 @@ export function renderCharts(factsJson: string | null): string {
   // A RANGE, not a figure. Rows whose stored answer was cut off before the name
   // could appear are counted as unreadable, not as absent. Dropping them can
   // only push the rate up, so the honest statement has both ends.
+  // FAIL CLOSED ON A MALFORMED BLOCK. The guard used to check only that
+  // `overall` existed. Facts are frozen JSON and can be hand-edited or written
+  // by a future change, and a partial object rendered "at least 0% of answers"
+  // and "undefined of undefined" straight to the customer. A 0% floor is a
+  // claim of total absence, which is the one finding this whole measure exists
+  // to avoid publishing without evidence. An absent section is a missing
+  // section. A zero is a lie.
+  const finite = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v);
   const pres = f.presence;
-  if (pres && Array.isArray(pres.engines) && pres.engines.length && pres.overall) {
+  const overallOk = !!pres?.overall
+    && finite(pres.overall.floorPct) && finite(pres.overall.ceilingPct)
+    && finite(pres.overall.total) && finite(pres.overall.unknown)
+    && pres.overall.total > 0;
+  if (pres && Array.isArray(pres.engines) && overallOk) {
     const floor = num(pres.overall.floorPct);
     const ceil = num(pres.overall.ceilingPct);
-    const rows = pres.engines.filter((e) => e && typeof e.name === "string");
+    const rows = pres.engines.filter(
+      (e) => e && typeof e.name === "string" && finite(e.floorPct) && finite(e.ceilingPct) && finite(e.unknown),
+    );
+    if (!rows.length) {
+      console.log("[readout] presence block omitted: no engine row carried usable numbers");
+    } else {
     const maxP = Math.max(...rows.map((e) => num(e.floorPct)), 1);
     const bars = rows.map((e, i) => {
       const label = ENGINE_ORDER.find((x) => x.key === e.name)?.label ?? String(e.name);
@@ -518,6 +535,7 @@ export function renderCharts(factsJson: string | null): string {
       `The bars above show how often each tool pulled a page from your site, which is how a tool comes to know about you. ` +
       `Being named is the result. Being read is how a tool gets there.`;
     blocks.push(chartBlock("Where AI says your name", bars, cap, undefined));
+    }
   }
 
   // 1a. What we did not report this month, and why. Rendered directly under

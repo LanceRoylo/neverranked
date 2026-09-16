@@ -285,3 +285,52 @@ test("baseline month: a client with no measurement_start is never suppressed", (
   const kept = rows.filter(r => Number.isFinite(Number(r.measurement_start)) && Number(r.measurement_start) > 0);
   assert.equal(kept.length, 0, "null and 0 both fall through to sending");
 });
+
+// ── The presence block must fail closed on malformed facts ────────────────
+//
+// FOUND BY AUDIT 2026-09-16, before deploy. The guard checked that `overall`
+// existed but not that its fields were numbers, so a partial object rendered
+// "the answer was yes on at least 0% of answers" and "undefined of undefined
+// answers" to a paying customer. facts_json is frozen JSON that can be
+// hand-edited or written by a future change, so "buildPresence always fills it
+// in" is not a guarantee the render layer may rely on.
+//
+// A 0% floor is a claim of total absence. It is the exact finding this measure
+// exists to avoid publishing without evidence.
+
+test("a malformed presence block renders nothing, not a zero", () => {
+  const html = renderCharts('{"presence":{"engines":[{}],"overall":{}}}');
+  assert.doesNotMatch(html, /at least 0%/, "a 0% floor is a claim of total absence");
+  assert.doesNotMatch(html, /undefined/, "undefined must never reach a customer");
+  assert.doesNotMatch(html, /NaN/);
+  assert.doesNotMatch(html, /Where AI says your name/, "the block should be omitted entirely");
+});
+
+test("presence with a good overall but no usable engine rows is omitted", () => {
+  const html = renderCharts(JSON.stringify({
+    presence: { engines: [{ name: "openai" }], overall: { floorPct: 38, ceilingPct: 53, unknown: 217, total: 1482 } },
+  }));
+  assert.doesNotMatch(html, /Where AI says your name/);
+});
+
+test("a well-formed presence block still renders", () => {
+  const html = renderCharts(JSON.stringify({
+    presence: {
+      engines: [{ name: "openai", floorPct: 44, ceilingPct: 81, unknown: 105, total: 281 }],
+      overall: { floorPct: 38, ceilingPct: 53, unknown: 217, total: 1482 },
+    },
+  }));
+  assert.match(html, /Where AI says your name/);
+  assert.match(html, /at least 38%/);
+  assert.doesNotMatch(html, /undefined|NaN/);
+});
+
+test("zero total is treated as unmeasured, not as a measured zero", () => {
+  const html = renderCharts(JSON.stringify({
+    presence: {
+      engines: [{ name: "openai", floorPct: 0, ceilingPct: 0, unknown: 0, total: 0 }],
+      overall: { floorPct: 0, ceilingPct: 0, unknown: 0, total: 0 },
+    },
+  }));
+  assert.doesNotMatch(html, /Where AI says your name/, "nothing measured means no section");
+});
