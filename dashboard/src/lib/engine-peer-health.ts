@@ -58,6 +58,29 @@ function median(xs: number[]): number {
 /** Row counts per engine since `sinceTs`, each scored against the median of
  *  all engines in the same window. Returns [] when the fleet is too quiet to
  *  judge, which callers must treat as "no opinion", NOT as "all healthy". */
+/** Surfaces that are NOT comparable to a peer median, and are watched against
+ *  their own history instead.
+ *
+ *  Google AI Overviews does not render for every query. It chooses, and on our
+ *  roster it renders for roughly 40-60% of them. Holding it beside engines that
+ *  answer everything and calling the difference degradation is a category
+ *  error, and it produced an `anomaly_engine_peer_drop` alert every single day
+ *  from 2026-09-12 onward. report-facts already knows this and says so in
+ *  MIN_ENGINE_DENSITY: "AIO sits at 42% too and is perfectly healthy, because
+ *  it legitimately declines to render." The alerting layer did not know, which
+ *  is this codebase's signature failure -- a rule written in one place and not
+ *  applied to its neighbour.
+ *
+ *  NOTHING IS LOST BY REMOVING IT FROM THIS CHECK. The row-drop detector in
+ *  anomaly-detection.ts compares every engine against its OWN prior-days
+ *  average, so a real AIO outage still alarms: it did on 2026-09-13, alert 332.
+ *  What stops is a daily alert for behaving exactly as designed, and an alert
+ *  that fires every day is one nobody reads.
+ *
+ *  Do not add an engine here to quieten it. The test is whether a peer median
+ *  is the right yardstick at all, not whether the alert is annoying. */
+const SELF_BASELINE_ENGINES = new Set(["google_ai_overview"]);
+
 export async function assessPeerHealth(env: Env, sinceTs: number): Promise<PeerHealth[]> {
   const rows = (await env.DB.prepare(
     `SELECT engine, COUNT(*) AS n FROM citation_runs WHERE run_at >= ? GROUP BY engine`,
@@ -66,9 +89,15 @@ export async function assessPeerHealth(env: Env, sinceTs: number): Promise<PeerH
   const counts = rows
     .filter((r) => typeof r.engine === "string")
     .map((r) => ({ engine: String(r.engine), rows: Number(r.n) || 0 }));
-  if (counts.length < 3) return []; // too few surfaces reporting to define a peer group
 
-  const med = median(counts.map((c) => c.rows));
+  // The yardstick is built from comparable surfaces only. A self-baseline
+  // engine is still REPORTED -- the digest should show its row count, and
+  // hiding it would trade one blind spot for another -- it is simply never
+  // judged against a median that does not describe it.
+  const peers = counts.filter((c) => !SELF_BASELINE_ENGINES.has(c.engine));
+  if (peers.length < 3) return []; // too few comparable surfaces to define a peer group
+
+  const med = median(peers.map((c) => c.rows));
   if (med < PEER_MIN_MEDIAN) return []; // fleet-wide quiet: not this check's business
 
   return counts
@@ -77,7 +106,7 @@ export async function assessPeerHealth(env: Env, sinceTs: number): Promise<PeerH
       rows: c.rows,
       median: med,
       pct: c.rows / med,
-      degraded: c.rows < med * PEER_DEGRADED_RATIO,
+      degraded: !SELF_BASELINE_ENGINES.has(c.engine) && c.rows < med * PEER_DEGRADED_RATIO,
     }))
     .sort((a, b) => a.pct - b.pct);
 }

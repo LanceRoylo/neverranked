@@ -159,22 +159,34 @@ export async function handleMemoSave(id: number, request: Request, user: User, e
         }
       }
     }
+    // Last-resort chart backfill, BEFORE delivery is stamped.
+    //
+    // This block used to sit after the UPDATE below, and emitReportFacts
+    // refuses outright when delivered_at is set. So it could never do
+    // anything: from the day that guard landed until 2026-09-16 the call was
+    // dead and the comment above it claimed it was "the catch-all that makes
+    // charts automatic for EVERY report". A stated safety net that cannot fire
+    // is worse than no safety net, because it stops anyone looking.
+    //
+    // Now it runs first, and ONLY when the memo has no frozen facts at all.
+    // That fixes the real gap -- a hand-authored memo delivered with
+    // facts_json NULL renders narrative-only forever -- without touching the
+    // immutability rule. Existing facts are never regenerated here: the body
+    // was vetted against them a few lines up, and rewriting the numbers after
+    // that vet would leave prose and charts describing different data.
+    try {
+      const meta = await env.DB.prepare(
+        `SELECT client_slug, month_key, facts_json FROM monthly_memos WHERE id=?`
+      ).bind(id).first<{ client_slug: string; month_key: string; facts_json: string | null }>();
+      if (meta && meta.facts_json == null) {
+        const { emitReportFacts } = await import("../lib/report-facts");
+        const wrote = await emitReportFacts(env, meta.client_slug, meta.month_key);
+        console.log(`[deliver] ${meta.client_slug}/${meta.month_key}: no frozen facts, backfill ${wrote ? "wrote" : "declined"}`);
+      }
+    } catch { /* charts are optional; delivery must not block on them */ }
     await env.DB.prepare(
       `UPDATE monthly_memos SET title=?, body_markdown=?, delivered_at=unixepoch(), updated_at=unixepoch() WHERE id=?`
     ).bind(title, body, id).run();
-    // Freeze the report's chart data (facts_json) now that it is delivered. This
-    // is the catch-all that makes charts automatic for EVERY report -- generated
-    // or hand-authored -- so no future customer needs the HTC hand-backfill.
-    // Best-effort: a failure leaves the report narrative-only, never blocks it.
-    try {
-      const meta = await env.DB.prepare(
-        `SELECT client_slug, month_key FROM monthly_memos WHERE id=?`
-      ).bind(id).first<{ client_slug: string; month_key: string }>();
-      if (meta) {
-        const { emitReportFacts } = await import("../lib/report-facts");
-        await emitReportFacts(env, meta.client_slug, meta.month_key);
-      }
-    } catch { /* charts are optional; delivery already succeeded */ }
     // Graduation tracker: record the real ship decision on this memo's latest
     // verdict. ship_as_is = delivered body unchanged from what the judge saw
     // (true agreement); ship_edited = Lance rewrote before delivering.

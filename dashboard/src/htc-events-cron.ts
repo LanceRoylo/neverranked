@@ -154,6 +154,9 @@ function toSchema(ev: RawEvent, todayIso: string): EventSchema | null {
 }
 
 export interface RefreshResult {
+  /** Set when the run was deliberately a no-op. Not an error: an error
+   *  means something broke, and nothing here did. */
+  skipped?: string;
   fetched: number;
   parsed: number;
   complete: number;
@@ -215,6 +218,41 @@ async function checkStaleness(env: Env): Promise<{ stale: boolean; ageHours: num
  *           Useful when called manually after a known fix so the
  *           previous-state stale alert doesn't fire one last time.
  */
+/** Does anything actually SERVE what this cron writes?
+ *
+ *  Hosted schema injection was retired 2026-07-24 when the product became
+ *  measurement-only, and hawaii-theatre's injection_configs row has been
+ *  enabled = 0 ever since. /inject/hawaii-theatre.js serves
+ *  "NeverRanked: not configured" and /inject/hawaii-theatre.json serves an
+ *  empty schema list. Verified live 2026-09-15.
+ *
+ *  The cron kept running anyway: one fetch and ~35 D1 writes a day into a
+ *  table nothing reads, and then an admin_alerts row reading "Event refresh:
+ *  3 added. 35 events live." with the detail "New shows added to
+ *  /upcoming-events/ got Event schema deployed."
+ *
+ *  Nothing was deployed. Nothing could be. The alert told Lance that work had
+ *  shipped to a client's site every time it ran, which is a synthetic success
+ *  in the reporting direction -- the codebase's governing rule says a guard
+ *  reporting success while measuring nothing is the failure, and this is its
+ *  mirror image.
+ *
+ *  So the work is now gated on the serving path being live. Existing rows are
+ *  left exactly as they are: this stops writing, it does not delete data. If
+ *  injection is ever deliberately re-enabled the cron resumes on its own, and
+ *  that re-enabling is a positioning decision, not a code one. */
+async function injectionIsServed(env: Env): Promise<boolean> {
+  try {
+    const cfg = await env.DB.prepare(
+      "SELECT enabled FROM injection_configs WHERE client_slug = ? LIMIT 1",
+    ).bind(CLIENT_SLUG).first<{ enabled: number }>();
+    return Number(cfg?.enabled) === 1;
+  } catch {
+    // Unknown is not a licence to write. Fail closed.
+    return false;
+  }
+}
+
 export async function refreshHawaiiTheatreEvents(
   env: Env,
   opts: { dryRun?: boolean; skipStalenessCheck?: boolean } = {},
@@ -227,6 +265,16 @@ export async function refreshHawaiiTheatreEvents(
   const trace = (step: string, ok: boolean, detail?: string) => {
     if (dryRun && result.trace) result.trace.push({ step, ok, detail });
   };
+
+  // Nothing serves these rows while injection is disabled. Writing them and
+  // then announcing a deployment is the synthetic success described above.
+  // A dry run is still allowed: inspecting the parser is not publishing.
+  if (!dryRun && !(await injectionIsServed(env))) {
+    result.error = undefined;
+    result.skipped = "injection disabled: /inject/" + CLIENT_SLUG + ".js serves nothing, so there is no deployment to make";
+    console.log(`[htc-events] skipped: injection_configs.enabled = 0 for ${CLIENT_SLUG}. No rows written, no alert filed.`);
+    return result;
+  }
 
   // Up-front staleness check. Fires an admin_alert if data is older
   // than STALE_THRESHOLD_HOURS (~36h). This is the "defense-in-depth"

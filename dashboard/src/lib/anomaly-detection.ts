@@ -155,16 +155,35 @@ async function fetchEngineMetrics(env: Env): Promise<EngineMetrics[]> {
 
   // Last 24h
   // Yesterday, whole, and the mean of the whole days before it.
+  //
+  // BOTH SIDES ARE SCOPED TO CURRENTLY-ACTIVE KEYWORDS, and the asymmetry is
+  // the whole point. planCitationRun filters WHERE active = 1, so yesterday's
+  // count can only contain active keywords. The 14-day baseline counted
+  // everything, including keywords since switched off, so the denominator
+  // described a bigger roster than the numerator ever could.
+  //
+  // MEASURED: and-scene's 11 keywords were deactivated 2026-09-14. The
+  // baseline still carried them, which put "expected" near 90 a day when the
+  // real figure was 67. On 2026-09-14 anthropic and gemini each produced 42
+  // rows: 63% of what was actually expected, which is not an alarm, but 47% of
+  // the inflated baseline, which is. Two false row-drop alerts fired on
+  // 2026-09-15 for a roster change we made on purpose.
+  //
+  // Left alone, every future client removal would do the same for a fortnight,
+  // and a detector that cries wolf gets muted -- which costs more than the
+  // alert is worth.
   const prevDayRows = (await env.DB.prepare(
-    `SELECT engine, COUNT(*) AS runs FROM citation_runs
-      WHERE run_at >= ? AND run_at < ? GROUP BY engine`
+    `SELECT cr.engine AS engine, COUNT(*) AS runs
+       FROM citation_runs cr JOIN citation_keywords ck ON ck.id = cr.keyword_id
+      WHERE ck.active = 1 AND cr.run_at >= ? AND cr.run_at < ? GROUP BY cr.engine`
   ).bind(startOfYesterday, startOfToday).all<{ engine: string; runs: number }>()).results;
   const prevDayMap = new Map(prevDayRows.map((r) => [r.engine, r.runs]));
 
   const priorDaysRows = (await env.DB.prepare(
-    `SELECT engine, COUNT(*) AS runs,
-            COUNT(DISTINCT CAST(run_at / 86400 AS INTEGER)) AS days
-       FROM citation_runs WHERE run_at >= ? AND run_at < ? GROUP BY engine`
+    `SELECT cr.engine AS engine, COUNT(*) AS runs,
+            COUNT(DISTINCT CAST(cr.run_at / 86400 AS INTEGER)) AS days
+       FROM citation_runs cr JOIN citation_keywords ck ON ck.id = cr.keyword_id
+      WHERE ck.active = 1 AND cr.run_at >= ? AND cr.run_at < ? GROUP BY cr.engine`
   ).bind(startOfYesterday - BASELINE_WINDOW_DAYS * SECONDS_PER_DAY, startOfYesterday)
    .all<{ engine: string; runs: number; days: number }>()).results;
   const priorDaysMap = new Map(priorDaysRows.map((r) => [r.engine, r]));
