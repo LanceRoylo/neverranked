@@ -583,6 +583,7 @@ async function buildPresence(
   windowStart: number,
   windowEnd: number,
   businessName: string,
+  cov: EngineCoverage[] | undefined,
 ): Promise<ReportFacts["presence"]> {
   const q = buildPresenceSql({ clientSlug: slug, businessName, windowStart, windowEnd });
   if (!q) {
@@ -600,8 +601,26 @@ async function buildPresence(
   }
 
   // Layer 1 only. engineLayer is the single source for which is which.
-  const searchRows = rows.filter((r) => engineLayer(r.engine) !== "model_knowledge" && r.engine !== "bing");
-  if (!searchRows.length) return undefined;
+  //
+  // AND the SAME coverage exclusion the headline bars apply. Without this, an
+  // engine held out of the bars for under-collection would still appear here,
+  // and the report would carry two verdicts about one surface in one document
+  // -- the exact failure the comment above monthCov describes, reproduced one
+  // section lower. Measured on prince-waikiki September: ChatGPT is excluded
+  // from the bars and would have shown at 44% in this block.
+  const excluded = new Set(
+    (cov ?? []).filter((c) => !c.sufficient).map((c) => c.engine),
+  );
+  const searchRows = rows.filter(
+    (r) => engineLayer(r.engine) !== "model_knowledge"
+      && r.engine !== "bing"
+      && !excluded.has(resolveEngineKey(r.engine) ?? r.engine)
+      && !excluded.has(r.engine),
+  );
+  if (!searchRows.length) {
+    console.log(`[report-facts] ${slug}: every web-searching surface is excluded or absent; presence omitted.`);
+    return undefined;
+  }
 
   const per: EnginePresence[] = searchRows.map(toEnginePresence);
   const judged = per.reduce((n, p) => n + p.judged, 0);
@@ -735,29 +754,6 @@ export async function buildReportFacts(env: Env, slug: string, monthKey: string)
   // the grid renders a month the movement section refuses to compare.
   const measurementStart = await getMeasurementStart(env, slug);
 
-  // Whether the AI named them. Same month window and the same engagement
-  // clamp the grid uses, so the two sections cannot describe different
-  // periods inside one document.
-  let presence: ReportFacts["presence"];
-  try {
-    const pb = monthBounds(monthKey);
-    if (pb) {
-      const pStart = Math.max(pb.start, measurementStart ?? 0);
-      if (pStart < pb.end) {
-        const injCfgP = await env.DB.prepare(
-          "SELECT * FROM injection_configs WHERE client_slug = ?",
-        ).bind(slug).first<InjectionConfig>();
-        const nameP = await resolveBusinessName(env, slug, injCfgP);
-        if (nameP) presence = await buildPresence(env, slug, pStart, pb.end, nameP);
-        else console.log(`[report-facts] ${slug}: no business name; presence omitted rather than reported as zero.`);
-      }
-    }
-  } catch (e) {
-    // Never blanks a report. An absent section is a missing section; a zero
-    // would be a false finding.
-    console.log(`[report-facts] ${slug}: presence build failed, omitting: ${e}`);
-  }
-
   // Coverage for the report month, computed ONCE and shared with the grid.
   //
   // WHY THE BARS NEED THIS. `engines` above comes straight out of
@@ -785,6 +781,31 @@ export async function buildReportFacts(env: Env, slug: string, monthKey: string)
     // pre-2026-09-12 behaviour, which showed every bar, and say so.
     console.log(`[report-facts] ${slug} ${monthKey}: month coverage unassessable, bars NOT filtered: ${e instanceof Error ? e.message : e}`);
     monthCov = undefined;
+  }
+
+  // Whether the AI named them. Built AFTER monthCov deliberately: it applies
+  // the same engine exclusion the headline bars apply, so one surface cannot
+  // be held out of the bars and shown in this block. Same month window and the
+  // same engagement clamp the grid uses, so the two sections cannot describe
+  // different periods inside one document either.
+  let presence: ReportFacts["presence"];
+  try {
+    const pb = monthBounds(monthKey);
+    if (pb) {
+      const pStart = Math.max(pb.start, measurementStart ?? 0);
+      if (pStart < pb.end) {
+        const injCfgP = await env.DB.prepare(
+          "SELECT * FROM injection_configs WHERE client_slug = ?",
+        ).bind(slug).first<InjectionConfig>();
+        const nameP = await resolveBusinessName(env, slug, injCfgP);
+        if (nameP) presence = await buildPresence(env, slug, pStart, pb.end, nameP, monthCov);
+        else console.log(`[report-facts] ${slug}: no business name; presence omitted rather than reported as zero.`);
+      }
+    }
+  } catch (e) {
+    // Never blanks a report. An absent section is a missing section; a zero
+    // would be a false finding.
+    console.log(`[report-facts] ${slug}: presence build failed, omitting: ${e}`);
   }
 
   // Question-level appeared/disappeared (defensive: absent on any failure).

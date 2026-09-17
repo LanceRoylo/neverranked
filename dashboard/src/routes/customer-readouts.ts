@@ -532,7 +532,10 @@ export function renderCharts(factsJson: string | null): string {
       `We publish the number that holds either way. ` +
       `One thing to expect, said now rather than after the fact: we have since increased how much of each answer we keep, ` +
       `so next month is measured on whole answers and will probably read higher for that reason alone, not because anything changed for you. ` +
-      `The bars above show how often each tool pulled a page from your site, which is how a tool comes to know about you. ` +
+      `The chart above it answers a different question, so do not read the two as versions of each other. ` +
+      `That one is a share of SOURCES: out of every page a tool pulled while answering, how many were yours. ` +
+      `A tool reads a dozen or more pages per answer, so a few percent there is normal and is not a smaller version of the number here. ` +
+      `This one is a share of ANSWERS: out of every answer it gave, how many said your name. ` +
       `Being named is the result. Being read is how a tool gets there.`;
     blocks.push(chartBlock("Where AI says your name", bars, cap, undefined));
     }

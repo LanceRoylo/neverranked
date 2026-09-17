@@ -204,3 +204,37 @@ test("an engine whose answers were never truncated has floor == ceiling", () => 
   assert.equal(p.rateFloor, p.rateCeiling);
   assert.equal(p.rateJudged, p.rateFloor);
 });
+
+// ── One document must not carry two verdicts about one surface ────────────
+//
+// FOUND BY AUDIT 2026-09-16. buildPresence filtered by engine LAYER only, so a
+// surface held out of the headline bars for under-collection would still have
+// appeared in the presence block one section lower. On prince-waikiki's real
+// September facts, ChatGPT search is excluded from the bars and would have
+// shown at 44% here.
+//
+// report-facts already carries a comment about exactly this failure, written
+// when the bars and the grid disagreed. It was reproduced one section down by
+// a function that did not know the rule existed. A rule written in one place
+// and not applied to its neighbour is this codebase's signature defect, and
+// this test is the neighbour being told.
+
+test("an engine excluded from the bars cannot appear in the presence block", () => {
+  const src = readFileSync("src/lib/report-facts.ts", "utf8");
+  const start = src.indexOf("async function buildPresence");
+  assert.ok(start > 0, "buildPresence not found");
+  const body = src.slice(start, src.indexOf("\nexport async function buildReportFacts", start));
+  assert.match(body, /c\.sufficient/, "buildPresence must consult the coverage verdict");
+  assert.match(body, /excluded\.has/, "buildPresence must drop excluded engines");
+});
+
+test("presence is built after coverage, not before it", () => {
+  // Ordering is load-bearing: monthCov must exist before buildPresence is
+  // called or the exclusion set is always empty and the check above passes
+  // while doing nothing.
+  const src = readFileSync("src/lib/report-facts.ts", "utf8");
+  const covAt = src.indexOf("let monthCov: EngineCoverage[] | undefined;");
+  const callAt = src.indexOf("await buildPresence(env, slug, pStart, pb.end, nameP, monthCov)");
+  assert.ok(covAt > 0 && callAt > 0, "both sites must exist");
+  assert.ok(covAt < callAt, "monthCov must be computed before buildPresence is called");
+});
