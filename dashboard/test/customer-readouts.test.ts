@@ -214,7 +214,7 @@ test("renderCharts: grid is fail-closed on malformed shape", () => {
 
 test("renderCharts: engine baseline (no prev) falls back to bars, not a dumbbell", () => {
   const html = renderCharts(JSON.stringify({ engines: [{ name: "Claude", pct: 14 }, { name: "ChatGPT search", pct: 7 }] }));
-  assert.match(html, /Where each AI tool reads you/);
+  assert.match(html, /How much of what AI reads is your own site/);
   assert.match(html, /nr-fill/);
   assert.doesNotMatch(html, /dumb-dot/);
 });

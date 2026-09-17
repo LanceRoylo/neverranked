@@ -75,6 +75,17 @@ export function renderReportMarkdown(md: string): string {
           ? `<a href="${href.replace(/"/g, "&quot;")}" rel="noopener noreferrer nofollow"${href.startsWith("/") ? "" : ' target="_blank"'}>${text}</a>`
           : text; // drop unsafe-scheme links, keep the text
       })
+      // Bare URLs become links too. The punch-list standard says "a clickable
+      // link beats a described place to look", and the generator emits naked
+      // URLs as often as markdown ones. Left as text they are dead: the
+      // customer has to select and paste. Runs AFTER the [text](url) pass and
+      // skips anything already inside an href.
+      .replace(/(href="[^"]*")|(https?:\/\/[^\s<>()\[\]"]+)/g, (m, inHref, bare) => {
+        if (inHref) return m;
+        const clean = bare.replace(/[.,;:]+$/, "");
+        const trail = bare.slice(clean.length);
+        return `<a href="${clean.replace(/"/g, "&quot;")}" rel="noopener noreferrer nofollow" target="_blank">${clean}</a>${trail}`;
+      })
       .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
       .replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, "<em>$1</em>")
       .replace(/`([^`]+)`/g, "<code>$1</code>");
@@ -222,7 +233,12 @@ function renderCitationGrid(
   const cells = Array.isArray(grid.cells) ? grid.cells : [];
   if (engines.length < 2 || questions.length < 3 || cells.length !== engines.length) return "";
 
-  const CELL = 24, GAP = 3, GUT = 84, TOP = 22, RIGHT = 52;
+  // Geometry. Enlarged 2026-09-17: at CELL 24 the 943-unit viewBox was scaled
+  // to ~0.75 inside the 760px prose column, which rendered the 9px column
+  // numbers at under 7px. Lance, reading it as the customer: "this chart is
+  // entirely too tiny". Shrinking was the problem, so the fix is a bigger
+  // intrinsic grid, bigger type, and a card that escapes the prose column.
+  const CELL = 30, GAP = 4, GUT = 116, TOP = 32, RIGHT = 70;
   const step = CELL + GAP;
   const W = GUT + questions.length * step - GAP + RIGHT;
   const H = TOP + engines.length * step - GAP;
@@ -350,10 +366,13 @@ function renderCitationGrid(
   // The old caption used "named" and "won a citation" for the same square, in
   // one sentence, across rows that measure two different things. Each row now
   // states its own basis.
-  const cap = `Each row is one AI tool, each numbered column is one question we ask it every day. The search tools go and read pages, so a gold square there means that tool pulled from your site. The model-knowledge tools read nothing at all, so a gold square there means it said your name. Brighter means it happened on a larger share of that month's checks. A dark square means the tool answered without you. A faint outline means that tool did not answer that question this month. A smaller square means we only got one or two checks in on that question, so read it as a hint rather than a pattern. The number on the right is how many of the questions it answered where you appeared. The columns are ordered, strongest on the left, so any run of questions nobody picks you up on gathers at the right-hand edge rather than being scattered through the grid.`;
+  const cap = `Each row is one AI tool. Each numbered column is one question we put to it every day, listed underneath. ` +
+    `The key above says what each square means. Columns are ordered strongest on the left, so the questions nobody picks you up on gather at the right-hand edge ` +
+    `instead of being scattered through the grid.`;
 
-  return `<section class="nr-chart"><h3 class="nr-ctitle">Where the six AI tools and the search control put you, question by question</h3>`
+  return `<section class="nr-chart cg-card"><h3 class="nr-ctitle">Where the six AI tools and the search control put you, question by question</h3>`
     + `<div class="cg-scroll">${svg}</div>`
+    + coverageKey(markThin)
     + `<ol class="cg-legend">${legend}</ol>`
     + chartText(cap, note) + `</section>`;
 }
@@ -427,7 +446,7 @@ function renderDumbbell(engines: ChartEngine[], prior: string, note?: string): s
   const excluded = names.length
     ? `<p class="nr-note">${esc(names.length === 1 ? names[0] : names.join(" and "))} ${names.length === 1 ? "is" : "are"} left out of this chart on purpose. ${names.length === 1 ? "It returned" : "They returned"} plenty of sources this month, but not one of them was any venue in your category, yours or a competitor's. That points at how ${names.length === 1 ? "that tool" : "those tools"} sourced answers this month rather than at anything on your side, so scoring it as a zero would be misleading.</p>`
     : "";
-  return `<section class="nr-chart"><h3 class="nr-ctitle">Where each AI tool reads you</h3><div class="nr-bars">${rows}</div>${chartText(cap, note)}${excluded}</section>`;
+  return `<section class="nr-chart"><h3 class="nr-ctitle">How much of what AI reads is your own site</h3><div class="nr-bars">${rows}</div>${chartText(cap, note)}${excluded}</section>`;
 }
 
 // 100% stacked bar for the source-type composition (part-to-whole). One bar
@@ -445,6 +464,136 @@ function renderStack(sources: ChartRow[], note?: string): string {
   return `<section class="nr-chart"><h3 class="nr-ctitle">Where AI's answers come from</h3><div class="stack-bar">${segs}</div><div class="stack-legend">${legend}</div>${chartText(cap, note)}</section>`;
 }
 
+
+/** The executive summary. Four numbers, above everything else.
+ *
+ *  WHY THIS EXISTS (2026-09-17). The readout opened with seven charts and put
+ *  the analyst's plain-English headline underneath them, below a divider
+ *  reading "The record". The single most useful sentence in the September memo
+ *  -- that Prince is invisible on nine of the twelve questions that name the
+ *  hotel -- was below the fold, under what looks like an appendix heading.
+ *  Lance, reading it as the customer: "I want an executive summary at the very
+ *  top with key points."
+ *
+ *  Built from FACTS, not from the prose, so it cannot drift from the charts
+ *  underneath it. Every figure here appears again below with its full context;
+ *  this is the scannable version for someone who reads one screen.
+ *
+ *  Each tile fails closed: a figure we cannot compute is omitted rather than
+ *  shown as zero. */
+function renderSummary(f: ReportFacts): string {
+  const tiles: Array<{ big: string; label: string; sub: string }> = [];
+
+  
+  // 1. The outcome. How often an AI says their name.
+  const p = f.presence;
+  if (p?.overall && Number.isFinite(p.overall.floorPct) && num(p.overall.total) > 0) {
+    tiles.push({
+      big: `${num(p.overall.floorPct)}%`,
+      label: "of AI answers name you",
+      sub: `at least, across ${num(p.overall.total).toLocaleString()} answers this month`,
+    });
+  }
+
+  // 2. The competitive position. Rank is what a GM asks for first.
+  const rows = (f.venue?.rows ?? []).filter((r: ChartRow) => r && typeof r.label === "string");
+  const sorted = [...rows].sort((a, b) => num(b.pct) - num(a.pct));
+  const meIdx = sorted.findIndex((r) => r.you);
+  if (meIdx >= 0) {
+    const ord = (n: number) => ["1st", "2nd", "3rd"][n - 1] ?? `${n}th`;
+    tiles.push({
+      big: ord(meIdx + 1),
+      label: "in your category",
+      sub: `${num(sorted[meIdx].pct)}% of all mentions. ${esc(String(sorted[0].label))} leads on ${num(sorted[0].pct)}%`,
+    });
+  }
+
+  // 3. The gap, and the reason this document exists. Questions where no
+  //    web-searching tool put them anywhere at all.
+  const g = f.grid;
+  const cells = g?.cells;
+  if (g && Array.isArray(cells) && Array.isArray(g.questions) && g.questions.length) {
+    const layer1 = (g.layers ?? []).map((l: string, i: number) => (l !== "model_knowledge" && g.engines?.[i] !== "Bing search (control)" ? i : -1)).filter((i) => i >= 0);
+    let blank = 0;
+    for (let q = 0; q < g.questions.length; q++) {
+      if (layer1.every((e: number) => !num(cells[e]?.[q]))) blank++;
+    }
+    if (blank > 0) {
+      tiles.push({
+        big: `${blank}`,
+        label: `of ${g.questions.length} questions`,
+        sub: "no AI tool put you anywhere in the answer",
+      });
+    }
+  }
+
+  // 4. Where to act. The single biggest off-site source.
+  const top = (f.topSources ?? [])[0];
+  if (top && typeof top.host === "string") {
+    tiles.push({
+      big: `${num(top.pct)}%`,
+      label: "of what AI reads",
+      sub: `comes from ${esc(top.host)}, the biggest single source in your category`,
+    });
+  }
+
+  if (tiles.length < 2) return "";
+  const cards = tiles.map((t, i) =>
+    `<div class="sum-tile" style="--i:${i}">
+       <div class="sum-big">${t.big}</div>
+       <div class="sum-lab">${t.label}</div>
+       <div class="sum-sub">${t.sub}</div>
+     </div>`).join("");
+  return `<section class="nr-chart sum-card"><h3 class="nr-ctitle">The short version</h3>
+    <div class="sum-grid">${cards}</div>
+    <p class="nr-cap"><strong>How to read this.</strong> Four numbers from the month, each explained in full further down.
+    The first is the one that matters most: when someone asks an AI about hotels in your category, how often does it say your name.</p>
+  </section>`;
+}
+
+
+/** A visual key for the coverage grid.
+ *
+ *  WHY THIS EXISTS (2026-09-17). The grid encodes five different things in one
+ *  square: gold intensity is the share of checks, a ring means at least half,
+ *  a smaller square means thin data, a dashed outline means the tool never
+ *  answered, and the right rail is a count. All of that was explained in a
+ *  150-word paragraph underneath. Lance, reading it as the customer: "I'm
+ *  having a hard time understanding how to read it so of course a customer is
+ *  going to be even more confused."
+ *
+ *  Prose cannot teach a visual encoding. This draws the actual swatches, using
+ *  the SAME css classes the cells use, so the key cannot drift from the chart.
+ *  Swatch sizes are fixed in their own small SVGs rather than inherited from
+ *  the grid's viewBox, so they stay legible whatever width the grid renders at. */
+function coverageKey(markThin: boolean): string {
+  const sw = (inner: string) => `<svg class="cg-kswatch" viewBox="0 0 26 26" aria-hidden="true">${inner}</svg>`;
+  const cell = (op: number, extra = "", inset = 0) =>
+    `<rect x="${1 + inset / 2}" y="${1 + inset / 2}" width="${24 - inset}" height="${24 - inset}" rx="4" class="cg-base"${extra}/>`
+    + `<rect x="${1 + inset / 2}" y="${1 + inset / 2}" width="${24 - inset}" height="${24 - inset}" rx="4" class="cg-heat" style="opacity:${op}"/>`;
+
+  const ramp = [0.12, 0.34, 0.56, 0.78, 1].map((o) => sw(cell(o))).join("");
+
+  const items: string[] = [
+    `<div class="cg-kitem cg-kramp"><div class="cg-kswatches">${ramp}</div>
+       <div class="cg-klab"><b>How often you showed up</b><span>Left: you appeared on a few of that month's checks. Right: nearly every one.</span></div></div>`,
+    `<div class="cg-kitem">${sw(cell(0.9, ' stroke="#e8c767" stroke-width="1.5"'))}
+       <div class="cg-klab"><b>A gold outline</b><span>You appeared on at least half that question's checks.</span></div></div>`,
+    `<div class="cg-kitem">${sw(cell(0))}
+       <div class="cg-klab"><b>A dark square</b><span>The tool answered that question and did not include you.</span></div></div>`,
+    `<div class="cg-kitem">${sw('<rect x="1" y="1" width="24" height="24" rx="4" class="cg-na"/>')}
+       <div class="cg-klab"><b>A dashed outline</b><span>The tool never answered that question this month, so there is nothing to report.</span></div></div>`,
+  ];
+  if (markThin) {
+    items.push(`<div class="cg-kitem">${sw(cell(0.8, "", 8))}
+       <div class="cg-klab"><b>A smaller square</b><span>We only got one or two checks in. Read it as a hint, not a pattern.</span></div></div>`);
+  }
+  items.push(`<div class="cg-kitem"><span class="cg-kcount">3<span class="cg-kden">/30</span></span>
+       <div class="cg-klab"><b>The number on the right</b><span>Questions where you appeared on at least half the checks, out of the questions that tool answered.</span></div></div>`);
+
+  return `<div class="cg-key">${items.join("")}</div>`;
+}
+
 export function renderCharts(factsJson: string | null): string {
   if (!factsJson) return "";
   let f: ReportFacts;
@@ -453,32 +602,13 @@ export function renderCharts(factsJson: string | null): string {
   const prior = f.prior_label ? esc(f.prior_label) : "last month";
   const notes = f.notes && typeof f.notes === "object" ? f.notes : {};
   const blocks: string[] = [];
+  // Above everything. See renderSummary.
+  const summary = renderSummary(f);
+  if (summary) blocks.push(summary);
 
   // 1. Per-engine citation share. A dumbbell (foregrounds the movement) when a
   // prior month exists; bars for a baseline report (nothing to move from yet).
   const allEngines = Array.isArray(f.engines) ? f.engines.filter((e) => e && typeof e.name === "string") : [];
-  // The two layers are measured differently and CANNOT share a chart. A
-  // citation-grade tool's pct is the share of its cited sources pointing at
-  // the customer; a model-knowledge tool's is the share of its answers that
-  // name them. Both caption below is false for the other, and the dumbbell's
-  // own caption ("that tool pulled from your site more") is Layer 1 language.
-  // Engines with no layer recorded (every bridge-written snapshot) are
-  // citation-grade, so hawaii-theatre renders exactly as it does today.
-  const engines = allEngines.filter((e) => e.layer !== "model_knowledge");
-  const namedFromMemory = allEngines.filter((e) => e.layer === "model_knowledge");
-
-  if (engines.length) {
-    if (engines.some((e) => typeof e.prev === "number")) {
-      blocks.push(renderDumbbell(engines, prior, notes.engines));
-    } else {
-      const sorted = [...engines].sort((a, b) => num(b.pct) - num(a.pct));
-      const max = Math.max(...sorted.map((e) => num(e.pct)), 1);
-      const bars = sorted.map((e, i) => barRow(e.name, num(e.pct), max, i, { title: `${e.name}: ${num(e.pct)}% of the pages it pulled were yours` })).join("");
-      const cap = `Each bar is the share of the pages that AI tool pulled from that were your own site. Higher is better. This is your baseline, and next month shows the movement.`;
-      blocks.push(chartBlock("Where each AI tool reads you", bars, cap, notes.engines));
-    }
-  }
-
   // 1b. Did the AI say your name. Placed directly under the "reads you" bars
   // because the pair is the point: being read is the mechanism, being named is
   // the outcome, and on real data they are far apart (15% against 38-45% on
@@ -538,6 +668,30 @@ export function renderCharts(factsJson: string | null): string {
       `This one is a share of ANSWERS: out of every answer it gave, how many said your name. ` +
       `Being named is the result. Being read is how a tool gets there.`;
     blocks.push(chartBlock("Where AI says your name", bars, cap, undefined));
+    }
+  }
+
+  // The two layers are measured differently and CANNOT share a chart. A
+  // citation-grade tool's pct is the share of its cited sources pointing at
+  // the customer; a model-knowledge tool's is the share of its answers that
+  // name them. Both caption below is false for the other, and the dumbbell's
+  // own caption ("that tool pulled from your site more") is Layer 1 language.
+  // Engines with no layer recorded (every bridge-written snapshot) are
+  // citation-grade, so hawaii-theatre renders exactly as it does today.
+  const engines = allEngines.filter((e) => e.layer !== "model_knowledge");
+  const namedFromMemory = allEngines.filter((e) => e.layer === "model_knowledge");
+
+  if (engines.length) {
+    if (engines.some((e) => typeof e.prev === "number")) {
+      blocks.push(renderDumbbell(engines, prior, notes.engines));
+    } else {
+      const sorted = [...engines].sort((a, b) => num(b.pct) - num(a.pct));
+      const max = Math.max(...sorted.map((e) => num(e.pct)), 1);
+      const bars = sorted.map((e, i) => barRow(e.name, num(e.pct), max, i, { title: `${e.name}: ${num(e.pct)}% of the pages it pulled were yours` })).join("");
+      const cap = `Out of every page a tool opened while answering questions in your category, this is the share that came from your own website. ` +
+        `Single digits is the normal range and not a bad result: a tool reads a dozen or more sources per answer, and every hotel in the set is competing for the same slots. ` +
+        `It matters because your own site is the one source here you control outright. The chart above shows whether AI says your name. This shows how much of what it reads is yours.`;
+      blocks.push(chartBlock("How much of what AI reads is your own site", bars, cap, notes.engines));
     }
   }
 
@@ -766,11 +920,23 @@ export function shell(title: string, inner: string): string {
   .leg-pct { color:#8a857a; } .leg-item.own { color:#e8e8ea; } .leg-item.own .leg-pct { color:#d4c596; }
   @media (prefers-reduced-motion:reduce){ .dumb-line{ transition:none; transform:translateY(-50%) scaleX(1); } .dumb-dot{ transition:none; transform:translate(-50%,-50%) scale(1); } .stack-bar{ transition:none; transform:scaleX(1); } .leg-item{ transition:none; opacity:1; } }
   /* citation grid (per-engine x per-question instrument) */
+  .sum-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:18px; margin:6px 0 4px; }
+  .sum-tile { padding:2px 0; }
+  .sum-big { font-family:Georgia,"Times New Roman",serif; font-size:40px; line-height:1.05; color:#d4c596; letter-spacing:-.02em; }
+  .sum-lab { font-size:14px; color:#e8e5da; margin-top:4px; }
+  .sum-sub { font-size:12.5px; color:#8a857a; margin-top:5px; line-height:1.45; }
+  .sum-card { background:rgba(212,197,150,.05); border:1px solid rgba(212,197,150,.14); }
   .cg-scroll { overflow-x:auto; margin:4px 0 14px; padding-bottom:4px; }
-  .cg-svg { display:block; max-width:100%; height:auto; min-width:340px; }
-  .cg-colnum { font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:9px; fill:#6f6a60; text-anchor:middle; }
-  .cg-rowlab { font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:11px; fill:#b7b1a3; text-anchor:end; letter-spacing:.02em; }
-  .cg-count { font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:12px; fill:#d4c596; text-anchor:start; font-variant-numeric:tabular-nums; }
+  /* The grid earns more width than the prose. Centred on the text column and
+     widened symmetrically; falls back to in-column scrolling below 1080px. */
+  @media (min-width:1080px){
+    .nr-chart.cg-card { width:calc(2 * min(580px, calc(50vw - 32px)));
+                        margin-left:calc(356px - min(580px, calc(50vw - 32px))); }
+  }
+  .cg-svg { display:block; max-width:100%; height:auto; min-width:900px; }
+  .cg-colnum { font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:13px; fill:#6f6a60; text-anchor:middle; }
+  .cg-rowlab { font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:15px; fill:#b7b1a3; text-anchor:end; letter-spacing:.02em; }
+  .cg-count { font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:17px; fill:#d4c596; text-anchor:start; font-variant-numeric:tabular-nums; }
   .cg-count-den { fill:#6f6a60; }
   .cg-base { fill:#1b1915; }
   .cg-na { fill:none; stroke:#2a2720; stroke-width:1; stroke-dasharray:2 3; }
@@ -781,6 +947,17 @@ export function shell(title: string, inner: string): string {
   .cg-cell { opacity:0; transition:opacity .5s cubic-bezier(.22,1,.36,1); transition-delay:calc(500ms + var(--d) * 14ms); }
   .nr-chart.in .cg-cell { opacity:1; }
   .cg-strong .cg-base { stroke:#e8c767; stroke-width:1.5; }
+  .cg-key { display:grid; grid-template-columns:repeat(auto-fit,minmax(248px,1fr)); gap:14px 22px;
+             margin:16px 0 6px; padding:16px 18px; background:rgba(255,255,255,.028); border-radius:10px; }
+  .cg-kitem { display:flex; gap:10px; align-items:flex-start; }
+  .cg-kswatch { width:26px; height:26px; flex:none; display:block; }
+  .cg-kswatches { display:flex; gap:3px; flex:none; }
+  .cg-kramp { grid-column:1 / -1; }
+  .cg-klab { font-size:12.5px; line-height:1.45; }
+  .cg-klab b { display:block; color:#e8e5da; font-weight:600; font-size:13px; margin-bottom:2px; }
+  .cg-klab span { color:#8a857a; }
+  .cg-kcount { font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:17px; color:#d4c596; flex:none; min-width:26px; }
+  .cg-kden { color:#6f6a60; }
   .cg-legend { list-style:none; margin:8px 0 0; padding:0; display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:2px 18px; }
   .cg-leg { display:flex; gap:8px; font-size:12.5px; color:#c9c4b8; line-height:1.5; align-items:baseline; }
   .cg-leg-n { font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:11px; color:#9c8a4e; min-width:16px; text-align:right; flex:none; font-variant-numeric:tabular-nums; }
