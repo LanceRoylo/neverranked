@@ -334,3 +334,35 @@ test("zero total is treated as unmeasured, not as a measured zero", () => {
   }));
   assert.doesNotMatch(html, /Where AI says your name/, "nothing measured means no section");
 });
+
+// ── Punch-list links ──────────────────────────────────────────────────────
+//
+// The standard has said since `Punch-list standard: require direct links in
+// generated punch lists` that "a clickable link beats a described place to
+// look". September's memo shipped with zero markdown links and two bare URLs,
+// and the renderer left bare URLs as dead text, so not one destination in the
+// punch list was clickable.
+
+test("a bare URL in the memo becomes a link", () => {
+  const html = renderReportMarkdown("Run https://search.google.com/test/rich-results on the homepage.");
+  assert.match(html, /<a href="https:\/\/search\.google\.com\/test\/rich-results"/);
+  assert.match(html, /target="_blank"/);
+});
+
+test("a markdown link still works, and is not double-wrapped", () => {
+  const html = renderReportMarkdown("Check [TripAdvisor](https://www.tripadvisor.com/) first.");
+  assert.match(html, /<a href="https:\/\/www\.tripadvisor\.com\/"[^>]*>TripAdvisor<\/a>/);
+  assert.doesNotMatch(html, /<a [^>]*><a /);
+});
+
+test("trailing punctuation stays outside the link", () => {
+  // "...visit https://example.com." must not link the full stop.
+  const html = renderReportMarkdown("Visit https://validator.schema.org/.");
+  assert.match(html, /href="https:\/\/validator\.schema\.org\/"/);
+  assert.doesNotMatch(html, /href="[^"]*\."/);
+});
+
+test("a javascript: URL is never linked", () => {
+  const html = renderReportMarkdown("Try [bad](javascript:alert(1)) now.");
+  assert.doesNotMatch(html, /javascript:/);
+});

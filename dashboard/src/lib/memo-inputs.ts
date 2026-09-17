@@ -98,6 +98,28 @@ export interface MemoInputs {
     source_types: Array<{ type: string; share_pct: number }>;
     hosts: Array<{ host: string; share_pct: number }>;
   };
+  /** Ready-made destinations for the punch list.
+   *
+   *  WHY (2026-09-17). The punch-list standard says "a clickable link beats a
+   *  described place to look", and the generator produced ZERO links in
+   *  September's memo. It had `offsite.hosts` -- bare hostnames like
+   *  "tripadvisor.com" -- and a hostname is not a URL, so it wrote prose:
+   *  "check what TripAdvisor, Expedia, Booking.com and Google Maps say", and
+   *  left the customer to go find all four.
+   *
+   *  Asking the prompt more firmly would not fix it. The model does not know
+   *  this hotel's TripAdvisor URL, and a model guessing listing URLs gets some
+   *  wrong -- a punch list with a dead link is worse than one with none.
+   *
+   *  So the URLs are built here, from measured data, and the prompt is told it
+   *  may use ONLY these. `find_listing` is a site-scoped search rather than a
+   *  guessed deep link: it lands on the right page without anyone needing to
+   *  know its address. */
+  destinations: {
+    own_site: string | null;
+    listings: Array<{ host: string; share_pct: number; open: string; find_listing: string }>;
+    tools: Array<{ name: string; url: string; checks: string }>;
+  };
   prior_memo: { month_key: string; title: string | null; body_markdown: string } | null;
   is_first_memo: boolean;
 }
@@ -333,6 +355,7 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
   /** Set only on the snapshot path, where a venue-share percentage exists. */
   let venue_share_basis: string | undefined;
   let offsite: MemoInputs["offsite"] = { source_types: [], hosts: [] };
+  const ownDomain = domains.results.find((d) => d.is_competitor === 0)?.domain ?? null;
 
   // ── Canonical override: source headline + per-engine from the snapshot ──
   // citation_snapshots is the authoritative share-of-citations rollup the
@@ -510,7 +533,32 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
       ORDER BY delivered_at DESC LIMIT 1`
   ).bind(slug).first<{ month_key: string; title: string | null; body_markdown: string }>();
 
+  // Punch-list destinations. See the `destinations` comment on MemoInputs.
+  const ownHost = ownDomain ? normHost(ownDomain) : null;
+  const destinations: MemoInputs["destinations"] = {
+    own_site: ownHost ? `https://${ownHost}` : null,
+    listings: offsite.hosts.slice(0, 6).map((h) => ({
+      host: h.host,
+      share_pct: h.share_pct,
+      open: `https://${h.host}`,
+      // Site-scoped search: lands on their actual listing without us guessing
+      // a deep link that may not exist or may have changed.
+      find_listing: `https://www.google.com/search?q=${encodeURIComponent(`site:${h.host} "${customer?.name ?? ""}"`)}`,
+    })),
+    tools: [
+      { name: "Google Rich Results Test", url: "https://search.google.com/test/rich-results",
+        checks: "whether a page's structured data is readable, and which types are present" },
+      { name: "Schema Markup Validator", url: "https://validator.schema.org/",
+        checks: "structured data errors on a specific URL" },
+      ...(ownHost ? [{ name: "Your robots.txt", url: `https://${ownHost}/robots.txt`,
+        checks: "whether AI crawlers are allowed to read the site at all" }] : []),
+      ...(ownHost ? [{ name: "Google Business Profile", url: "https://business.google.com/",
+        checks: "the amenity and description fields AI reads for local answers" }] : []),
+    ],
+  };
+
   return {
+    destinations,
     customer: customer
       ? {
           client_slug: customer.client_slug,
