@@ -380,3 +380,19 @@ test("an email address is never turned into a link", () => {
   const html = renderReportMarkdown("Email hello@neverranked.com please.");
   assert.doesNotMatch(html, /<a /);
 });
+
+test("a brand name that ends in a TLD is not a destination", () => {
+  // "TripAdvisor 10 percent, Expedia 4 percent, Booking.com 3 percent" is a
+  // statistic. Linking Booking.com made one of three names in that sentence
+  // clickable purely because of how it is spelled, which reads as arbitrary.
+  // A destination is written lowercase; a brand mid-prose is capitalised.
+  const html = renderReportMarkdown("TripAdvisor 10 percent, Expedia 4 percent, Booking.com 3 percent.");
+  assert.doesNotMatch(html, /<a /);
+});
+
+test("an uppercase full URL still links", () => {
+  // The lowercase rule applies only to the bare-domain form. A written-out
+  // scheme is an unambiguous instruction whatever its case.
+  const html = renderReportMarkdown("See HTTPS://EXAMPLE.COM/PAGE for details.");
+  assert.match(html, /<a href="HTTPS:\/\/EXAMPLE\.COM\/PAGE"/);
+});

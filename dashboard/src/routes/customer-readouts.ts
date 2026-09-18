@@ -88,7 +88,7 @@ export function renderReportMarkdown(md: string): string {
       // Deliberately conservative on the bare-domain form: a real TLD from a
       // short list, no leading @ (emails), and never inside an existing href.
       .replace(
-        /(href="[^"]*")|(https?:\/\/[^\s<>()\[\]"]+)|((?:^|[\s(])(?:www\.)?[a-z0-9][a-z0-9-]*(?:\.[a-z0-9-]+)*\.(?:com|org|net|io|ai|co|gov|edu)(?:\/[^\s<>()\[\]",]*)?)/gi,
+        /([hH][rR][eE][fF]="[^"]*")|([hH][tT][tT][pP][sS]?:\/\/[^\s<>()\[\]"]+)|((?:^|[\s(])(?:www\.)?[a-z0-9][a-z0-9-]*(?:\.[a-z0-9-]+)*\.(?:com|org|net|io|ai|co|gov|edu)(?:\/[^\s<>()\[\]",]*)?)/g,
         (m, inHref, full, bareDomain) => {
           if (inHref) return m;
           const raw = full ?? bareDomain;
