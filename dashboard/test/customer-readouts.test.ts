@@ -366,3 +366,17 @@ test("a javascript: URL is never linked", () => {
   const html = renderReportMarkdown("Try [bad](javascript:alert(1)) now.");
   assert.doesNotMatch(html, /javascript:/);
 });
+
+test("a bare domain written without a scheme still links", () => {
+  // The generator writes "princewaikiki.com/dining" constantly. Left as text
+  // it makes the customer retype a page we just told them to open.
+  const html = renderReportMarkdown("Check princewaikiki.com/dining and princewaikiki.com/weddings.");
+  assert.match(html, /href="https:\/\/princewaikiki\.com\/dining"/);
+  assert.match(html, /href="https:\/\/princewaikiki\.com\/weddings"/);
+});
+
+test("an email address is never turned into a link", () => {
+  // neverranked.com inside an address must not be linkified.
+  const html = renderReportMarkdown("Email hello@neverranked.com please.");
+  assert.doesNotMatch(html, /<a /);
+});

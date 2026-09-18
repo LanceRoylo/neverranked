@@ -80,12 +80,28 @@ export function renderReportMarkdown(md: string): string {
       // URLs as often as markdown ones. Left as text they are dead: the
       // customer has to select and paste. Runs AFTER the [text](url) pass and
       // skips anything already inside an href.
-      .replace(/(href="[^"]*")|(https?:\/\/[^\s<>()\[\]"]+)/g, (m, inHref, bare) => {
-        if (inHref) return m;
-        const clean = bare.replace(/[.,;:]+$/, "");
-        const trail = bare.slice(clean.length);
-        return `<a href="${clean.replace(/"/g, "&quot;")}" rel="noopener noreferrer nofollow" target="_blank">${clean}</a>${trail}`;
-      })
+      // Two shapes, one pass. A full URL, and a bare domain written without a
+      // scheme -- "princewaikiki.com/dining" -- which the generator writes
+      // constantly and which was left as dead text. If we tell someone to go
+      // to a page, the page should be one click away.
+      //
+      // Deliberately conservative on the bare-domain form: a real TLD from a
+      // short list, no leading @ (emails), and never inside an existing href.
+      .replace(
+        /(href="[^"]*")|(https?:\/\/[^\s<>()\[\]"]+)|((?:^|[\s(])(?:www\.)?[a-z0-9][a-z0-9-]*(?:\.[a-z0-9-]+)*\.(?:com|org|net|io|ai|co|gov|edu)(?:\/[^\s<>()\[\]",]*)?)/gi,
+        (m, inHref, full, bareDomain) => {
+          if (inHref) return m;
+          const raw = full ?? bareDomain;
+          if (!raw) return m;
+          const lead = full ? "" : (/^[\s(]/.test(raw) ? raw[0] : "");
+          const body = full ? raw : raw.slice(lead.length);
+          const clean = body.replace(/[.,;:]+$/, "");
+          const trail = body.slice(clean.length);
+          if (!clean) return m;
+          const href = /^https?:\/\//i.test(clean) ? clean : `https://${clean}`;
+          return `${lead}<a href="${href.replace(/"/g, "&quot;")}" rel="noopener noreferrer nofollow" target="_blank">${clean}</a>${trail}`;
+        },
+      )
       .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
       .replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, "<em>$1</em>")
       .replace(/`([^`]+)`/g, "<code>$1</code>");
@@ -407,8 +423,18 @@ function barRow(label: string, pct: number, maxPct: number, i: number, opts: { h
   </div>`;
 }
 
-function chartBlock(title: string, bars: string, caption: string, note?: string): string {
-  return `<section class="nr-chart"><h3 class="nr-ctitle">${esc(title)}</h3><div class="nr-bars">${bars}</div>${chartText(caption, note)}</section>`;
+/** A bar chart whose bars are sized against the biggest value rather than
+ *  against 100. That is the right choice for ranking and a misleading one for
+ *  magnitude, so the scale is stated on the chart instead of being left for
+ *  the reader to assume. See the note on the presence chart's maxP. */
+function scaleNote(maxPct: number): string {
+  const m = Math.round(maxPct);
+  if (!Number.isFinite(m) || m <= 0 || m >= 100) return "";
+  return `<div class="nr-scale">Bars compare these to each other, not to 100%. The longest bar is ${m}%.</div>`;
+}
+
+function chartBlock(title: string, bars: string, caption: string, note?: string, maxPct?: number): string {
+  return `<section class="nr-chart"><h3 class="nr-ctitle">${esc(title)}</h3><div class="nr-bars">${bars}</div>${typeof maxPct === "number" ? scaleNote(maxPct) : ""}${chartText(caption, note)}</section>`;
 }
 
 // Dumbbell / slope chart for the per-engine month-over-month move (used only when
@@ -644,7 +670,16 @@ export function renderCharts(factsJson: string | null): string {
     if (!rows.length) {
       console.log("[readout] presence block omitted: no engine row carried usable numbers");
     } else {
-    const maxP = Math.max(...rows.map((e) => num(e.floorPct)), 1);
+    // FIXED 0-100, not scaled to the biggest bar.
+    //
+    // Every other chart here sizes bars against the largest value, which is
+    // fine for ranking and wrong for magnitude: ChatGPT's 3% on the chart
+    // below and ChatGPT's 43% here both rendered as a completely full bar.
+    // Two adjacent charts, values 14x apart, identical picture. For a company
+    // whose argument is that other people's numbers flatter you, that is the
+    // wrong thing to be wrong about. These values live in the tens, so a real
+    // 0-100 scale is both honest and readable.
+    const maxP = 100;
     const bars = rows.map((e, i) => {
       const label = ENGINE_ORDER.find((x) => x.key === e.name)?.label ?? String(e.name);
       const lo = num(e.floorPct), hi = num(e.ceilingPct);
@@ -691,7 +726,7 @@ export function renderCharts(factsJson: string | null): string {
       const cap = `Out of every page a tool opened while answering questions in your category, this is the share that came from your own website. ` +
         `Single digits is the normal range and not a bad result: a tool reads a dozen or more sources per answer, and every hotel in the set is competing for the same slots. ` +
         `It matters because your own site is the one source here you control outright. The chart above shows whether AI says your name. This shows how much of what it reads is yours.`;
-      blocks.push(chartBlock("How much of what AI reads is your own site", bars, cap, notes.engines));
+      blocks.push(chartBlock("How much of what AI reads is your own site", bars, cap, notes.engines, max));
     }
   }
 
@@ -725,7 +760,18 @@ export function renderCharts(factsJson: string | null): string {
         }),
       )
       .join("");
-    const cap = `These tools answer from what they already know instead of searching the web, so they have no sources to cite. What counts here is whether they name your business at all. Each bar is the share of that tool's answers that mentioned you by name.`;
+    // A zero here alarms people, and on this layer it is usually a fact about
+    // the model rather than about the customer. We have measured the same
+    // collapse in two unrelated industries. Saying so is the difference
+    // between a finding and a scare.
+    const anyZero = namedFromMemory.some((e) => num(e.pct) === 0);
+    const cap = `These tools answer from what they already know instead of searching the web, so they have no sources to cite. ` +
+      `What counts here is whether they name your business at all. Each bar is the share of that tool's answers that mentioned you by name.` +
+      (anyZero
+        ? ` A zero on this chart is common and is not a fault in your business: models answering from training data rarely name individual local businesses, ` +
+          `and we have measured the same pattern across unrelated categories. It is the one layer nothing you publish this month can move, ` +
+          `because it only changes when the model is retrained.`
+        : "");
     blocks.push(chartBlock("Where AI names you from memory", bars, cap));
   }
 
@@ -947,6 +993,7 @@ export function shell(title: string, inner: string): string {
   .cg-cell { opacity:0; transition:opacity .5s cubic-bezier(.22,1,.36,1); transition-delay:calc(500ms + var(--d) * 14ms); }
   .nr-chart.in .cg-cell { opacity:1; }
   .cg-strong .cg-base { stroke:#e8c767; stroke-width:1.5; }
+  .nr-scale { font-size:12px; color:#8a857a; margin:10px 0 0; }
   .cg-key { display:grid; grid-template-columns:repeat(auto-fit,minmax(248px,1fr)); gap:14px 22px;
              margin:16px 0 6px; padding:16px 18px; background:rgba(255,255,255,.028); border-radius:10px; }
   .cg-kitem { display:flex; gap:10px; align-items:flex-start; }
