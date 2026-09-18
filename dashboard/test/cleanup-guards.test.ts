@@ -62,3 +62,18 @@ test("the HTC event cron will not write while nothing serves the rows", () => {
   const fn = src.slice(src.indexOf("async function injectionIsServed"), src.indexOf("export async function refreshHawaiiTheatreEvents"));
   assert.match(fn, /catch\s*\{[\s\S]*return false/, "an error must deny, not allow");
 });
+
+test("the snippet sweep only chases domains where injection is live", () => {
+  // Hosted schema injection was retired 2026-07-24 and every
+  // injection_configs row is enabled = 0, yet the sweep kept escalating:
+  // "Snippet still not installed on montaic.com after 154 days", plus the
+  // same for neverranked.com. Two of the four alerts the 2026-09-18 briefing
+  // said needed a human were nudges to install something that would do
+  // nothing if installed.
+  const src = readFileSync("src/cron.ts", "utf8");
+  const i = src.indexOf("SELECT d.* FROM domains d");
+  assert.ok(i > 0, "the snippet sweep query should select from domains");
+  const q = src.slice(i, i + 400);
+  assert.match(q, /JOIN injection_configs ic ON ic\.client_slug = d\.client_slug AND ic\.enabled = 1/,
+    "a retired capability must not generate work");
+});

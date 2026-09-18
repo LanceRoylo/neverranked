@@ -2672,12 +2672,29 @@ export async function runSnippetSweep(env: Env): Promise<void> {
   // direct clients were onboarded before that column existed. If they
   // have a snippet detected in the wild, we should celebrate it.
   const yesterday = now - DAY;
+  // ONLY where the snippet would actually do something.
+  //
+  // Hosted schema injection was retired 2026-07-24 when the product became
+  // measurement-only. Every injection_configs row is enabled = 0 and
+  // /inject/<slug>.js serves "NeverRanked: not configured". This sweep kept
+  // chasing installation anyway: on 2026-09-18 the morning briefing listed
+  // "Snippet still not installed on montaic.com after 154 days" and the same
+  // for neverranked.com, two of the four alerts it said needed a human.
+  //
+  // Nudging someone to install a snippet that would do nothing if installed
+  // is the same failure as the HTC event cron fixed 2026-09-17: work reported
+  // against a capability that no longer exists. An alert nobody can action is
+  // an alert that teaches people to skim the list.
+  //
+  // Joined rather than filtered in code so a client with injection genuinely
+  // switched on is swept exactly as before.
   const candidates = (await env.DB.prepare(`
-    SELECT * FROM domains
-      WHERE active = 1
-        AND is_competitor = 0
-        AND (snippet_last_checked_at IS NULL OR snippet_last_checked_at < ?)
-      ORDER BY COALESCE(snippet_email_sent_at, created_at)
+    SELECT d.* FROM domains d
+      JOIN injection_configs ic ON ic.client_slug = d.client_slug AND ic.enabled = 1
+      WHERE d.active = 1
+        AND d.is_competitor = 0
+        AND (d.snippet_last_checked_at IS NULL OR d.snippet_last_checked_at < ?)
+      ORDER BY COALESCE(d.snippet_email_sent_at, d.created_at)
       LIMIT 200
   `).bind(yesterday).all<Domain>()).results;
 
