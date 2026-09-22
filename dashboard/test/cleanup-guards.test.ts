@@ -88,3 +88,24 @@ test("prompt auto-expand never refills a client that has been switched off", () 
   assert.match(body, /JOIN measurement_registry mr ON mr\.client_slug = ic\.client_slug AND mr\.active = 1/,
     "only a client actually being measured may be expanded");
 });
+
+test("the question set locks when measurement starts", () => {
+  // hawaii-theatre's measurement began 2026-08-01, then auto-expand added
+  // questions on successive Mondays, so the measured set changed almost every
+  // week. That drift is what produced +11 in HTC's September memo while the
+  // locked 18 were down 4.
+  const src = readFileSync("src/prompt-auto-expand.ts", "utf8");
+  const fn = src.slice(src.indexOf("export async function autoExpandPromptsForClient"));
+  const lockAt = fn.indexOf("measurement_start");
+  const workAt = fn.indexOf("discoverContext(");
+  assert.ok(lockAt > 0, "the per-client function must consult measurement_start");
+  assert.ok(lockAt < workAt, "the lock must be checked before any generation work, including model calls");
+  assert.match(fn.slice(0, workAt), /start <= Math\.floor\(Date\.now\(\) \/ 1000\)/, "a started client must add nothing");
+});
+
+test("the lock lives in the function every caller uses", () => {
+  // The admin run-monday route calls autoExpandPromptsForClient directly. A
+  // gate placed only on the Monday sweep would be bypassed by it.
+  const route = readFileSync("src/routes/admin-run-monday.ts", "utf8");
+  assert.match(route, /autoExpandPromptsForClient/, "the direct caller still exists, so the lock must be in the function");
+});

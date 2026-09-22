@@ -216,6 +216,38 @@ export async function autoExpandPromptsForClient(
     rejected_by: { format: 0, tone: 0, similarity: 0, relevance: 0 },
   };
 
+  // 0. The question set LOCKS when measurement starts.
+  //
+  // This function may build a client's question set before measurement
+  // begins, which is its job during onboarding. It must never add to it
+  // afterwards. The methodology publishes hash-locked, pre-registered query
+  // sets, and a set that grows every Monday is neither.
+  //
+  // MEASURED 2026-09-21 on hawaii-theatre, measurement_start 2026-08-01: the
+  // core 18 questions were created that day, and this function then added 9,
+  // 2, 1, 4, 3, 4 and 3 on successive Mondays. The measured set was different
+  // almost every week. That is the mechanism behind the drift in HTC's
+  // September memo, which showed +11 points while the locked 18 were down 4,
+  // because newly added questions read as rises from zero.
+  //
+  // New questions still have value for discovery. They belong in an
+  // exploratory set reported separately from the headline, promoted into the
+  // locked panel only at a declared period boundary. That is a separate
+  // build. Until it exists, the correct behaviour after measurement starts is
+  // to add nothing.
+  //
+  // Enforced HERE rather than in the Monday sweep because the admin
+  // run-monday route calls this function directly, and a gate on one caller
+  // is a gate on nothing.
+  const reg = await env.DB.prepare(
+    `SELECT measurement_start FROM measurement_registry WHERE client_slug = ?`,
+  ).bind(clientSlug).first<{ measurement_start: number | null }>();
+  const start = reg?.measurement_start ?? null;
+  if (start !== null && start <= Math.floor(Date.now() / 1000)) {
+    console.log(`[auto-expand] ${clientSlug}: question set locked since ${new Date(start * 1000).toISOString().slice(0, 10)}; adding nothing.`);
+    return result;
+  }
+
   // 1. Skip if already at target
   const trackedRow = await env.DB.prepare(
     `SELECT COUNT(*) AS n, keyword FROM citation_keywords WHERE client_slug = ? AND active = 1`,
