@@ -77,3 +77,14 @@ test("the snippet sweep only chases domains where injection is live", () => {
   assert.match(q, /JOIN injection_configs ic ON ic\.client_slug = d\.client_slug AND ic\.enabled = 1/,
     "a retired capability must not generate work");
 });
+
+test("prompt auto-expand never refills a client that has been switched off", () => {
+  // Removing and-scene on 2026-09-14 dropped its active keyword count to zero,
+  // which is below MIN_TARGET, so the Monday sweep read a deliberate removal as
+  // a shortage and inserted twelve new active keywords. Twice.
+  const src = readFileSync("src/prompt-auto-expand.ts", "utf8");
+  const i = src.indexOf("export async function runAutoExpandSweep");
+  const body = src.slice(i, i + 2400);
+  assert.match(body, /JOIN measurement_registry mr ON mr\.client_slug = ic\.client_slug AND mr\.active = 1/,
+    "only a client actually being measured may be expanded");
+});

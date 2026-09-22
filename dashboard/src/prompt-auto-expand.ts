@@ -414,10 +414,32 @@ Generate exactly ${count} prompts. JSON only.`;
  * prompt count < MIN_TARGET.
  */
 export async function runAutoExpandSweep(env: Env): Promise<AutoExpandResult[]> {
+  // ONLY clients that are actually being measured.
+  //
+  // This used to key off injection_configs alone -- the table for hosted
+  // schema injection, retired 2026-07-24 -- and select any client with a
+  // business description and fewer than MIN_TARGET active keywords.
+  //
+  // That made deliberately switching a client OFF look like a client running
+  // short of prompts. On 2026-09-14 Lance removed and-scene as a cost decision
+  // and every one of its keywords went inactive. Its active count fell to
+  // zero, zero is below 40, and the following Monday this sweep generated
+  // twelve new keywords and inserted them active. It had also added eleven the
+  // morning of the 14th itself. The removal and the refill were fighting.
+  //
+  // Nothing spent money on measurement only because and-scene has no
+  // measurement_registry row, so the sweep never picked the keywords up. The
+  // generation itself called the model, which is spend on a client Lance had
+  // explicitly stopped paying for.
+  //
+  // measurement_registry.active is the one flag that means "we are measuring
+  // this client". A client that is not in it, or is in it switched off, is not
+  // short of prompts. It is off.
   const rows = (
     await env.DB.prepare(
       `SELECT ic.client_slug
          FROM injection_configs ic
+         JOIN measurement_registry mr ON mr.client_slug = ic.client_slug AND mr.active = 1
         WHERE ic.business_description IS NOT NULL
           AND LENGTH(ic.business_description) >= 60
           AND (
