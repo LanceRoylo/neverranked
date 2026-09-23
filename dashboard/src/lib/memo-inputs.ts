@@ -34,6 +34,11 @@ export interface MemoInputs {
     prior_share_pct: number;
     delta_pp: number;
     current_runs: number;
+    /** How many cohort businesses this engine named this period, customer
+     *  excluded. Above zero is positive proof the engine DOES name businesses
+     *  in this category, which is what makes "named nobody" refutable rather
+     *  than something the writer has to guess at. */
+    cohort_citations?: number;
     // True when the engine returned citations but named NO venue in the
     // category at all -- not the customer, not a single competitor. A 0%
     // here is an engine-level absence, not a visibility failure, and the
@@ -199,6 +204,13 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
   const q = new Map<number, { keyword: string; category: string; cr: number; cc: number; pr: number; pc: number }>();
   // cohort mention counts (current window only), per competitor host
   const cohortMentions = new Map<string, number>();
+  // Per-engine cohort mentions. Without this the memo can see that an engine
+  // returned 0% for the customer but has NO WAY to separate "named competitors,
+  // not you" from "named nobody at all" -- opposite findings with opposite
+  // remedies. In 2026-09 the generator guessed, and told a paying customer an
+  // engine had named no business in the category when it had named 405 and
+  // simply never named them.
+  const engCohort = new Map<string, number>();
 
   // Registered cohort hosts for matching.
   const domains = await env.DB.prepare(
@@ -232,6 +244,7 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
         if (!key || !cohortHosts.has(key) || seen.has(key)) continue;
         seen.add(key);
         cohortMentions.set(key, (cohortMentions.get(key) ?? 0) + 1);
+        engCohort.set(r.engine, (engCohort.get(r.engine) ?? 0) + 1);
       }
     }
   }
@@ -240,13 +253,22 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
   // that have no canonical citation_snapshots row yet. For snapshot customers it
   // is overridden below by the canonical share-of-citations so the memo, the
   // dashboard, Atlas, and the readout all report the same metric.
-  let by_engine = Array.from(eng.entries()).map(([engine, e]) => ({
-    engine,
-    current_share_pct: pct(e.cc, e.cr),
-    prior_share_pct: pct(e.pc, e.pr),
-    delta_pp: +(pct(e.cc, e.cr) - pct(e.pc, e.pr)).toFixed(1),
-    current_runs: e.cr,
-  })).sort((a, b) => b.current_share_pct - a.current_share_pct);
+  let by_engine: MemoInputs["by_engine"] = Array.from(eng.entries()).map(([engine, e]) => {
+    const cohort = engCohort.get(engine) ?? 0;
+    // Assert absence ONLY when there is a cohort to be absent from. With an
+    // empty competitor roster every engine reads as naming nobody, which is
+    // the same false claim pointing the other way.
+    const dark = cohortHosts.size > 0 && cohort === 0 && e.cr > 0;
+    return {
+      engine,
+      current_share_pct: pct(e.cc, e.cr),
+      prior_share_pct: pct(e.pc, e.pr),
+      delta_pp: +(pct(e.cc, e.cr) - pct(e.pc, e.pr)).toFixed(1),
+      current_runs: e.cr,
+      cohort_citations: cohort,
+      ...(dark ? { no_cohort_signal: true } : {}),
+    };
+  }).sort((a, b) => b.current_share_pct - a.current_share_pct);
 
   const by_question = Array.from(q.values()).map((v) => ({
     keyword: v.keyword,
@@ -481,6 +503,7 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
         prior_share_pct: ps ?? (e.share_pct ?? 0),
         delta_pp: ps === null ? 0 : +((e.share_pct ?? 0) - ps).toFixed(1),
         current_runs: e.total ?? 0,
+        ...(typeof cc === "number" ? { cohort_citations: cc } : {}),
         ...(dark ? { no_cohort_signal: true } : {}),
       };
     }).sort((a, b) => b.current_share_pct - a.current_share_pct);
