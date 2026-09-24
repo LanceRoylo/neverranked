@@ -63,6 +63,19 @@ export async function handleMemoInbox(user: User, env: Env): Promise<Response> {
       <span style="color:var(--dim);font-size:13px;margin-left:12px">Also runs automatically on the 24th.</span>
     </form>
 
+    <div style="margin:0 0 28px;padding:12px 14px;border:1px solid #333;border-radius:8px">
+      <div style="color:var(--dim);font-size:13px;margin-bottom:8px">
+        Rebuild a readout snapshot from D1, in the Worker. Do this before regenerating when a
+        snapshot's provenance is not the Worker, then regenerate so the memo's facts come from it.
+      </div>
+      ${[...new Set(drafts.map((d) => d.client_slug))].map((sl) => `
+        <form method="POST" action="/admin/snapshots/${esc(sl)}/rebuild" style="display:inline-block;margin:0 8px 0 0">
+          <button type="submit" style="background:#1d1d1d;color:var(--gold);border:1px solid #4a4a4a;border-radius:6px;padding:6px 12px;cursor:pointer;font-family:ui-monospace,monospace;font-size:13px">
+            Rebuild snapshot &middot; ${esc(sl)}
+          </button>
+        </form>`).join("")}
+    </div>
+
     <h2 style="font-weight:400;color:#e8c767">Drafts awaiting review (${drafts.length})</h2>
     ${drafts.length === 0 ? `<p style="color:var(--dim)">No drafts in the queue.</p>` : `
     <table style="width:100%;border-collapse:collapse;margin-bottom:36px">
@@ -300,4 +313,64 @@ export async function handleMemoGenerate(user: User, env: Env): Promise<Response
     <p style="margin-top:20px"><a href="/admin/memos" style="color:var(--gold)">Review the queue &rarr;</a></p>
   `;
   return html(layout("Generated drafts", body, user));
+}
+
+
+// ── Rebuild one readout snapshot ─────────────────────────────────────────
+//
+// WHY THIS EXISTS. On 2026-09-23 a laptop launchd job ran the forensic bridge,
+// which writes citation_snapshots from disk files, and it overwrote the row
+// the Worker had written that Monday for BOTH live clients. measured_at on the
+// stored rows matches the two bridge executions to the second, and the absent
+// `layer` key (which buildReadoutSnapshot always writes and the bridge never
+// does) is the fingerprint. Every figure in both September memos derived from
+// those rows.
+//
+// The only caller of buildReadoutSnapshot was the Monday weekly-extras
+// workflow, so the sole way to recover was to run a workflow that also fires a
+// replicate sweep, a GSC pull, a backup and a Reddit check -- a great deal of
+// side effect to rebuild one row the day before a delivery.
+//
+// This rebuilds exactly one client's snapshot from D1, in the Worker, on the
+// same month-to-date window the Monday step uses, and reports the refusal
+// instead of swallowing it. The four guards inside buildReadoutSnapshot refuse
+// to write rather than write something wrong, and a refusal used to look
+// exactly like a clean run from outside.
+export async function handleRebuildSnapshot(user: User, env: Env, slug: string): Promise<Response> {
+  const { buildReadoutSnapshot } = await import("../citations");
+  const now = new Date();
+  const monthStart = Math.floor(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1) / 1000);
+  const monthEnd = Math.floor(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1) / 1000);
+
+  const before = await env.DB.prepare(
+    `SELECT datetime(measured_at,'unixepoch') AS measured, instr(engines_breakdown,'layer') AS has_layer
+       FROM citation_snapshots WHERE client_slug = ? ORDER BY week_start DESC LIMIT 1`,
+  ).bind(slug).first<{ measured: string | null; has_layer: number }>().catch(() => null);
+
+  let res: { ok: boolean; reason?: string };
+  try {
+    res = await buildReadoutSnapshot(env, slug, monthStart, monthEnd);
+  } catch (e) {
+    res = { ok: false, reason: e instanceof Error ? e.message : String(e) };
+  }
+
+  const after = await env.DB.prepare(
+    `SELECT datetime(measured_at,'unixepoch') AS measured, instr(engines_breakdown,'layer') AS has_layer
+       FROM citation_snapshots WHERE client_slug = ? ORDER BY week_start DESC LIMIT 1`,
+  ).bind(slug).first<{ measured: string | null; has_layer: number }>().catch(() => null);
+
+  // `layer` is the provenance tell: the Worker writes it on every engine, the
+  // bridge writes it on none. If it is present afterwards, this row came from
+  // the Worker and from D1.
+  const wrote = res.ok && !!after?.has_layer;
+  const body = `
+    <p><a href="/admin/memos" style="color:var(--dim)">&larr; All memos</a></p>
+    <h1 style="font-weight:400">${wrote ? "Snapshot rebuilt" : "Snapshot NOT rebuilt"} &middot; ${esc(slug)}</h1>
+    <ul style="line-height:1.9">
+      <li>Before: measured ${esc(before?.measured ?? "none")} &middot; provenance ${before?.has_layer ? "Worker" : "<strong style=\"color:#e8a0a0\">not the Worker</strong>"}</li>
+      <li>After: measured ${esc(after?.measured ?? "none")} &middot; provenance ${after?.has_layer ? "<strong style=\"color:#7bdca0\">Worker</strong>" : "<strong style=\"color:#e8a0a0\">not the Worker</strong>"}</li>
+      ${res.ok ? "" : `<li style="color:#e8a0a0">Refused: ${esc(res.reason ?? "unknown")}. The guards refuse rather than write something wrong; this is a real condition to fix, not a retry.</li>`}
+    </ul>
+    <p style="color:var(--dim)">The memo must be regenerated after this so its facts come from the rebuilt snapshot. Delivery already blocks a draft written under older rules.</p>`;
+  return html(layout(`Rebuild snapshot &middot; ${esc(slug)}`, body, user));
 }

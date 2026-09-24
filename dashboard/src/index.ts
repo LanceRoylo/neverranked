@@ -2549,6 +2549,16 @@ export default {
       const { handleMemoInbox } = await import("./routes/admin-memos");
       return handleMemoInbox(user, env);
     }
+    // Rebuild ONE client's readout snapshot from D1, in the Worker. Added
+    // 2026-09-24 after the forensic bridge was found to have overwritten both
+    // live clients' snapshots from laptop disk files. See handleRebuildSnapshot.
+    {
+      const m = path.match(/^\/admin\/snapshots\/([a-z0-9-]{1,64})\/rebuild$/);
+      if (m && method === "POST" && user.role === "admin") {
+        const { handleRebuildSnapshot } = await import("./routes/admin-memos");
+        return handleRebuildSnapshot(user, env, m[1]);
+      }
+    }
     if (path === "/admin/memos/generate" && method === "POST" && user.role === "admin") {
       const { handleMemoGenerate } = await import("./routes/admin-memos");
       return handleMemoGenerate(user, env);
