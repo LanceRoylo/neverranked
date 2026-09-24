@@ -200,13 +200,50 @@ export async function sweepQuerySets(env: Env): Promise<void> {
         (res.added.length ? `Added: ${res.added.slice(0, 5).join(" | ")}${res.added.length > 5 ? " ..." : ""}. ` : "") +
         (res.removed.length ? `Removed: ${res.removed.slice(0, 5).join(" | ")}${res.removed.length > 5 ? " ..." : ""}.` : "");
 
+      // A REMOVAL is not a symmetrical case and must not read like one.
+      //
+      // Adding questions inflates a figure because new questions read as rises
+      // from zero. REMOVING questions inflates it too, and more quietly: drop
+      // the ones a client scores worst on and the headline climbs without
+      // anything changing in the world. It also destroys the ability to show
+      // the customer that work they did actually landed.
+      //
+      // 2026-09-24, prince-waikiki: 12 of 30 questions went inactive. They were
+      // the nine zero-citation questions the memo leads with plus three more --
+      // exactly what the punch list had asked the customer to fix. Nothing
+      // blocked it and the alert read like a routine change notice.
+      let removalWarning = "";
+      if (res.removed.length) {
+        try {
+          const marks = res.removed.map(() => "?").join(",");
+          const cov = await env.DB.prepare(
+            `SELECT
+               AVG(CASE WHEN ck.keyword IN (${marks}) THEN cr.client_cited * 1.0 END) AS gone,
+               AVG(CASE WHEN ck.keyword NOT IN (${marks}) THEN cr.client_cited * 1.0 END) AS kept
+             FROM citation_runs cr
+             JOIN citation_keywords ck ON ck.id = cr.keyword_id
+            WHERE ck.client_slug = ? AND cr.run_at >= unixepoch('now','-30 days')`
+          ).bind(...res.removed, ...res.removed, client_slug).first<{ gone: number | null; kept: number | null }>();
+          if (cov && cov.gone !== null && cov.kept !== null) {
+            const gone = Math.round(cov.gone * 1000) / 10;
+            const kept = Math.round(cov.kept * 1000) / 10;
+            removalWarning = ` The removed questions ran at ${gone}% citation rate against ${kept}% for those retained.` +
+              (gone < kept
+                ? ` They scored BELOW the retained set, so this client's headline figure rises by removal alone, and any improvement on them can no longer be shown. Restore them or declare the change in the readout.`
+                : ` They scored at or above the retained set, so the headline figure falls by removal alone.`);
+          }
+        } catch { /* a warning that cannot be computed must not lose the alert */ }
+      }
+
       await env.DB.prepare(
         `INSERT INTO admin_alerts (client_slug, type, title, detail, created_at)
            VALUES (?, 'query_set_changed', ?, ?, ?)`
       ).bind(
         client_slug,
-        `Question set changed for ${client_slug}`,
-        detail,
+        res.removed.length
+          ? `${res.removed.length} question(s) REMOVED from ${client_slug}`
+          : `Question set changed for ${client_slug}`,
+        detail + removalWarning,
         Math.floor(Date.now() / 1000),
       ).run();
     } catch (e) {

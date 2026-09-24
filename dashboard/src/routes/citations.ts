@@ -1352,8 +1352,15 @@ export async function handleDeleteKeyword(
   keywordId: number,
   env: Env
 ): Promise<Response> {
+  // Stamp it. On 2026-09-24 a paying customer was found to have lost 12 of 30
+  // measured questions with no record of what did it or when, because this
+  // table carried created_at and nothing else. A deactivation that leaves no
+  // trace is indistinguishable from data loss. See migration 0122.
   await env.DB.prepare(
-    "UPDATE citation_keywords SET active = 0 WHERE id = ? AND client_slug = ?"
+    `UPDATE citation_keywords
+        SET active = 0, deactivated_at = unixepoch(),
+            deactivated_reason = 'Deactivated from the admin console.'
+      WHERE id = ? AND client_slug = ?`
   ).bind(keywordId, slug).run();
 
   return redirect(`/admin/citations/${slug}`);
