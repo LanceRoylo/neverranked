@@ -93,9 +93,28 @@ export async function computePulse(user: User, env: Env): Promise<PulseState | n
       `SELECT COUNT(DISTINCT client_slug) AS n FROM domains WHERE active = 1 AND is_competitor = 0`
     ).first<{ n: number }>();
 
-    const done = todayScans?.n
-      ? `${todayScans.n} scan${todayScans.n === 1 ? "" : "s"} today`
-      : (lastScan ? `Last scan ${ago(lastScan.scanned_at, nowSec)}` : "Idle");
+    // The pulse must lead with the CITATION SWEEP, because that is the thing
+    // the product does daily and the thing a customer pays for. It used to
+    // report scan_results, the AEO domain scanner -- a different subsystem on
+    // a weekly cadence -- under the bare label "Last scan". Sitting beside
+    // "Monitoring 4 clients" and "Daily cycle in 8h", "Last scan 3d ago" reads
+    // as "measurement is three days stale". On 2026-09-24 it said exactly that
+    // while the sweep had run that morning and written rows for every client.
+    // True about scans, misleading about the machine.
+    const todayRuns = await env.DB.prepare(
+      `SELECT COUNT(*) AS n FROM citation_runs WHERE run_at >= ?`
+    ).bind(startOfDay).first<{ n: number }>().catch(() => null);
+    const lastRun = await env.DB.prepare(
+      `SELECT MAX(run_at) AS ts FROM citation_runs`
+    ).first<{ ts: number | null }>().catch(() => null);
+
+    const done = todayRuns?.n
+      ? `${todayRuns.n.toLocaleString()} citation run${todayRuns.n === 1 ? "" : "s"} today`
+      : lastRun?.ts
+        ? `Last measured ${ago(lastRun.ts, nowSec)}`
+        : todayScans?.n
+          ? `${todayScans.n} domain scan${todayScans.n === 1 ? "" : "s"} today`
+          : (lastScan ? `Last domain scan ${ago(lastScan.scanned_at, nowSec)}` : "Idle");
     const now = `Monitoring ${activeClients?.n || 0} client${activeClients?.n === 1 ? "" : "s"}`;
     // Next event: whichever fires sooner (daily cron at 06:00 UTC, or weekly Monday scan).
     const nextTs = Math.min(nextDaily, nextWeekly);
