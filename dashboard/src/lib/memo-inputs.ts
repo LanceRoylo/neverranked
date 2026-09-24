@@ -98,6 +98,12 @@ export interface MemoInputs {
      *  not asked. Reporting the second as the first is how a September memo
      *  came to lead with an eleven-point gain on a client who was down four. */
     first_reading?: boolean;
+    /** True when the question was not asked in the CURRENT window. Its 0% is
+     *  an absence of MEASUREMENT, not an absence of citations, and the two are
+     *  opposite findings. The mirror of first_reading, and it was missing
+     *  until a draft told a client that twelve of their strongest questions
+     *  had collapsed to zero when all twelve had simply been switched off. */
+    not_asked_this_period?: boolean;
     current_runs: number;
   }>;
   cohort: {
@@ -290,6 +296,20 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
     prior_pct: v.pr > 0 ? pct(v.pc, v.pr) : null,
     delta_pp: v.pr > 0 ? +(pct(v.cc, v.cr) - pct(v.pc, v.pr)).toFixed(1) : null,
     ...(v.pr > 0 ? {} : { first_reading: true }),
+    // The MIRROR of first_reading, and it was missing.
+    //
+    // No runs in the CURRENT window means the question was not asked this
+    // period, so its 0% is an absence of measurement, not an absence of
+    // citations. Without this the two are indistinguishable and a question
+    // that was switched off reads as a collapse.
+    //
+    // 2026-09-24, hawaii-theatre: twelve questions "returned zero citations
+    // this month" after citing heavily in August -- 87, 86, 86, 84 and so on.
+    // All twelve were inactive. Not one had lost anything; they had stopped
+    // being asked when the set was reverted to the core 18 on the 21st. The
+    // draft made "verify whether this is a real loss" its first punch-list
+    // item, about a loss that never happened.
+    ...(v.cr > 0 ? {} : { not_asked_this_period: true }),
     current_runs: v.cr,
   })).sort((a, b) => a.current_pct - b.current_pct); // weakest first
 
