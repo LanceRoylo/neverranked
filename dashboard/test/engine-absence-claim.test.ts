@@ -89,3 +89,20 @@ test("the prompt separates retrieving surfaces from model-knowledge ones", () =>
   assert.match(src, /not robots\.txt, not schema/,
     "the prompt must rule out site-side remedies for a non-retrieving surface");
 });
+
+test("the prompt forbids inventing a cause the measurement did not establish", () => {
+  // 2026-09-24: a draft told the customer that absent or broken schema "is
+  // why" their amenity questions returned no citations. Nobody had looked at
+  // the schema. The deliverable judge caught it; the prompt now prevents it.
+  const fs = require("node:fs") as typeof import("node:fs");
+  const src = fs.readFileSync(new URL("../src/lib/memo-generator.ts", import.meta.url), "utf8");
+  assert.match(src, /that is why/, "the banned phrasing must be named explicitly");
+  assert.match(src, /first thing to rule out/, "and the correct framing offered");
+});
+
+test("the prompt requires every punch-list item to be anchored in this customer's data", () => {
+  const fs = require("node:fs") as typeof import("node:fs");
+  const src = fs.readFileSync(new URL("../src/lib/memo-generator.ts", import.meta.url), "utf8");
+  assert.match(src, /handed to any competitor in the same category without a word changing/,
+    "the distinctiveness test must be stated as a test the writer can apply");
+});
