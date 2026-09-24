@@ -4,32 +4,68 @@
     {
       "name": "neverranked",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["--yes", "serve", ".", "-l", "4173"],
+      "runtimeArgs": [
+        "--yes",
+        "serve",
+        ".",
+        "-l",
+        "4173"
+      ],
       "port": 4173
     },
     {
       "name": "schema-check",
       "runtimeExecutable": "bash",
-      "runtimeArgs": ["-c", "cd tools/schema-check && npx wrangler dev --port 8789"],
+      "runtimeArgs": [
+        "-c",
+        "cd tools/schema-check && npx wrangler dev --port 8789"
+      ],
       "port": 8789
     },
     {
       "name": "dashboard",
       "runtimeExecutable": "bash",
-      "runtimeArgs": ["-c", "cd dashboard && npx wrangler dev --port 8788"],
+      "runtimeArgs": [
+        "-c",
+        "cd dashboard && npx wrangler dev --port 8788"
+      ],
       "port": 8788
     },
     {
       "name": "report-preview",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["--yes", "serve", "/private/tmp/claude-501/-Users-lanceroylo-Desktop-neverranked/f759a8ce-ba84-4a11-81b2-7c4c9208e878/scratchpad/report-preview", "-l", "8790"],
+      "runtimeArgs": [
+        "--yes",
+        "serve",
+        "/private/tmp/claude-501/-Users-lanceroylo-Desktop-neverranked/f759a8ce-ba84-4a11-81b2-7c4c9208e878/scratchpad/report-preview",
+        "-l",
+        "8790"
+      ],
       "port": 8790
     },
     {
       "name": "hello-momentum",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["--yes", "serve", "/Users/lanceroylo/Desktop/hello-momentum-site", "-l", "4321"],
+      "runtimeArgs": [
+        "--yes",
+        "serve",
+        "/Users/lanceroylo/Desktop/hello-momentum-site",
+        "-l",
+        "4321"
+      ],
       "port": 4321
+    },
+    {
+      "name": "readout-preview",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "--yes",
+        "serve",
+        "/private/tmp/claude-501/-Users-lanceroylo/f5db8314-371e-4651-b2bd-12b0820c73a5/scratchpad/readout",
+        "-l",
+        "8791"
+      ],
+      "port": 8791
     }
   ]
 }

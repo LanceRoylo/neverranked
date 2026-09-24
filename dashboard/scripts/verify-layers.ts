@@ -52,20 +52,19 @@ const DB = {
   },
 };
 
-async function main() {
-const slug = process.argv[2] ?? "prince-waikiki";
-const month = process.argv[3] ?? "2026-09";
-const facts = await buildReportFacts({ DB } as never, slug, month);
 
-if (!facts) { console.log(`${slug}/${month}: buildReportFacts returned null`); process.exit(1); }
-console.log(`${slug}/${month} keys: ${Object.keys(facts).join(", ")}`);
-console.log(`PRESENCE KEY PRESENT: ${"presence" in facts}`);
-if (facts.presence) {
-  const p = facts.presence;
-  console.log(`  overall: floor ${p.overall.floorPct}%  ceiling ${p.overall.ceilingPct}%  unread ${p.overall.unknown}/${p.overall.total}`);
-  for (const e of p.engines) console.log(`  ${e.name.padEnd(20)} floor ${String(e.floorPct).padStart(3)}%  ceiling ${String(e.ceilingPct).padStart(3)}%  unread ${e.unknown}/${e.total}`);
-}
-console.log(`  bars: ${facts.engines.map((e) => `${e.name} ${e.pct}%`).join(", ")}`);
-console.log(`  excluded: ${(facts.excludedEngines ?? []).map((e) => e.name).join(", ") || "none"}`);
+async function main() {
+  const slug = process.argv[2] ?? "prince-waikiki";
+  const month = process.argv[3] ?? "2026-09";
+  const f: any = await buildReportFacts({ DB } as never, slug, month);
+  if (!f) { console.log("null"); return; }
+  console.log(`${slug} ${month} -- engines and resolved layer:`);
+  for (const e of f.engines) {
+    console.log("  " + String(e.name).padEnd(24) + " pct=" + String(e.pct).padEnd(4) + " layer=" + (e.layer ?? "(absent = citation)"));
+  }
+  const inReadsChart = f.engines.filter((e: any) => e.layer !== "model_knowledge").map((e: any) => e.name);
+  const heldOut = f.engines.filter((e: any) => e.layer === "model_knowledge").map((e: any) => e.name);
+  console.log("\n  'what AI reads' chart shows :", inReadsChart.join(", "));
+  console.log("  held out (fetch nothing)    :", heldOut.join(", ") || "(none)");
 }
 main();

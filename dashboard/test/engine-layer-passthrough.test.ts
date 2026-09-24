@@ -106,3 +106,65 @@ test("an unrecognized layer value is not trusted into the model-knowledge group"
   // caption the older pipeline already validated.
   for (const e of f!.engines) assert.equal(e.layer, undefined);
 });
+
+/* A sweep-written snapshot records no layer at all. Measured 2026-09-24 on
+ * both live clients: every engine came back untagged, so Claude and Gemma --
+ * which fetch nothing while answering -- rendered inside "How much of what AI
+ * reads is your own site", a chart whose denominator does not exist for them.
+ *
+ * Resolution is gated on the snapshot being sweep-written. A bridge snapshot
+ * is URL-based throughout, INCLUDING for the model-knowledge engines, so
+ * there an absent layer genuinely means "this is a citation-grade reading"
+ * and inferring from the engine name would mislabel what was measured. */
+function fakeEnvWithSource(snap: unknown, source: string | null) {
+  return {
+    DB: {
+      prepare(sql: string) {
+        return {
+          bind() {
+            return {
+              async first() {
+                if (/measurement_registry/.test(sql)) return source ? { snapshot_source: source } : null;
+                if (/citation_snapshots/.test(sql)) return snap;
+                if (/FROM customers/.test(sql)) return { name: "Prince Waikiki" };
+                return null;
+              },
+              async all() { return { results: [] }; },
+            };
+          },
+          async first() { return null; },
+          async all() { return { results: [] }; },
+        };
+      },
+    },
+  } as never;
+}
+
+const UNTAGGED = {
+  ...SWEEP_SNAP,
+  engines_breakdown: JSON.stringify({
+    Perplexity: { share_pct: 3 },
+    Claude: { share_pct: 0 },
+    Gemma: { share_pct: 1 },
+  }),
+};
+
+test("an untagged SWEEP snapshot has its model-knowledge engines resolved", async () => {
+  const f = await buildReportFacts(fakeEnvWithSource(UNTAGGED, "sweep"), "prince-waikiki", "2026-09");
+  const by = new Map(f!.engines.map((e) => [e.name, e]));
+  assert.equal(by.get("Claude")!.layer, "model_knowledge", "Claude fetches nothing and must be held out");
+  assert.equal(by.get("Gemma")!.layer, "model_knowledge");
+  assert.equal(by.get("Perplexity")!.layer, undefined, "a retrieving surface stays untagged");
+});
+
+test("the same untagged snapshot from a BRIDGE client is left exactly alone", async () => {
+  const f = await buildReportFacts(fakeEnvWithSource(UNTAGGED, "bridge"), "hawaii-theatre", "2026-09");
+  for (const e of f!.engines) {
+    assert.equal(e.layer, undefined, `${e.name} must keep its citation-grade reading`);
+  }
+});
+
+test("an unknown snapshot source resolves nothing, which is the old behaviour", async () => {
+  const f = await buildReportFacts(fakeEnvWithSource(UNTAGGED, null), "prince-waikiki", "2026-09");
+  for (const e of f!.engines) assert.equal(e.layer, undefined);
+});

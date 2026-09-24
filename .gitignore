@@ -49,3 +49,6 @@ outreach-drafts/
 # would have published it.
 HANDOFF-*.md
 REVENUE-*.md
+
+# Local readout previews. Contain client figures; never commit (repo is public).
+.preview/

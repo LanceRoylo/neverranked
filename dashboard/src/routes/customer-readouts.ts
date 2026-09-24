@@ -19,6 +19,7 @@
  *   /admin/memos.
  * - Auth is identical to the cockpit: admin, or the customer's own client_slug.
  */
+
 import type { Env } from "../types";
 import { ENGINE_ORDER } from "../lib/engine-order";
 import { getUser } from "../auth";
@@ -254,7 +255,16 @@ function renderCitationGrid(
   // numbers at under 7px. Lance, reading it as the customer: "this chart is
   // entirely too tiny". Shrinking was the problem, so the fix is a bigger
   // intrinsic grid, bigger type, and a card that escapes the prose column.
-  const CELL = 30, GAP = 4, GUT = 116, TOP = 32, RIGHT = 70;
+  //
+  // GUT is measured, not guessed. At a fixed 116 the row labels were
+  // right-aligned into a gutter too narrow for the longest of them, and
+  // "Bing search (control)" rendered as "h (control)" -- a clipped label on a
+  // chart whose whole job is saying which tool did what. The labels are set
+  // in a 15px monospace face, so width is character count times a constant.
+  const CELL = 30, GAP = 4, TOP = 32, RIGHT = 70;
+  const ROWLAB_PX = 15, ROWLAB_CH = 0.62; // monospace advance ratio
+  const longestLabel = Math.max(...engines.map((e) => String(e).length), 10);
+  const GUT = Math.max(116, Math.ceil(longestLabel * ROWLAB_PX * ROWLAB_CH) + 18);
   const step = CELL + GAP;
   const W = GUT + questions.length * step - GAP + RIGHT;
   const H = TOP + engines.length * step - GAP;

@@ -720,12 +720,46 @@ export async function buildReportFacts(env: Env, slug: string, monthKey: string)
     } catch { /* no prior */ }
   }
 
+  // Is this client's snapshot written by the sweep? Decides whether an absent
+  // layer may be resolved from the engine, or must be left as the
+  // citation-grade reading a bridge snapshot genuinely records. Defaults to
+  // NO on any failure, which is the behaviour every client had before.
+  let sweepSourced = false;
+  try {
+    const reg = await env.DB.prepare(
+      `SELECT snapshot_source FROM measurement_registry WHERE client_slug = ?`,
+    ).bind(slug).first<{ snapshot_source: string | null }>();
+    sweepSourced = reg?.snapshot_source === "sweep";
+  } catch { sweepSourced = false; }
+
   const engines = Object.entries(eb).map(([name, v]) => {
     const row: ReportFacts["engines"][number] = { name, pct: n(v?.share_pct) };
-    // Only "model_knowledge" is carried; anything else (including absent, as
-    // on every bridge-written snapshot) stays a citation-grade reading so
-    // existing clients render exactly as before.
-    if ((v as { layer?: string } | undefined)?.layer === "model_knowledge") row.layer = "model_knowledge";
+    // Carry the recorded layer, and RESOLVE it when the snapshot has none.
+    //
+    // Treating absent as citation-grade was a safe default for bridge-written
+    // snapshots, which are URL-based throughout. It became wrong the moment a
+    // client moved to the sweep: prince-waikiki's 2026-09 facts recorded no
+    // layer on any engine, so Claude and Gemma -- which fetch nothing while
+    // answering -- rendered inside "How much of what AI reads is your own
+    // site", a chart whose denominator does not exist for them.
+    //
+    // engineLayer() knows the answer from the engine itself, so absence is
+    // resolved rather than assumed.
+    const recorded = (v as { layer?: string } | undefined)?.layer;
+    if (recorded === "model_knowledge") row.layer = "model_knowledge";
+    else if (recorded !== "citation" && sweepSourced) {
+      // The sweep writer records no layer at all, so a sweep client's facts
+      // arrive untagged and Claude and Gemma fall through into "How much of
+      // what AI reads is your own site" -- a chart whose denominator does not
+      // exist for a surface that fetches nothing. Resolve from the engine.
+      //
+      // Gated on sweep ON PURPOSE. A bridge snapshot is URL-based throughout,
+      // including for the model-knowledge engines, so there an absent layer
+      // truly means "this number is a citation-grade reading" and inferring
+      // from the engine name would mislabel what was measured.
+      const resolved = engineLayer(name);
+      if (resolved === "model_knowledge") row.layer = "model_knowledge";
+    }
     if (priorEngines.has(name)) row.prev = priorEngines.get(name);
     // Only assert this when the bridge actually measured it. An older
     // snapshot without cohort_citations stays silent rather than guessing.
