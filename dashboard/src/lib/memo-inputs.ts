@@ -39,6 +39,12 @@ export interface MemoInputs {
      *  in this category, which is what makes "named nobody" refutable rather
      *  than something the writer has to guess at. */
     cohort_citations?: number;
+    /** "citation" = the surface retrieves and cites pages. "model_knowledge" =
+     *  it answers from what the model already knows and fetches nothing, so no
+     *  crawl-side change can reach it. Without this the memo cannot tell the
+     *  two apart and will prescribe robots.txt for an engine that never made
+     *  a request. */
+    layer?: "citation" | "model_knowledge" | "unknown";
     // True when the engine returned citations but named NO venue in the
     // category at all -- not the customer, not a single competitor. A 0%
     // here is an engine-level absence, not a visibility failure, and the
@@ -132,6 +138,8 @@ export interface MemoInputs {
 function pct(cited: number, runs: number): number {
   return runs > 0 ? +(100 * cited / runs).toFixed(1) : 0;
 }
+import { engineLayer } from "./engine-layer";
+
 function normHost(h: string): string {
   return h.toLowerCase().replace(/^www\./, "").trim();
 }
@@ -266,6 +274,7 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
       delta_pp: +(pct(e.cc, e.cr) - pct(e.pc, e.pr)).toFixed(1),
       current_runs: e.cr,
       cohort_citations: cohort,
+      layer: engineLayer(engine),
       ...(dark ? { no_cohort_signal: true } : {}),
     };
   }).sort((a, b) => b.current_share_pct - a.current_share_pct);
@@ -504,6 +513,10 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
         delta_pp: ps === null ? 0 : +((e.share_pct ?? 0) - ps).toFixed(1),
         current_runs: e.total ?? 0,
         ...(typeof cc === "number" ? { cohort_citations: cc } : {}),
+        layer: (() => {
+          const l = (e as unknown as { layer?: string }).layer;
+          return l === "citation" || l === "model_knowledge" ? l : engineLayer(engine);
+        })(),
         ...(dark ? { no_cohort_signal: true } : {}),
       };
     }).sort((a, b) => b.current_share_pct - a.current_share_pct);

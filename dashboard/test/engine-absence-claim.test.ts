@@ -76,3 +76,16 @@ test("the number gate accepts the cohort count the memo is required to cite", as
   assert.match(src, /add\(e\.cohort_citations\)/,
     "cohort_citations must be registered with the figure allowlist");
 });
+
+test("the prompt separates retrieving surfaces from model-knowledge ones", () => {
+  // 2026-09-24, Prince's delivered-tomorrow draft: "Whether Claude's zero
+  // share changes after the robots.txt and schema checks." Claude fetches
+  // nothing during an answer, so no site change can reach it. The writer had
+  // no layer field and no rule, so it prescribed a crawl fix for a surface
+  // that never made a request.
+  const fs = require("node:fs") as typeof import("node:fs");
+  const src = fs.readFileSync(new URL("../src/lib/memo-generator.ts", import.meta.url), "utf8");
+  assert.match(src, /model_knowledge/, "the prompt must name the layer it has to reason about");
+  assert.match(src, /not robots\.txt, not schema/,
+    "the prompt must rule out site-side remedies for a non-retrieving surface");
+});

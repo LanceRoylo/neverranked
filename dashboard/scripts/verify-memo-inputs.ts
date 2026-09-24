@@ -57,14 +57,15 @@ async function main() {
   const slug = process.argv[2] ?? "prince-waikiki";
   const inp: any = await gatherMemoInputs({ DB } as never, slug, new Date());
   if (!inp) { console.log("gatherMemoInputs returned null"); process.exit(1); }
-  console.log("engine              share%  runs   cohort_citations  no_cohort_signal");
+  console.log("engine              share%  runs   cohort_citations  no_cohort_signal  layer");
   for (const e of inp.by_engine) {
     console.log(
       String(e.engine).padEnd(20),
       String(e.current_share_pct).padEnd(6),
       String(e.current_runs).padEnd(6),
       String(e.cohort_citations ?? "-").padEnd(17),
-      e.no_cohort_signal ? "TRUE" : "-");
+      (e.no_cohort_signal ? "TRUE" : "-").padEnd(18),
+      e.layer ?? "(missing)");
   }
 }
 main();
