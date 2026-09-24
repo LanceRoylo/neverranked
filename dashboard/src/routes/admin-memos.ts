@@ -145,17 +145,35 @@ export async function handleMemoSave(id: number, request: Request, user: User, e
     const override = String(form.get("override") || "") === "1";
     if (!override) {
       const memo = await env.DB.prepare(
-        `SELECT client_slug, facts_json FROM monthly_memos WHERE id=?`
-      ).bind(id).first<{ client_slug: string; facts_json: string | null }>();
+        `SELECT client_slug, facts_json, rules_hash FROM monthly_memos WHERE id=?`
+      ).bind(id).first<{ client_slug: string; facts_json: string | null; rules_hash: string | null }>();
       if (memo) {
-        const { vetMemoBody } = await import("../lib/memo-generator");
+        const { vetMemoBody, memoRulesHash } = await import("../lib/memo-generator");
         const vet = await vetMemoBody(env, memo.client_slug, body, new Date(), memo.facts_json);
-        if (vet.unverifiedNumbers.length || vet.toneViolations.length || vet.claimIssues.length) {
+        // Was this draft written under the rules we run today?
+        //
+        // The memo regenerates on the 15th and the 24th. A rule fixed on the
+        // 24th at 09:00 does not reach a draft written at 06:03, and re-vetting
+        // the BODY cannot see it: the checks here look for bad numbers and
+        // banned phrasing, not for a sentence that is merely wrong in a way
+        // the new prompt would have prevented. On 2026-09-24 a draft sat ready
+        // to deliver containing the exact line that morning's last fix existed
+        // to stop, and every existing gate passed it.
+        let staleRules: string | null = null;
+        try {
+          const current = await memoRulesHash();
+          if (memo.rules_hash !== current) {
+            staleRules = memo.rules_hash
+              ? `This draft was written under generator rules ${memo.rules_hash}; the deployed rules are ${current}. Regenerate it before delivering, or override if you have read it against the current rules yourself.`
+              : `This draft predates rule tracking, so the rules that produced it are unknown. Regenerate it before delivering.`;
+          }
+        } catch { /* a check that cannot run must not block a delivery on its own */ }
+        if (vet.unverifiedNumbers.length || vet.toneViolations.length || vet.claimIssues.length || staleRules) {
           // Persist the edits as a draft (don't lose them), then block.
           await env.DB.prepare(
             `UPDATE monthly_memos SET title=?, body_markdown=?, updated_at=unixepoch() WHERE id=?`
           ).bind(title, body, id).run();
-          return renderDeliveryBlocked(id, title, body, vet, user);
+          return renderDeliveryBlocked(id, title, body, { ...vet, staleRules }, user);
         }
       }
     }
@@ -234,10 +252,11 @@ function renderDeliveryBlocked(
   id: number,
   title: string,
   body: string,
-  vet: { unverifiedNumbers: string[]; toneViolations: string[]; claimIssues?: string[] },
+  vet: { unverifiedNumbers: string[]; toneViolations: string[]; claimIssues?: string[]; staleRules?: string | null },
   user: User,
 ): Response {
   const items: string[] = [];
+  if (vet.staleRules) items.push(`<li><strong>Written under older generator rules</strong>: <span style="color:#9aa0e8">${esc(vet.staleRules)}</span></li>`);
   if (vet.unverifiedNumbers.length) items.push(`<li><strong>Unverified numbers</strong> (not found in the measured data): <span style="color:#e8c767">${esc(vet.unverifiedNumbers.join(", "))}</span></li>`);
   if (vet.toneViolations.length) items.push(`<li><strong>Tone / phrasing blocks</strong>: <span style="color:#e8a0a0">${esc(vet.toneViolations.join(", "))}</span></li>`);
   // Claim issues get one line each with the offending sentence quoted, because

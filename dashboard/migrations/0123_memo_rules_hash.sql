@@ -1,0 +1,13 @@
+-- A fix that lands outside the monthly window silently did not apply.
+--
+-- 2026-09-24: the memo regenerates on the 15th and the 24th. The 24th ran at
+-- 06:03. Three generator fixes shipped AFTER it that day -- the cohort
+-- evidence, the figure-gate exemptions, and the engine-layer rule that stops
+-- the memo prescribing robots.txt for a surface that fetches nothing. The
+-- draft waiting to be delivered still contained the line the last of those
+-- was written to prevent, and nothing in the system knew.
+--
+-- The draft records which rules produced it. Delivery compares that against
+-- the rules now deployed and refuses when they differ, through the same
+-- fail-closed gate and the same explicit override as every other block.
+ALTER TABLE monthly_memos ADD COLUMN rules_hash TEXT;

@@ -178,6 +178,27 @@ export function planBareNumbers(inp: { plan_markdown?: string | null }): Set<str
 // points/pp delta -- those are data claims and must trace to the measured set
 // (see findUnverifiedNumbers). The old 0-31 band let a fabricated small count
 // or (with the adjacency gap) a fabricated percentage slip through.
+/** Which rules produced a draft.
+ *
+ *  A memo is only as good as the instructions the writer was given, and those
+ *  instructions change between the day a draft is generated and the day it is
+ *  delivered. On 2026-09-24 three generator fixes shipped hours after the
+ *  monthly run, and the draft sitting in the console still contained the exact
+ *  sentence the last of them was written to prevent.
+ *
+ *  Hashing the prompt itself means this tracks the rules and nothing else: an
+ *  unrelated deploy does not invalidate a draft, and a rule change always
+ *  does. INPUT_CONTRACT_REVISION covers changes to the DATA the writer is
+ *  handed, which can alter a memo without a word of the prompt moving -- bump
+ *  it when by_engine or the other input blocks gain or lose a field. */
+const INPUT_CONTRACT_REVISION = "2026-09-24.layer+cohort";
+
+export async function memoRulesHash(): Promise<string> {
+  const material = MEMO_AUTHOR_SYSTEM + "\u0000" + INPUT_CONTRACT_REVISION;
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(material));
+  return Array.from(new Uint8Array(buf)).slice(0, 6).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 export function isSafeNumber(tok: string): boolean {
   const n = Number(tok);
   if (Number.isNaN(n)) return false;
@@ -407,14 +428,15 @@ export async function generateMemoDraft(env: Env, slug: string, now: Date): Prom
     // Save as DRAFT (delivered_at NULL). Flag metadata is stored in the
     // title prefix is avoided; instead we return it for the review UI.
     const res = await env.DB.prepare(
-      `INSERT INTO monthly_memos (client_slug, month_key, title, body_markdown, delivered_at, created_at, updated_at)
-       VALUES (?, ?, ?, ?, NULL, unixepoch(), unixepoch())
+      `INSERT INTO monthly_memos (client_slug, month_key, title, body_markdown, rules_hash, delivered_at, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, NULL, unixepoch(), unixepoch())
        ON CONFLICT(client_slug, month_key) DO UPDATE SET
          title = excluded.title,
          body_markdown = excluded.body_markdown,
+         rules_hash = excluded.rules_hash,
          updated_at = excluded.updated_at
        WHERE monthly_memos.delivered_at IS NULL`
-    ).bind(slug, monthKey, parsed.title, parsed.body_markdown).run();
+    ).bind(slug, monthKey, parsed.title, parsed.body_markdown, await memoRulesHash()).run();
 
     // Fetch the id (the upsert may have updated an existing draft).
     const row = await env.DB.prepare(
