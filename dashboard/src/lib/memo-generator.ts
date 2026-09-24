@@ -188,7 +188,37 @@ export function isSafeNumber(tok: string): boolean {
 
 // Extract numeric tokens from the draft and flag any specific number that
 // is neither in the allowed set nor trivially safe.
-export function findUnverifiedNumbers(body: string, allowed: Set<string>, planBare: Set<string> = new Set()): string[] {
+/** Figures this client was ALREADY SENT, harvested from their most recent
+ *  delivered memo. Not new claims: a number we published to them last month
+ *  is a fact of record they can check against their own inbox.
+ *
+ *  This exists because two of our own rules collided. The question-set drift
+ *  rule REQUIRES the memo to cite the prior figure when warning that a
+ *  month-over-month comparison is invalid, and the figure gate then flagged
+ *  the memo for obeying it. On 2026-09 HTC correctly wrote "a different set of
+ *  questions than last month's 52%" -- the exact number delivered in August --
+ *  and it came back as an unverified figure. */
+export function priorDeliveredNumbers(priorBody: string | null | undefined): Set<string> {
+  const out = new Set<string>();
+  if (!priorBody) return out;
+  const normalized = priorBody.replace(/(\d),(\d{3})\b/g, "$1$2");
+  for (const m of normalized.matchAll(/\d+(?:\.\d+)?/g)) out.add(m[0]);
+  return out;
+}
+
+/** An HTTP status code in an instruction is not a measurement. "Configure a
+ *  permanent 301 redirect" is the punch-list telling someone what to do. */
+function isTechnicalConstant(tok: string, after: string): boolean {
+  if (!/^(30[1278]|40[0-4]|410|50[0-3]|200)$/.test(tok)) return false;
+  return /^\s*(redirect|status|response|error|code)\b/i.test(after);
+}
+
+export function findUnverifiedNumbers(
+  body: string,
+  allowed: Set<string>,
+  planBare: Set<string> = new Set(),
+  priorDelivered: Set<string> = new Set(),
+): string[] {
   // Strip thousands separators so "2,346" reads as one number, not "2"
   // and "346". Without this, every comma-formatted figure trips a false
   // positive on its tail segment.
@@ -215,9 +245,20 @@ export function findUnverifiedNumbers(body: string, allowed: Set<string>, planBa
     // A number stated as a percentage or a points/pp delta is a DATA CLAIM: it
     // must be a measured value, so neither the small-int exemption nor the
     // plan's non-data numbers can satisfy it.
-    const after = normalized.slice(m.index + t.length, m.index + t.length + 9);
+    const after = normalized.slice(m.index + t.length, m.index + t.length + 14);
+    if (isTechnicalConstant(t, after)) continue;
     const isDataClaim = /^\s*(%|percent|point|pp\b|percentage)/i.test(after);
-    if (isDataClaim) { bad.add(t); continue; }
+    if (isDataClaim) {
+      // The ONE exemption: a figure we already delivered to this client, named
+      // in the prose as belonging to an earlier period. Tight on purpose --
+      // the number must appear in the previous memo AND be introduced as a
+      // past figure, so it cannot be used to launder an invented percentage
+      // for the current period.
+      const before = normalized.slice(Math.max(0, m.index - 60), m.index);
+      const citedAsPast = /\b(last month|previous month|prior month|last month's|previously|a month ago|in august|in july|earlier reading)\b/i.test(before);
+      if (priorDelivered.has(t) && citedAsPast) continue;
+      bad.add(t); continue;
+    }
     if (planBare.has(t)) continue; // plan date/cadence referenced in prose
     if (isSafeNumber(t)) continue;
     bad.add(t);
@@ -432,7 +473,17 @@ export async function vetMemoBody(
   const inputs = await gatherMemoInputs(env, slug, now);
   const tone = checkHumanTone(body, "customer-email");
   const toneViolations = tone.violations.filter((v) => v.severity === "block").map((v) => `${v.pattern}: ${v.match}`);
-  const unverifiedNumbers = findUnverifiedNumbers(body, allowedNumberSet(inputs), planBareNumbers(inputs));
+  // The most recent memo this client was actually SENT. Drafts are excluded:
+  // an undelivered draft is not a fact of record, and letting one seed the
+  // allowlist would let a bad figure launder itself forward.
+  const prior = await env.DB.prepare(
+    `SELECT body_markdown FROM monthly_memos
+      WHERE client_slug = ? AND delivered_at IS NOT NULL
+      ORDER BY month_key DESC LIMIT 1`,
+  ).bind(slug).first<{ body_markdown: string }>().catch(() => null);
+  const unverifiedNumbers = findUnverifiedNumbers(
+    body, allowedNumberSet(inputs), planBareNumbers(inputs),
+    priorDeliveredNumbers(prior?.body_markdown));
   // Claim checking: the number guard proves a figure EXISTS in the data; this
   // proves the prose describes it TRUTHFULLY. Three false comparisons reached
   // a delivered draft on 2026-08-03 with every number legitimate. Absent
