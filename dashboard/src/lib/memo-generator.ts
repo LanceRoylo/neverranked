@@ -99,7 +99,14 @@ export function allowedNumberSet(inp: MemoInputs): Set<string> {
   add(inp.cohort.members.length);
   add(inp.cohort.members.length + 1); // cohort + customer
   for (const m of inp.cohort.members) { add(m.mentions); add(m.share_pct); }
-  for (const e of inp.by_engine) { add(e.current_share_pct); add(e.prior_share_pct); add(Math.abs(e.delta_pp)); add(e.current_runs); }
+  for (const e of inp.by_engine) {
+    add(e.current_share_pct); add(e.prior_share_pct); add(Math.abs(e.delta_pp)); add(e.current_runs);
+    // The cohort count is the evidence that separates "named others, not you"
+    // from "named nobody". The memo is REQUIRED to distinguish those, so the
+    // number it must cite to do so has to verify, or the gate flags the one
+    // figure that makes the sentence true.
+    if (typeof e.cohort_citations === "number") add(e.cohort_citations);
+  }
   // prior_pct and delta_pp are null on a first reading (the question was not
   // asked in the prior window). Null must not become an allowed 0, or the
   // author can write "rose from 0%" and have it verify.

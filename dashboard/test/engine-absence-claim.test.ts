@@ -65,3 +65,14 @@ test("the prompt still carries both halves of the rule", async () => {
   assert.match(src, /Never infer an engine-level absence from a 0% share alone/,
     "the prohibition that stops the 2026-09 sentence must stay in the prompt");
 });
+
+test("the number gate accepts the cohort count the memo is required to cite", async () => {
+  const fs = await import("node:fs/promises");
+  const src = await fs.readFile(new URL("../src/lib/memo-generator.ts", import.meta.url), "utf8");
+  // Shipped 2026-09-23 without this: the memo correctly wrote "405" and the
+  // figure gate flagged it as unverified, because the allowlist was not
+  // updated alongside the field. A gate that flags correct numbers is a gate
+  // people learn to wave through.
+  assert.match(src, /add\(e\.cohort_citations\)/,
+    "cohort_citations must be registered with the figure allowlist");
+});
