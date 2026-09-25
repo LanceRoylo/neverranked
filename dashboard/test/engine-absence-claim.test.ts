@@ -106,3 +106,29 @@ test("the prompt requires every punch-list item to be anchored in this customer'
   assert.match(src, /handed to any competitor in the same category without a word changing/,
     "the distinctiveness test must be stated as a test the writer can apply");
 });
+
+test("the memo takes its cadence from data, never from the engagement plan", () => {
+  // 2026-09-25: Prince's first paid memo said the month was "three full
+  // passes spread across the month". Those are the frozen plan's words, from
+  // when measurement was three laptop repetitions. It had run on 25 separate
+  // days, so the memo understated the work eightfold and contradicted the
+  // published methodology. The plan states what was PROMISED and is graded
+  // against; it is not a source of fact about what happened.
+  const fs = require("node:fs") as typeof import("node:fs");
+  const gen = fs.readFileSync(new URL("../src/lib/memo-generator.ts", import.meta.url), "utf8");
+  const inputs = fs.readFileSync(new URL("../src/lib/memo-inputs.ts", import.meta.url), "utf8");
+
+  assert.match(gen, /data\.cadence\.measurement_days/, "the prompt must name the measured field");
+  assert.match(gen, /NEVER describe the instrument using words from the engagement plan/i);
+  assert.match(inputs, /COUNT\(DISTINCT date\(cr\.run_at,'unixepoch'\)\)/,
+    "measurement days must be counted from the rows");
+});
+
+test("the cadence figures verify, so the gate cannot flag the honest number", () => {
+  // "25" was reported as an unverified figure because measurement days
+  // existed nowhere in the inputs. A gate that flags the true answer is how
+  // people learn to wave the gate through.
+  const fs = require("node:fs") as typeof import("node:fs");
+  const gen = fs.readFileSync(new URL("../src/lib/memo-generator.ts", import.meta.url), "utf8");
+  assert.match(gen, /add\(inp\.cadence\.measurement_days\)/);
+});

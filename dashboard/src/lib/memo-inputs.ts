@@ -23,6 +23,15 @@ export interface MemoInputs {
    *  When present, the memo opens with a "Where we are in the plan" grading. */
   plan_markdown?: string | null;
   window: { current_start: string; current_end: string; prior_start: string };
+  /** How the measurement actually ran this period, counted from the rows.
+   *
+   *  The memo had no measured description of its own instrument, so it took
+   *  one from the frozen engagement plan. On 2026-09-25 Prince's first paid
+   *  memo told the customer the month was "three full passes spread across
+   *  the month" -- the plan's words, written when measurement was three
+   *  laptop reps. It had actually run on 25 separate days. The plan exists to
+   *  grade expectations, not to state what happened. */
+  cadence: { measurement_days: number; readings_per_question_per_engine: number };
   overall: {
     current: { runs: number; cited: number; share_pct: number };
     prior: { runs: number; cited: number; share_pct: number };
@@ -284,6 +293,21 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
       ...(dark ? { no_cohort_signal: true } : {}),
     };
   }).sort((a, b) => b.current_share_pct - a.current_share_pct);
+
+  // Counted from the rows, never described from the plan. See `cadence`.
+  const cadenceRow = await env.DB.prepare(
+    `SELECT COUNT(DISTINCT date(cr.run_at,'unixepoch')) AS days, COUNT(*) AS runs
+       FROM citation_runs cr
+       JOIN citation_keywords ck ON ck.id = cr.keyword_id
+      WHERE ck.client_slug = ? AND cr.run_at >= ? AND cr.run_at < ?`,
+  ).bind(slug, curStart, nowTs).first<{ days: number; runs: number }>().catch(() => null);
+  const measurementDays = cadenceRow?.days ?? 0;
+  const questionsAsked = q.size || 1;
+  const cadence = {
+    measurement_days: measurementDays,
+    readings_per_question_per_engine:
+      Math.round(((cadenceRow?.runs ?? 0) / (questionsAsked * 7)) * 10) / 10,
+  };
 
   const by_question = Array.from(q.values()).map((v) => ({
     keyword: v.keyword,
@@ -629,6 +653,7 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
         }
       : { client_slug: slug, name: slug, category_label: null, primary_contact_first_name: null },
     plan_markdown: sanitizePlanForAuthoring(customer?.plan_markdown ?? null),
+    cadence,
     window: {
       current_start: new Date(curStart * 1000).toISOString().slice(0, 10),
       current_end: new Date(nowTs * 1000).toISOString().slice(0, 10),
