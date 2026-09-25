@@ -57,6 +57,11 @@ async function main() {
   const slug = process.argv[2] ?? "prince-waikiki";
   const inp: any = await gatherMemoInputs({ DB } as never, slug, new Date());
   if (!inp) { console.log("gatherMemoInputs returned null"); process.exit(1); }
+  console.log("window:", JSON.stringify(inp.window));
+  console.log("cadence:", JSON.stringify(inp.cadence));
+  console.log("overall current:", JSON.stringify(inp.overall.current), " prior:", JSON.stringify(inp.overall.prior));
+  const firsts = inp.by_question.filter((q: any) => q.first_reading).length;
+  console.log(`by_question: ${inp.by_question.length} total, ${firsts} first_reading`);
   console.log("engine              share%  runs   cohort_citations  no_cohort_signal  layer");
   for (const e of inp.by_engine) {
     console.log(

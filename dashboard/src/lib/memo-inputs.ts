@@ -36,6 +36,15 @@ export interface MemoInputs {
     current: { runs: number; cited: number; share_pct: number };
     prior: { runs: number; cited: number; share_pct: number };
     share_delta_pp: number;
+    /** True when there is NO prior period to compare against.
+     *
+     *  On the snapshot path a missing prior used to fall back to the CURRENT
+     *  share, so share_delta_pp computed to zero and the month read as "held
+     *  flat" when nothing had been compared. An absence rendered as a value,
+     *  the same shape as "named nobody" and "went to zero". Month two is the
+     *  first memo with a comparison in it and the first that can get this
+     *  wrong in front of a customer. */
+    prior_missing?: boolean;
   };
   by_engine: Array<{
     engine: string;
@@ -203,8 +212,40 @@ function sanitizePlanForAuthoring(plan: string | null): string | null {
 
 export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promise<MemoInputs> {
   const nowTs = Math.floor(now.getTime() / 1000);
-  const curStart = nowTs - 30 * DAY;
-  const priorStart = nowTs - 60 * DAY;
+
+  // THE REPORTING PERIOD IS THE CALENDAR MONTH, and it is the same period the
+  // charts use.
+  //
+  // This used to be a trailing 30 days while buildReportFacts used the calendar
+  // month, and the prose said "this month" for both. In September 2026 the two
+  // happened to coincide, because prince-waikiki started measuring on the 1st,
+  // so every figure reconciled and nothing looked wrong. They diverge properly
+  // in October: a memo generated on the 24th would compute its prose over
+  // Sep 24 to Oct 24 while its charts covered October, and call both "this
+  // month". Month two is the first memo with a comparison in it and the first
+  // where a reader can hold two numbers side by side.
+  //
+  // The prior period is the previous calendar month, which is also what the
+  // prose means by "last month".
+  const startOfMonthUTC = (d: Date, monthsBack = 0): number =>
+    Math.floor(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - monthsBack, 1) / 1000);
+
+  // MEASUREMENT_START IS A FLOOR, not a filter applied later. Runs from before
+  // the engagement are not this customer's measurement and must never enter a
+  // figure. September's memo window reached back to Aug 26 and picked up six
+  // pre-engagement runs from Aug 30; small enough to change nothing, and
+  // exactly the kind of thing that is not small in another month.
+  const mStart = (await env.DB.prepare(
+    `SELECT measurement_start FROM measurement_registry WHERE client_slug = ?`,
+  ).bind(slug).first<{ measurement_start: number | null }>().catch(() => null))?.measurement_start ?? null;
+
+  const monthStart = startOfMonthUTC(now);
+  const prevMonthStart = startOfMonthUTC(now, 1);
+  const curStart = mStart !== null ? Math.max(monthStart, mStart) : monthStart;
+  // A prior period that opens before the engagement is not a prior period.
+  // Leaving it null makes every question a first_reading, which is what the
+  // baseline month is, rather than inventing a comparison.
+  const priorStart = mStart !== null && prevMonthStart < mStart ? curStart : prevMonthStart;
 
   const customer = await env.DB.prepare(
     `SELECT client_slug, name, category_label, plan_markdown, primary_contact_name FROM customers WHERE client_slug = ?`
@@ -419,6 +460,7 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
     current: { runs: curRuns, cited: curCited, share_pct: pct(curCited, curRuns) },
     prior: { runs: priRuns, cited: priCited, share_pct: pct(priCited, priRuns) },
     share_delta_pp: +(pct(curCited, curRuns) - pct(priCited, priRuns)).toFixed(1),
+    ...(priRuns === 0 ? { prior_missing: true } : {}),
   };
   let cohort = { rank: rankLegacy, members: cohortMembersLegacy, customer_mentions: curCited };
   // How far this client's own number moves on its own. Computed over 21 days
@@ -580,6 +622,7 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
     overall = {
       current: { runs: venueTotal, cited: ownedCitations, share_pct: venueShare },
       prior: { runs: 0, cited: 0, share_pct: priVenue ?? venueShare },
+      ...(priVenue === null ? { prior_missing: true } : {}),
       share_delta_pp: priVenue === null ? 0 : +(venueShare - priVenue).toFixed(1),
     };
 
