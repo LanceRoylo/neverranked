@@ -118,3 +118,40 @@ test("an empty roster is not an outage", () => {
   assert.equal(s.darkKeywords, 0);
   assert.deepEqual(s.affected, []);
 });
+
+/* The watchdog must judge a FINISHED sweep.
+ *
+ * It assumed the sweep settled within ~20 minutes and judged at 06:30
+ * regardless. That aged out as the keyword count grew: on 2026-09-25, with 63
+ * active keywords, rows were still landing at 06:41 and the check fired at
+ * 06:30:46 calling two of the paying client's keywords dark. Both wrote
+ * minutes later. The same false alarm fired on 2026-09-17.
+ *
+ * A guard that cries wolf gets skimmed, and skimming it is how the real one
+ * gets missed -- which is what this file exists to prevent. */
+test("the in-flight check treats recent writes as a running sweep", async () => {
+  const { sweepInFlight } = await import("../src/lib/sweep-coverage");
+  const now = 1_790_000_000;
+  const env = (ts: number | null) => ({
+    DB: { prepare: () => ({ first: async () => ({ ts }) }) },
+  } as never);
+
+  assert.equal(await sweepInFlight(env(now - 30), now), true, "writing 30s ago is in flight");
+  assert.equal(await sweepInFlight(env(now - 120), now), true, "writing 2m ago is in flight");
+  assert.equal(await sweepInFlight(env(now - 20 * 60), now), false, "20m of silence is settled");
+  assert.equal(await sweepInFlight(env(null), now), false, "no rows at all is not in flight");
+});
+
+test("a deferral raises nothing rather than reporting unreached keywords", async () => {
+  const fs = await import("node:fs");
+  const src = fs.readFileSync(new URL("../src/lib/sweep-coverage.ts", import.meta.url), "utf8");
+  assert.match(src, /deferring to the next run/, "the deferral must be logged, not silent");
+  assert.match(src, /alerted: false/);
+});
+
+test("an in-flight check that fails proceeds instead of going silent", async () => {
+  const fs = await import("node:fs");
+  const src = fs.readFileSync(new URL("../src/lib/sweep-coverage.ts", import.meta.url), "utf8");
+  const i = src.indexOf("in-flight check failed");
+  assert.ok(i > 0, "a failure to determine flight state must not suppress the guard");
+});

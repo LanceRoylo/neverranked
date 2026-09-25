@@ -27,9 +27,23 @@
  * planner selected and asks which of them are silent everywhere.
  *
  * ON THE WINDOW. 24 hours ending now, run at 06:30 UTC against a sweep that
- * dispatches at 06:00 and settles within ~20 minutes. Yesterday's rows fall
- * outside it, so one missed night is caught on the first morning rather than
- * after five.
+ * dispatches at 06:00. Yesterday's rows fall outside it, so one missed night
+ * is caught on the first morning rather than after five.
+ *
+ * ON WAITING FOR THE SWEEP TO FINISH. This used to assume the sweep settled
+ * within ~20 minutes and judged it at 06:30 regardless. That assumption aged
+ * out as the active keyword count grew: on 2026-09-25, with 63 active
+ * keywords, rows were still landing at 06:41 and this fired at 06:30:46
+ * reporting two of prince-waikiki's keywords dark. Both had simply not been
+ * reached yet, and both wrote minutes later. The same false alarm fired on
+ * 2026-09-17 and also self-resolved.
+ *
+ * A guard that cries wolf gets skimmed, and skimming it is how the real one
+ * gets missed -- which is the precise failure this file was written to close.
+ * So it now DETECTS completion rather than assuming it, and defers when the
+ * sweep is still writing. Deferring is safe: the check runs every morning, so
+ * a genuinely dark keyword is caught on the next pass, which is still far
+ * inside the five nights that went unnoticed before this existed.
  */
 
 import type { Env } from "../types";
@@ -155,8 +169,35 @@ export interface SweepCoverageResult extends SweepCoverageSummary {
  * one per keyword: eleven alerts saying the same thing is how a real signal
  * gets buried, and burial is the failure this exists to prevent.
  */
+/** Seconds of silence that mean the sweep has stopped writing. Comfortably
+ *  longer than the gap between consecutive writes within one sweep, and far
+ *  shorter than the gap between sweeps. */
+const QUIESCENCE_SECONDS = 5 * 60;
+
+/** Is the sweep still writing right now? A keyword it has not reached yet is
+ *  not dark, and must never be reported as such. */
+export async function sweepInFlight(env: Env, now: number): Promise<boolean> {
+  const row = await env.DB.prepare(
+    "SELECT MAX(run_at) AS ts FROM citation_runs",
+  ).first<{ ts: number | null }>();
+  if (!row?.ts) return false;
+  return now - row.ts < QUIESCENCE_SECONDS;
+}
+
 export async function checkSweepCoverage(env: Env): Promise<SweepCoverageResult> {
   const now = Math.floor(Date.now() / 1000);
+
+  // Judge a finished sweep or none at all.
+  try {
+    if (await sweepInFlight(env, now)) {
+      console.log("[sweep-coverage] sweep still writing; deferring to the next run rather than reporting unreached keywords as dark.");
+      return { ...summarizeCoverage([]), alerted: false };
+    }
+  } catch (e) {
+    // If we cannot tell, behave as before rather than going silent.
+    console.log(`[sweep-coverage] in-flight check failed, proceeding: ${e instanceof Error ? e.message : String(e)}`);
+  }
+
   const summary = summarizeCoverage(await fetchSweepCoverage(env, now));
 
   if (summary.darkKeywords === 0) return { ...summary, alerted: false };
