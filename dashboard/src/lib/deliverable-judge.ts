@@ -143,10 +143,10 @@ Return ONLY a JSON object, no prose: {"verdict":"ship"|"escalate","confidence":"
 ${examples}
 
 FACTS (the measured data behind this draft):
-${args.factsJson.slice(0, 4000)}
+${clip(args.factsJson, FACTS_CAP, "FACTS")}
 
 DRAFT to judge:
-${args.draftMarkdown.slice(0, 8000)}
+${clip(args.draftMarkdown, DRAFT_CAP, "DRAFT")}
 
 Would Lance ship this as-is? Return only the JSON verdict.`;
 
@@ -179,10 +179,10 @@ You are NOT checking banned punctuation or whether numbers trace to the data. Se
 
 Return ONLY JSON: {"objected": true|false, "reason": "the single strongest problem, or empty if none"}.`;
   const user = `FACTS:
-${args.factsJson.slice(0, 4000)}
+${clip(args.factsJson, FACTS_CAP, "FACTS")}
 
 DRAFT (a first judge approved this for shipping):
-${args.draftMarkdown.slice(0, 8000)}
+${clip(args.draftMarkdown, DRAFT_CAP, "DRAFT")}
 
 Find the strongest reason NOT to ship, or confirm it is sound.`;
 
@@ -207,6 +207,29 @@ Find the strongest reason NOT to ship, or confirm it is sound.`;
 }
 
 // ── the gate ────────────────────────────────────────────────────────
+// CLIPPING IS DECLARED, NOT SILENT.
+//
+// The draft was cut at 8,000 characters and the facts at 4,000, with nothing
+// saying so. On 2026-09-25 prince-waikiki's memo reached 9,232 characters and
+// the judge read it chopped mid-heading at "### O" (character 7,996). It
+// reported "Draft appears truncated at the end, incomplete deliverable" and
+// escalated. The draft was complete and ended correctly; the cut was ours.
+//
+// The quieter half of the same bug: whatever sat past the cut was never
+// judged at all, so every prior verdict on a long draft was formed without
+// the closing sections, and every claim check ran against half the facts.
+//
+// The caps are now far above any real deliverable, and when one does bite it
+// says so in the text the judge reads, so a clip can never again be mistaken
+// for a defect in the work.
+const DRAFT_CAP = 60_000;
+const FACTS_CAP = 24_000;
+const clip = (text: string, cap: number, what: string): string =>
+  text.length <= cap
+    ? text
+    : `${text.slice(0, cap)}\n\n[${what} CLIPPED HERE for length: ${text.length} characters total, you are reading the first ${cap}. This cut is ours, not a defect in the work. Do NOT report the draft as truncated or incomplete on account of it.]`;
+
+
 export async function gateDeliverable(env: Env, args: GateArgs): Promise<DeliverableVerdict> {
   const judge = await runJudge(env, args);
   // Judge unavailable -> fail safe to escalate, and record the ACTUAL error in
