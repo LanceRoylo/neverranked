@@ -17,6 +17,7 @@
  * READ-ONLY BY CONSTRUCTION. The shim refuses anything that is not a SELECT or
  * WITH, so it cannot write through a code path that thinks it can. */
 import { execFileSync } from "node:child_process";
+import { groupVenues } from "../src/lib/venue-attribution";
 
 
 function runSql(sql: string): Record<string, unknown>[] {
@@ -140,18 +141,18 @@ async function main() {
   const venue = (f.venue?.rows || []).filter((r: any) => r && typeof r.label === "string");
   const pageish = venue.filter((r: any) => isPageLabel(r.label));
   if (pageish.length) fail("cohort", `page labels counted as businesses: ${pageish.map((r: any) => r.label).join(", ")}`);
-  const dupes = new Map<string, string[]>();
-  for (const r of venue) {
-    const k = String(r.label).toLowerCase().replace(/[^a-z0-9]+/g, " ").split(" ").filter(Boolean).sort().join(" ");
-    const near = [...dupes.keys()].find((x) => x.includes(k) || k.includes(x));
-    if (near) dupes.get(near)!.push(r.label); else dupes.set(k, [r.label]);
-  }
-  for (const [, labels] of dupes) if (labels.length > 1) warn("cohort", `possible duplicate venues: ${labels.join(" / ")}`);
+  // Real resolution, not string similarity. The true duplicates and the false
+  // ones sit at the same edit distance, so this compares distinctive cores.
+  const groups = groupVenues(venue.map((r: any) => String(r.label)));
+  const merged = groups.filter((g) => g.labels.length > 1);
+  for (const g of merged) warn("cohort", `one property under two labels: ${g.labels.join(" / ")}`);
+  if (merged.length) warn("cohort", `${venue.length} venue rows resolve to ${groups.length} distinct properties`);
   for (const m of b.matchAll(/among\s+([a-z-]+|\d+)\s+[A-Za-z ]*?(hotels|venues|businesses)/gi)) {
     const claimed = /^\d+$/.test(m[1]) ? Number(m[1]) : wordToNum(m[1]);
     if (claimed === null) continue;
-    if (Math.abs(claimed - venue.length) > 1)
-      fail("cohort", `claims "among ${m[1]}" but facts hold ${venue.length} venue rows`);
+    const distinct = groupVenues(venue.map((r: any) => String(r.label))).length;
+    if (Math.abs(claimed - distinct) > 1)
+      fail("cohort", `claims "among ${m[1]}" but the cohort resolves to ${distinct} distinct properties (${venue.length} labels)`);
   }
 
   // 5. Cadence. The memo must describe the instrument from data, never from

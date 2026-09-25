@@ -313,3 +313,77 @@ export function matchCohortMember(
   }
   return best ? best.domain : null;
 }
+
+/* ── Same property, two labels ────────────────────────────────────────────
+ *
+ * prince-waikiki's cohort holds three pairs that are one hotel written twice:
+ *
+ *   The Laylow Waikiki Autograph Collection / The Laylow Autograph Collection
+ *   Sheraton Princess Kaiulani Waikiki Beach / Sheraton Princess Kaiulani
+ *   The Ritz Carlton Residences Waikiki Beach / Ritz-Carlton Residences Waikiki
+ *
+ * and several that look just as similar and are NOT:
+ *
+ *   Outrigger Waikiki Beach Resort  vs  Outrigger Reef Waikiki Beach Resort
+ *   Hyatt Regency / Hyatt Centric / Hyatt Place, all Waikiki Beach
+ *   Sheraton Waikiki  vs  Sheraton Princess Kaiulani
+ *
+ * A string-similarity threshold cannot separate those: the true pairs and the
+ * false ones sit at the same edit distance. So this does not measure
+ * similarity at all. It removes the words that describe WHERE a hotel is and
+ * WHAT KIND of thing it is, and compares what remains.
+ *
+ * The distinctive core is the hotel's actual name. "Outrigger" and "Outrigger
+ * Reef" differ there, so they stay apart. "The Laylow Autograph Collection"
+ * and "The Laylow Waikiki Autograph Collection" do not, so they merge.
+ *
+ * EXACT equality of the core, never containment. Containment is precisely
+ * what would swallow Outrigger Reef into Outrigger, and collapsing two real
+ * competitors into one bar understates a customer's category while looking
+ * tidier than the truth. A count that is high by three is the safer error.
+ */
+
+/** Where a hotel is. Removed before comparing, never used to distinguish. */
+const GEO_WORDS = new Set([
+  "waikiki", "honolulu", "oahu", "hawaii", "hawaiian", "kai", "beach",
+  "beachfront", "oceanfront", "island", "shore", "bay",
+]);
+
+/** What kind of thing it is. Also removed. */
+const CATEGORY_WORDS = new Set([
+  "hotel", "hotels", "resort", "resorts", "spa", "inn", "suites", "suite",
+  "lodge", "club", "collection", "residences", "residence", "tower", "towers",
+  "the", "a", "an", "and", "of", "at", "by", "on", "in",
+]);
+
+/** The distinctive part of a venue name: what is left once location and
+ *  category are taken away. Empty means the label said nothing specific. */
+export function venueCore(label: string): string {
+  return String(label)
+    .toLowerCase()
+    .replace(/\(.*?\)/g, " ")          // "(brand pages)" is a deliberate marker
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean)
+    .filter((w) => !GEO_WORDS.has(w) && !CATEGORY_WORDS.has(w))
+    .join(" ");
+}
+
+/** Two labels naming the same property. Conservative by construction. */
+export function sameVenue(a: string, b: string): boolean {
+  const ca = venueCore(a), cb = venueCore(b);
+  if (!ca || !cb) return false;        // nothing distinctive to compare
+  if (/\(/.test(a) !== /\(/.test(b)) return false; // a brand page is not a property
+  return ca === cb;
+}
+
+/** Group labels by property, preserving input order. Returns one entry per
+ *  distinct property, each listing every label that named it. */
+export function groupVenues(labels: string[]): Array<{ core: string; labels: string[] }> {
+  const out: Array<{ core: string; labels: string[] }> = [];
+  for (const label of labels) {
+    const hit = out.find((g) => sameVenue(g.labels[0], label));
+    if (hit) hit.labels.push(label);
+    else out.push({ core: venueCore(label), labels: [label] });
+  }
+  return out;
+}
