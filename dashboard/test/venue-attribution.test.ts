@@ -177,3 +177,32 @@ test("a zero-citation umbrella row still reads as a hotel name", () => {
   ]);
   assert.equal(fallback["ritzcarlton.com"], "Ritz-Carlton Residences Waikiki");
 });
+
+/* A page is not a property.
+ *
+ * The attributor read a slug out of a URL path and named a venue from it, with
+ * nothing stopping it doing that to a generic section. On 2026-09-25
+ * prince-waikiki's measured cohort contained the venues "En Us", "Rooms" and
+ * "Information", from /en-us/, /rooms/ and /information/. They scored 0% and
+ * fell below the chart's 12-bar cap, so the names never reached the customer.
+ * The counts did: "third among 38 Waikiki luxury hotels" and "27 more venues
+ * were named at least once" were both padded by them. */
+test("a locale or section segment is never named as a venue", () => {
+  for (const p of ["/en-us/", "/rooms/", "/information/", "/about-us/", "/book/", "/dining/"]) {
+    const a = attributeVenueUrl(p);
+    assert.equal(a.label, "", `${p} must not produce a venue label, got "${a.label}"`);
+    assert.equal(a.slug, "", `${p} must not produce a property slug`);
+  }
+});
+
+test("a real property slug still attributes", () => {
+  const a = attributeVenueUrl("/hotels-resorts/hawaii/honolulu/outrigger-waikiki-beach-resort/");
+  assert.notEqual(a.label, "", "a genuine property must still be named");
+});
+
+test("filtering a section does not discard the region read from the path", () => {
+  // /waikiki/rooms/ is still an Oahu page even though "rooms" names no venue.
+  const a = attributeVenueUrl("/destinations/united-states/hawaii/waikiki/rooms/");
+  assert.equal(a.label, "");
+  assert.notEqual(a.region, "unknown", "region must survive the filter");
+});

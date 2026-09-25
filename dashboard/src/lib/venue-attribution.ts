@@ -146,6 +146,36 @@ function labelFromSlug(slug: string): string {
  * Returns region "unknown" when the two signals disagree or neither fires, so
  * the caller can exclude rather than guess at an island.
  */
+/** Path segments that are pages, not properties.
+ *
+ * The attributor reads a slug out of a URL path and turns it into a venue
+ * name. Nothing stopped it doing that to a generic page segment, so
+ * /en-us/, /rooms/ and /information/ became the venues "En Us", "Rooms" and
+ * "Information". All three were sitting in prince-waikiki's measured cohort
+ * on 2026-09-25, inflating "third among 38 Waikiki luxury hotels" and the
+ * chart's "27 more venues were named at least once".
+ *
+ * They scored 0% and fell below the chart's 12-bar cap, so the names never
+ * reached the customer. The COUNTS did, in a product sold on the precision of
+ * exactly this kind of number.
+ */
+const NON_PROPERTY_SLUGS = new Set([
+  // locale and navigation
+  "en", "us", "en-us", "en-gb", "ja", "jp", "ko", "zh", "index", "home", "www",
+  // generic site sections
+  "rooms", "room", "information", "info", "about", "about-us", "contact",
+  "contact-us", "gallery", "photos", "media", "press", "news", "blog",
+  "location", "locations", "directions", "map", "maps", "search", "sitemap",
+  "faq", "faqs", "help", "support", "terms", "privacy", "legal", "careers",
+  // commerce and booking
+  "book", "booking", "bookings", "reserve", "reservations", "rates", "offers",
+  "deals", "specials", "packages", "promotions", "gift-cards", "cart",
+  // hotel-generic nouns that are sections, not properties
+  "hotel", "hotels", "resort", "resorts", "suites", "accommodation",
+  "accommodations", "amenities", "dining", "restaurants", "spa", "pool",
+  "meetings", "events", "weddings", "groups", "reviews", "overview",
+]);
+
 export function attributeVenueUrl(path: string): VenueAttribution {
   const p = path.toLowerCase();
   let slug = "";
@@ -165,7 +195,11 @@ export function attributeVenueUrl(path: string): VenueAttribution {
   if (byCode && byWord) region = byCode === byWord ? byCode : "unknown"; // signals disagree
   else region = byCode ?? byWord ?? "unknown";
 
-  return { slug, region, label: slug ? labelFromSlug(slug) : "" };
+  // A generic page segment is not a property. Region still reads from the
+  // whole path, so a locale or section page keeps contributing its region;
+  // it just stops being named as a venue.
+  const isProperty = slug !== "" && !NON_PROPERTY_SLUGS.has(slug);
+  return { slug: isProperty ? slug : "", region, label: isProperty ? labelFromSlug(slug) : "" };
 }
 
 /**
