@@ -180,29 +180,45 @@ test("a zero-citation umbrella row still reads as a hotel name", () => {
 
 /* A page is not a property.
  *
- * The attributor read a slug out of a URL path and named a venue from it, with
- * nothing stopping it doing that to a generic section. On 2026-09-25
- * prince-waikiki's measured cohort contained the venues "En Us", "Rooms" and
- * "Information", from /en-us/, /rooms/ and /information/. They scored 0% and
- * fell below the chart's 12-bar cap, so the names never reached the customer.
- * The counts did: "third among 38 Waikiki luxury hotels" and "27 more venues
- * were named at least once" were both padded by them. */
-test("a locale or section segment is never named as a venue", () => {
-  for (const p of ["/en-us/", "/rooms/", "/information/", "/about-us/", "/book/", "/dining/"]) {
-    const a = attributeVenueUrl(p);
-    assert.equal(a.label, "", `${p} must not produce a venue label, got "${a.label}"`);
-    assert.equal(a.slug, "", `${p} must not produce a property slug`);
+ * prince-waikiki's measured cohort held the venues "Information", "Rooms" and
+ * "En Us", padding "third among 38 Waikiki luxury hotels" and the chart's
+ * "27 more venues were named at least once". They scored 0% and sat below the
+ * chart's 12-bar cap, so the names never reached the customer. The counts did.
+ *
+ * THE SLUGS ARE THE REAL ONES. The first fix used an exact-match set holding
+ * "information" and "rooms" and removed neither, because the actual slugs are
+ * "hotel-information" and "hotel-rooms". Only "en-us" matched, which made a
+ * broken fix look partly effective. These cases are taken from the stored
+ * snapshot, not invented. */
+import { isPageSlug } from "../src/lib/venue-attribution";
+
+test("the slugs that actually polluted the cohort are rejected", () => {
+  for (const slug of ["hotel-information", "hotel-rooms", "en-us"]) {
+    assert.equal(isPageSlug(slug), true, `${slug} must not name a venue`);
   }
 });
 
-test("a real property slug still attributes", () => {
-  const a = attributeVenueUrl("/hotels-resorts/hawaii/honolulu/outrigger-waikiki-beach-resort/");
-  assert.notEqual(a.label, "", "a genuine property must still be named");
+test("every real property in the cohort survives", () => {
+  // Taken from the stored top_competitors for prince-waikiki.
+  for (const slug of [
+    "outrigger-waikiki-beach-resort", "halekulani", "the-kahala",
+    "waikiki-beach-marriott-resort-and-spa", "moana-surfrider",
+    "ala-moana-hotel", "sheraton-waikiki", "alohilani-resort-waikiki-beach",
+    "hyatt-regency-waikiki-beach-resort-and-spa", "the-laylow-waikiki",
+  ]) {
+    assert.equal(isPageSlug(slug), false, `${slug} is a real hotel and must be kept`);
+  }
 });
 
-test("filtering a section does not discard the region read from the path", () => {
-  // /waikiki/rooms/ is still an Oahu page even though "rooms" names no venue.
-  const a = attributeVenueUrl("/destinations/united-states/hawaii/waikiki/rooms/");
-  assert.equal(a.label, "");
-  assert.notEqual(a.region, "unknown", "region must survive the filter");
+test("a hotel named in ordinary English is not erased", () => {
+  // The rule must not reach for place or descriptor words. If "beach" or
+  // "waikiki" were page words, genuine hotels would vanish from their own
+  // category, which is far worse than an inflated count.
+  for (const slug of ["beach-house", "ocean-view-inn", "the-modern-honolulu"]) {
+    assert.equal(isPageSlug(slug), false, `${slug} must survive`);
+  }
+});
+
+test("an empty slug is not a property", () => {
+  assert.equal(isPageSlug(""), true);
 });

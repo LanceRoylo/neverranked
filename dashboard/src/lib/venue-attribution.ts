@@ -146,35 +146,50 @@ function labelFromSlug(slug: string): string {
  * Returns region "unknown" when the two signals disagree or neither fires, so
  * the caller can exclude rather than guess at an island.
  */
-/** Path segments that are pages, not properties.
+/** Words that describe a PAGE rather than name a PROPERTY.
  *
- * The attributor reads a slug out of a URL path and turns it into a venue
- * name. Nothing stopped it doing that to a generic page segment, so
- * /en-us/, /rooms/ and /information/ became the venues "En Us", "Rooms" and
- * "Information". All three were sitting in prince-waikiki's measured cohort
- * on 2026-09-25, inflating "third among 38 Waikiki luxury hotels" and the
- * chart's "27 more venues were named at least once".
+ * A slug is not a property when every word in it is one of these. Matching on
+ * whole slugs was not enough: the real cohort held "hotel-information" and
+ * "hotel-rooms", so an exact-match set containing "information" and "rooms"
+ * removed neither. Only "en-us" happened to match, which made the first fix
+ * look partly effective and was worse than no fix, because the count still
+ * read as precise.
  *
- * They scored 0% and fell below the chart's 12-bar cap, so the names never
- * reached the customer. The COUNTS did, in a product sold on the precision of
- * exactly this kind of number.
+ * Nothing distinctive belongs in here. Place and descriptor words like
+ * "waikiki", "beach" or "ocean" must stay OUT, or a genuine hotel whose name
+ * is ordinary English gets erased from its own category. "Waikiki Beach
+ * Marriott Resort and Spa" survives because "waikiki" and "marriott" are not
+ * listed; "hotel-rooms" does not, because both of its words are.
  */
-const NON_PROPERTY_SLUGS = new Set([
+const PAGE_WORDS = new Set([
   // locale and navigation
-  "en", "us", "en-us", "en-gb", "ja", "jp", "ko", "zh", "index", "home", "www",
-  // generic site sections
-  "rooms", "room", "information", "info", "about", "about-us", "contact",
-  "contact-us", "gallery", "photos", "media", "press", "news", "blog",
-  "location", "locations", "directions", "map", "maps", "search", "sitemap",
-  "faq", "faqs", "help", "support", "terms", "privacy", "legal", "careers",
+  "en", "us", "gb", "ja", "jp", "ko", "zh", "index", "home", "www", "page",
+  // site sections
+  "information", "info", "about", "contact", "gallery", "photos", "media",
+  "press", "news", "blog", "location", "locations", "directions", "map",
+  "maps", "search", "sitemap", "faq", "faqs", "help", "support", "terms",
+  "privacy", "legal", "careers", "overview", "details", "guide",
   // commerce and booking
-  "book", "booking", "bookings", "reserve", "reservations", "rates", "offers",
-  "deals", "specials", "packages", "promotions", "gift-cards", "cart",
-  // hotel-generic nouns that are sections, not properties
-  "hotel", "hotels", "resort", "resorts", "suites", "accommodation",
-  "accommodations", "amenities", "dining", "restaurants", "spa", "pool",
-  "meetings", "events", "weddings", "groups", "reviews", "overview",
+  "book", "booking", "bookings", "reserve", "reservation", "reservations",
+  "rate", "rates", "offer", "offers", "deal", "deals", "special", "specials",
+  "package", "packages", "promotion", "promotions", "cart", "gift", "cards",
+  // generic category nouns
+  "hotel", "hotels", "resort", "resorts", "suite", "suites", "room", "rooms",
+  "accommodation", "accommodations", "amenity", "amenities", "dining",
+  "restaurant", "restaurants", "spa", "pool", "meeting", "meetings", "event",
+  "events", "wedding", "weddings", "group", "groups", "review", "reviews",
+  "guest", "guests", "stay", "stays",
+  // connectives
+  "the", "a", "an", "and", "or", "of", "our", "your", "at", "in", "on", "to",
 ]);
+
+/** True when every word in the slug is a page word, so the slug names a
+ *  section of a site rather than a business. */
+export function isPageSlug(slug: string): boolean {
+  const words = slug.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+  if (words.length === 0) return true;
+  return words.every((w) => PAGE_WORDS.has(w));
+}
 
 export function attributeVenueUrl(path: string): VenueAttribution {
   const p = path.toLowerCase();
@@ -198,7 +213,7 @@ export function attributeVenueUrl(path: string): VenueAttribution {
   // A generic page segment is not a property. Region still reads from the
   // whole path, so a locale or section page keeps contributing its region;
   // it just stops being named as a venue.
-  const isProperty = slug !== "" && !NON_PROPERTY_SLUGS.has(slug);
+  const isProperty = slug !== "" && !isPageSlug(slug);
   return { slug: isProperty ? slug : "", region, label: isProperty ? labelFromSlug(slug) : "" };
 }
 
