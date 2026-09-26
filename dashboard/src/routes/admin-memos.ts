@@ -343,9 +343,10 @@ export async function handleRebuildSnapshot(user: User, env: Env, slug: string):
   const monthEnd = Math.floor(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1) / 1000);
 
   const before = await env.DB.prepare(
-    `SELECT datetime(measured_at,'unixepoch') AS measured, instr(engines_breakdown,'layer') AS has_layer
+    `SELECT datetime(measured_at,'unixepoch') AS measured, instr(engines_breakdown,'layer') AS has_layer,
+            COALESCE(query_set_hash,'') AS qs, COALESCE(query_set_changed_in_window,0) AS qs_changed
        FROM citation_snapshots WHERE client_slug = ? ORDER BY week_start DESC LIMIT 1`,
-  ).bind(slug).first<{ measured: string | null; has_layer: number }>().catch(() => null);
+  ).bind(slug).first<{ measured: string | null; has_layer: number; qs: string; qs_changed: number }>().catch(() => null);
 
   let res: { ok: boolean; reason?: string };
   try {
@@ -355,9 +356,10 @@ export async function handleRebuildSnapshot(user: User, env: Env, slug: string):
   }
 
   const after = await env.DB.prepare(
-    `SELECT datetime(measured_at,'unixepoch') AS measured, instr(engines_breakdown,'layer') AS has_layer
+    `SELECT datetime(measured_at,'unixepoch') AS measured, instr(engines_breakdown,'layer') AS has_layer,
+            COALESCE(query_set_hash,'') AS qs, COALESCE(query_set_changed_in_window,0) AS qs_changed
        FROM citation_snapshots WHERE client_slug = ? ORDER BY week_start DESC LIMIT 1`,
-  ).bind(slug).first<{ measured: string | null; has_layer: number }>().catch(() => null);
+  ).bind(slug).first<{ measured: string | null; has_layer: number; qs: string; qs_changed: number }>().catch(() => null);
 
   // `layer` is the provenance tell: the Worker writes it on every engine, the
   // bridge writes it on none. If it is present afterwards, this row came from
@@ -369,6 +371,7 @@ export async function handleRebuildSnapshot(user: User, env: Env, slug: string):
     <ul style="line-height:1.9">
       <li>Before: measured ${esc(before?.measured ?? "none")} &middot; provenance ${before?.has_layer ? "Worker" : "<strong style=\"color:#e8a0a0\">not the Worker</strong>"}</li>
       <li>After: measured ${esc(after?.measured ?? "none")} &middot; provenance ${after?.has_layer ? "<strong style=\"color:#7bdca0\">Worker</strong>" : "<strong style=\"color:#e8a0a0\">not the Worker</strong>"}</li>
+      <li>Question set: ${after?.qs ? `<code>${esc(after.qs.slice(0, 12))}</code>` : "<span style=\"color:#e8c767\">not stamped</span>"}${after?.qs_changed ? ` &middot; <strong style=\"color:#e8c767\">the set CHANGED inside this window, so the aggregate spans more than one set</strong>` : ""}</li>
       ${res.ok ? "" : `<li style="color:#e8a0a0">Refused: ${esc(res.reason ?? "unknown")}. The guards refuse rather than write something wrong; this is a real condition to fix, not a retry.</li>`}
     </ul>
     <p style="color:var(--dim)">The memo must be regenerated after this so its facts come from the rebuilt snapshot. Delivery already blocks a draft written under older rules.</p>`;

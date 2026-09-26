@@ -1,0 +1,22 @@
+-- Bind a readout to the question set that produced it.
+--
+-- The methodology page says "hash-locked" five times. The Worker has hashed the
+-- question set daily since query_set_versions existed, and alerts on every
+-- change, so the claim was never empty. What was missing was the BINDING:
+-- nothing on a stored snapshot named the set behind it, so a delivered readout
+-- could only be tied to a question set by inferring from dates in another
+-- table. Defensible, but not demonstrable, which is the wrong side of the line
+-- for a practice that sells falsifiability.
+--
+-- query_set_hash   the hash of the set in force at the end of the window,
+--                  computed by hashQuerySet, the same function
+--                  query_set_versions uses. A different computation here would
+--                  produce a number that matches nothing and proves nothing.
+-- query_set_changed_in_window
+--                  1 when the set changed DURING the window, so the aggregate
+--                  spans more than one set and the single hash above does not
+--                  describe all of it. Recorded rather than hidden: the whole
+--                  point of the hash is that it cannot quietly stand for
+--                  something it does not cover.
+ALTER TABLE citation_snapshots ADD COLUMN query_set_hash TEXT;
+ALTER TABLE citation_snapshots ADD COLUMN query_set_changed_in_window INTEGER;

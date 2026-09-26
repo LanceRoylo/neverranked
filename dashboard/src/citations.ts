@@ -2874,11 +2874,37 @@ export async function buildReadoutSnapshot(
   monday.setUTCDate(monday.getUTCDate() - (dow === 0 ? 6 : dow - 1));
   const weekStart = Math.floor(monday.getTime() / 1000);
 
+  // Bind this readout to the question set behind it.
+  //
+  // Uses hashQuerySet, the SAME function query_set_versions uses. Computing it
+  // differently here would produce a number that matches nothing and proves
+  // nothing, which is worse than no hash at all.
+  //
+  // A snapshot covers a window and a set can change inside one. When it does,
+  // the hash below describes the end of the window rather than all of it, so
+  // that is recorded rather than hidden. A hash quietly standing for something
+  // it does not cover is the failure the hash exists against.
+  let querySetHash: string | null = null;
+  let setChangedInWindow = 0;
+  try {
+    const { hashQuerySet, activeQuerySet } = await import("./lib/query-set");
+    querySetHash = await hashQuerySet(await activeQuerySet(env, clientSlug));
+    const changes = await env.DB.prepare(
+      `SELECT COUNT(*) AS n FROM query_set_versions
+        WHERE client_slug = ? AND observed_at > ? AND observed_at <= ?`,
+    ).bind(clientSlug, windowStart, windowEnd).first<{ n: number }>();
+    setChangedInWindow = (changes?.n ?? 0) > 0 ? 1 : 0;
+  } catch (e) {
+    // A missing hash is honest. A wrong one is not, so failure leaves it null.
+    console.log(`[readout-snapshot] ${clientSlug}: query set hash unavailable: ${e instanceof Error ? e.message : String(e)}`);
+  }
+
   await env.DB.prepare(
     `INSERT INTO citation_snapshots
        (client_slug, week_start, total_queries, client_citations, citation_share,
-        top_competitors, keyword_breakdown, engines_breakdown, created_at, measured_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        top_competitors, keyword_breakdown, engines_breakdown, created_at, measured_at,
+        query_set_hash, query_set_changed_in_window)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(client_slug, week_start) DO UPDATE SET
        total_queries = excluded.total_queries,
        client_citations = excluded.client_citations,
@@ -2887,7 +2913,9 @@ export async function buildReadoutSnapshot(
        keyword_breakdown = excluded.keyword_breakdown,
        engines_breakdown = excluded.engines_breakdown,
        created_at = excluded.created_at,
-       measured_at = excluded.measured_at`
+       measured_at = excluded.measured_at,
+       query_set_hash = excluded.query_set_hash,
+       query_set_changed_in_window = excluded.query_set_changed_in_window`
   ).bind(
     clientSlug,
     weekStart,
@@ -2899,6 +2927,8 @@ export async function buildReadoutSnapshot(
     JSON.stringify(enginesBreakdown),
     now,
     now,
+    querySetHash,
+    setChangedInWindow,
   ).run();
 
   const l1 = Object.entries(enginesBreakdown).filter(([, v]) => v.layer === "citation").length;
