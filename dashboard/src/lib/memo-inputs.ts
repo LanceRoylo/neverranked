@@ -356,6 +356,7 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
     ? {
         measurement_days: Number(cadenceRow.days),
         readings_per_question_per_engine:
+          // absent-is-zero: unreachable. The branch above requires days > 0, and days and runs come from the same COUNT over the same rows, so runs cannot be absent when days is positive.
           Math.round((Number(cadenceRow.runs ?? 0) / (questionsAsked * 7)) * 10) / 10,
       }
     : undefined;
@@ -589,11 +590,23 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
     // throughout, so they are unaffected.
     const ownedCitations = Object.values(curSnap.eb)
       .filter((e) => (e as { layer?: string }).layer !== "model_knowledge")
+      // absent-is-zero: summing. An engine entry with no citations count contributes nothing to a total, which is what zero means in a sum.
       .reduce((a, e) => a + (e.citations ?? 0), 0);
     const comps = (curSnap.tc.competitors ?? [])
+      // absent-is-zero: summing, as above. mentions feeds a total and a sort, never a stated per-competitor figure.
       .map((c) => ({ domain: c.domain ?? "", label: c.label ?? null, mentions: c.citations ?? 0 }))
       .sort((a, b) => b.mentions - a.mentions);
-    const venueShare = curSnap.tc.htc_venue_share_pct ?? 0;
+    // ABSENT IS NOT ZERO, and this one reaches a delivered memo.
+    //
+    // isReadoutShapeSnapshot returns true on engines_breakdown ALONE, so a
+    // snapshot can pass the shape guard while top_competitors carries no
+    // venue rollup. `?? 0` then set the memo's headline share to 0% and told
+    // a paying customer they hold none of their category. The same line
+    // existed on the dashboard and was fixed hours earlier; this is the copy
+    // that feeds the document.
+    const venueShareRaw = curSnap.tc.htc_venue_share_pct;
+    const haveVenueShare = typeof venueShareRaw === "number" && Number.isFinite(venueShareRaw);
+    const venueShare = haveVenueShare ? (venueShareRaw as number) : 0;
     const venueTotal = ownedCitations + comps.reduce((a, c) => a + c.mentions, 0);
 
     by_engine = Object.entries(curSnap.eb).map(([engine, e]) => {
@@ -601,12 +614,15 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
       // Only assert absence when the bridge actually measured it. An older
       // snapshot without cohort_citations stays silent rather than guessing.
       const cc = e.cohort_citations;
+      // absent-is-zero: fail-safe. An absent total makes this false, so no_cohort_signal is NOT set. Absence withholds the claim rather than asserting it.
       const dark = typeof cc === "number" && cc === 0 && (e.total ?? 0) > 0;
       return {
         engine,
+        // absent-is-zero: RESIDUAL RISK, accepted. buildReadoutSnapshot writes share_pct for every engine it emits, so absence means a snapshot this Worker did not write. The bridge was exactly that, and it is now refused. If a foreign writer returns, this reports 0% for a real engine.
         current_share_pct: e.share_pct ?? 0,
         prior_share_pct: ps ?? (e.share_pct ?? 0),
         delta_pp: ps === null ? 0 : +((e.share_pct ?? 0) - ps).toFixed(1),
+        // absent-is-zero: same residual risk as share_pct above. total is written unconditionally by buildReadoutSnapshot.
         current_runs: e.total ?? 0,
         ...(typeof cc === "number" ? { cohort_citations: cc } : {}),
         layer: (() => {
@@ -629,12 +645,19 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
       "every question measured in this window, not the like-for-like subset; " +
       "share is this venue's citations as a proportion of all citations that went to venues";
     const priVenue = priSnap ? (priSnap.tc.htc_venue_share_pct ?? null) : null;
-    overall = {
-      current: { runs: venueTotal, cited: ownedCitations, share_pct: venueShare },
-      prior: { runs: 0, cited: 0, share_pct: priVenue ?? venueShare },
-      ...(priVenue === null ? { prior_missing: true } : {}),
-      share_delta_pp: priVenue === null ? 0 : +(venueShare - priVenue).toFixed(1),
-    };
+    // With no venue rollup there is no share to state, so the snapshot does
+    // NOT override the run-based overall computed above. A real number from a
+    // narrower basis beats a zero from the right one.
+    if (haveVenueShare) {
+      overall = {
+        current: { runs: venueTotal, cited: ownedCitations, share_pct: venueShare },
+        prior: { runs: 0, cited: 0, share_pct: priVenue ?? venueShare },
+        ...(priVenue === null ? { prior_missing: true } : {}),
+        share_delta_pp: priVenue === null ? 0 : +(venueShare - priVenue).toFixed(1),
+      };
+    } else {
+      console.log(`[memo-inputs] ${slug}: snapshot carries no venue share; keeping the run-based overall rather than reporting 0%.`);
+    }
 
     // Count who is strictly ahead. indexOf() on a sorted array returns the
     // FIRST match, so any tie silently promoted the customer to the top of the
@@ -650,10 +673,12 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
     const st = curSnap.tc.source_types ?? {};
     offsite = {
       source_types: Object.entries(st)
+        // absent-is-zero: same residual risk. source_types entries are written with share_pct by the same writer.
         .map(([type, v]) => ({ type, share_pct: v.share_pct ?? 0 }))
         .filter((s) => s.share_pct > 0)
         .sort((a, b) => b.share_pct - a.share_pct),
       hosts: (curSnap.tc.offsite_hosts ?? [])
+        // absent-is-zero: same residual risk. offsite_hosts entries are written with share_pct by the same writer.
         .map((h) => ({ host: h.host ?? "", share_pct: h.share_pct ?? 0 }))
         .filter((h) => h.host),
     };

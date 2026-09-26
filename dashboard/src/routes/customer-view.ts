@@ -355,6 +355,13 @@ async function buildCitationMapEdges(
   return { edges, ranEngines };
 }
 
+/** "5/6", or an em dash when the count is absent. Absence is not zero: a
+ *  venue whose engine count was never computed has not been shown to appear
+ *  on none of them. */
+function toolsOutOfSix(n: number | null | undefined): string {
+  return typeof n === "number" && Number.isFinite(n) ? `${n}/6` : "\u2014/6";
+}
+
 async function buildFromD1(env: Env, slug: string): Promise<CustomerViewData | null> {
   const cust = await env.DB.prepare(
     `SELECT name, category, category_label FROM customers WHERE client_slug = ?`
@@ -432,8 +439,12 @@ async function buildFromD1(env: Env, slug: string): Promise<CustomerViewData | n
     // asserting a seventh AI tool that does not exist. Seven is correct for
     // MEASURED SURFACES, which is what the gap copy below says, and wrong for
     // tools.
-    { host: `${cust.name} (you)`, mentions: ownShare, position: "", toolsCount: `${tc.htc_engines_count ?? 0}/6`, isYou: true },
-    ...competitors.map((c) => ({ host: cohortHost(c), mentions: c.venue_share_pct, position: "", toolsCount: `${c.engines_count ?? 0}/6`, isYou: false })),
+    // An absent engine count is not a count of zero. "0/6" tells a customer a
+    // venue appeared on none of the six tools, which is a measurement claim;
+    // not knowing is not that claim. An em dash reads as "not counted" in a
+    // column of "5/6" and cannot be mistaken for a result.
+    { host: `${cust.name} (you)`, mentions: ownShare, position: "", toolsCount: toolsOutOfSix(tc.htc_engines_count), isYou: true },
+    ...competitors.map((c) => ({ host: cohortHost(c), mentions: c.venue_share_pct, position: "", toolsCount: toolsOutOfSix(c.engines_count), isYou: false })),
   ].sort((a, b) => b.mentions - a.mentions);
 
   // Display slice. Attribution grew one cohort from 11 rows to 32 and the tail
@@ -659,6 +670,7 @@ async function renderInProgressIfLive(env: Env, slug: string): Promise<string | 
     let runDays: number[] = [];
     try { runDays = JSON.parse(String(reg.run_days || "[]")) as number[]; } catch { runDays = []; }
     const target = Number(reg.full_target ?? 3);
+    // absent-is-zero: progress counter. No heartbeat row means no work done yet, and zero is the honest count.
     const done = Math.min(Number(hb?.done ?? 0), target);
 
     const lastDay = runDays.length ? runDays[runDays.length - 1] : null;
@@ -670,6 +682,7 @@ async function renderInProgressIfLive(env: Env, slug: string): Promise<string | 
       slug,
       customerName: cust.name || slug,
       categoryLabel: cust.category_label,
+      // absent-is-zero: counting rows. No matching keywords IS zero keywords.
       questionCount: Number(kw?.n ?? 0),
       runsDone: done,
       runsTarget: target,
