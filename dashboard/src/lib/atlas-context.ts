@@ -82,7 +82,10 @@ export interface MeasurementWindow {
   citations_of_customer: number;
   /** Owned citations as a share of citations to ANY cohort venue. Matches the
    *  dashboard headline and the readout venue chart. */
-  venue_share_pct: number;
+  /** NULL when it could not be computed. Never substituted with
+   *  share_of_all_cited_sources_pct: that is a 7.3x smaller quantity and
+   *  presenting it as this one is the 2026-09-07 incident. */
+  venue_share_pct: number | null;
   /** Owned citations as a share of EVERY cited source. Larger denominator, so
    *  a much smaller number. Not interchangeable with venue_share_pct. */
   share_of_all_cited_sources_pct: number;
@@ -409,11 +412,23 @@ async function loadMeasurementWindow(
     // Two DIFFERENT shares, named so they cannot be conflated. The field
     // formerly called citation_share_pct carried the second one while the
     // system prompt and every other surface meant the first.
-    venue_share_pct: venueSharePct ?? sharePctOut,
+    // NULL, never the other number.
+    //
+    // This used to fall back to sharePctOut, which is
+    // share_of_all_cited_sources_pct: a strictly larger denominator and a
+    // 7.3x smaller figure. That substitution IS the 2026-09-07 incident the
+    // comment above records, reintroduced through a fallback: the field whose
+    // _units say "THE headline figure, use this when asked about citation
+    // share" would quietly carry the one they say never to present as it.
+    //
+    // venueSharePct is null whenever the head snapshot is not readout shape,
+    // carries no top_competitors, fails to parse, or holds a non-numeric
+    // share. Atlas is told the figure is unavailable and says so.
+    venue_share_pct: venueSharePct,
     share_of_all_cited_sources_pct: sharePctOut,
     _units: {
       venue_share_pct:
-        "THE headline figure. Of every citation that named a business in this customer's competitive category, the share that named THEM. This is the number on their dashboard and in their monthly readout. Use this when asked about citation share, visibility, or how they are doing.",
+        "THE headline figure. Of every citation that named a business in this customer's competitive category, the share that named THEM. This is the number on their dashboard and in their monthly readout. Use this when asked about citation share, visibility, or how they are doing. If it is NULL it could not be computed for this period: say that it is not available and do NOT substitute share_of_all_cited_sources_pct, which is a different and much smaller quantity.",
       share_of_all_cited_sources_pct:
         "A different and much smaller figure: of EVERY source cited across all questions, including news, guides, directories and unrelated sites, the share that was this customer. A larger denominator, so a smaller number. Never present it as their citation share and never compare it against venue_share_pct.",
     },
