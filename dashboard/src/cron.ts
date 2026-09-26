@@ -1891,6 +1891,22 @@ export async function runCompExpiryCheck(env: Env): Promise<void> {
 
     const daysUntil = Math.ceil((expiryTs - now) / 86400);
 
+    // WHO THE DECISION BELONGS TO, which is not whoever provisioned the comp.
+    //
+    // The marker's detail carries the address the trial was set up under, and
+    // the alert used to echo only that under "Contact:". For hawaii-theatre
+    // that is Carl, the marketing director, who is an advocate inside the
+    // account rather than the person who decides. The CEO is on file as the
+    // primary contact and reads the monthly memo. Pitching the champion feels
+    // like progress and does not move a renewal.
+    const decisionMaker = await env.DB.prepare(
+      "SELECT primary_contact_name AS name, primary_contact_email AS email FROM customers WHERE client_slug = ?",
+    ).bind(m.client_slug).first<{ name: string | null; email: string | null }>().catch(() => null);
+    const who = decisionMaker?.name
+      ? `Decision-maker on file: ${decisionMaker.name}${decisionMaker.email ? ` <${decisionMaker.email}>` : " (no email on file)"}. `
+      : `No primary contact on file for ${m.client_slug}, so there is no recorded decision-maker to approach. `;
+    const marker = `Provisioning record (who set the trial up, NOT necessarily who decides): ${m.detail}`;
+
     if (daysUntil <= 0) {
       // On or past expiry day. One alert per marker; the 30d window
       // caps re-firing but keeps it visible if you miss the first one.
@@ -1898,7 +1914,7 @@ export async function runCompExpiryCheck(env: Env): Promise<void> {
         clientSlug: m.client_slug,
         type: `comp_expired_${m.client_slug}`,
         title: `Comp subscription expired: ${m.client_slug}`,
-        detail: `Complimentary plan ended ${Math.abs(daysUntil)} day(s) ago. Decide whether to convert to paid or deactivate. Marker detail: ${m.detail}`,
+        detail: `Complimentary plan ended ${Math.abs(daysUntil)} day(s) ago. Decide whether to convert to paid or deactivate. ${who}${marker}`,
         windowHours: 24 * 30,
       });
     } else if (daysUntil <= 7) {
@@ -1906,7 +1922,7 @@ export async function runCompExpiryCheck(env: Env): Promise<void> {
         clientSlug: m.client_slug,
         type: `comp_expires_7d_${m.client_slug}`,
         title: `Comp subscription expires in ${daysUntil} day(s): ${m.client_slug}`,
-        detail: `Comp ends soon. Reach out to decide whether to continue. Marker detail: ${m.detail}`,
+        detail: `Comp ends soon. ${who}${marker}`,
         windowHours: 24 * 7,
       });
     } else if (daysUntil <= 30) {
@@ -1914,7 +1930,7 @@ export async function runCompExpiryCheck(env: Env): Promise<void> {
         clientSlug: m.client_slug,
         type: `comp_expires_30d_${m.client_slug}`,
         title: `Comp subscription expires in ${daysUntil} day(s): ${m.client_slug}`,
-        detail: `Comp ends within 30 days. Good time to book a conversion conversation. Marker detail: ${m.detail}`,
+        detail: `Comp ends within 30 days. Good time to book a conversion conversation. ${who}${marker}`,
         windowHours: 24 * 14,
       });
     }
