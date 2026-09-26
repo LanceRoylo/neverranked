@@ -38,6 +38,10 @@ const CUSTOMER_FACING = [
   "../src/lib/report-facts.ts",
   "../src/routes/customer-view.ts",
   "../src/routes/customer-readouts.ts",
+  // Added 2026-09-26 after Atlas was found substituting a 7.3x smaller share
+  // for the headline one whenever the headline could not be computed. The
+  // chat is a customer-facing surface like any other.
+  "../src/lib/atlas-context.ts",
 ];
 
 /** Reading from a local accumulator: zero is the right answer. */

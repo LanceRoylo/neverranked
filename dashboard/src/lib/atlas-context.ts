@@ -249,6 +249,7 @@ async function loadMeasurementStatus(env: Env, slug: string): Promise<Measuremen
 
   return {
     on_pass_cadence: true,
+    // absent-is-zero: RESIDUAL RISK, accepted. No heartbeat row means no recorded passes, and zero is the honest count of what was recorded. If the heartbeat writer fails while the sweep keeps running, Atlas would say zero passes in a month that measured daily.
     passes_done_this_month: Number(hb?.done ?? 0),
     passes_target: Number(reg.full_target ?? 3),
     scheduled_run_days,
@@ -397,7 +398,9 @@ async function loadMeasurementWindow(
       const tc = JSON.parse(headSnap.top_competitors) as { htc_venue_share_pct?: number; source_types?: Record<string, { share_pct?: number }>; offsite_hosts?: Array<{ host?: string; share_pct?: number }> };
       if (typeof tc.htc_venue_share_pct === "number") venueSharePct = tc.htc_venue_share_pct;
       offsiteOut = {
+        // absent-is-zero: harmless. A zero share is dropped by the filter below and never reaches Atlas, so absence and zero have the same visible result: nothing.
         source_types: Object.entries(tc.source_types ?? {}).map(([type, v]) => ({ type, share_pct: v.share_pct ?? 0 })).filter((s) => s.share_pct > 0).sort((a, b) => b.share_pct - a.share_pct),
+        // absent-is-zero: RESIDUAL RISK, accepted. Unlike source_types above, hosts are filtered on host rather than share, so an entry with an absent share would be offered to Atlas as 0%. buildReadoutSnapshot always writes share_pct here.
         hosts: (tc.offsite_hosts ?? []).map((h) => ({ host: h.host ?? "", share_pct: h.share_pct ?? 0 })).filter((h) => h.host),
       };
     } catch { /* malformed: keep empty */ }
@@ -580,16 +583,19 @@ async function loadCohort(env: Env, slug: string, windowDays: number): Promise<C
       // numerator whose denominator counts cited URLs.
       const owned = Object.entries(eb)
         .filter(([k, v]) => (v.layer ?? (engineLayer(k) === "citation" ? "citation" : "model_knowledge")) === "citation")
+        // absent-is-zero: summing. An entry with no citation count contributes nothing to a total, which is what zero means in a sum.
         .reduce((a, [, v]) => a + (v.citations ?? 0), 0);
       const comps = (tc.competitors ?? []).filter((c) => c.domain);
       if (comps.length) {
         members = comps.map((c) => ({
           domain: String(c.domain),
           label: c.label ?? null,
+          // absent-is-zero: RESIDUAL RISK, accepted. This is a per-competitor figure Atlas can quote. buildReadoutSnapshot always writes citations, so absence means a snapshot this Worker did not write, which the bridge was and which is now refused.
           mentions_last_window: c.citations ?? 0,
           engines_count: c.engines_count,
         }));
         ownedCount = owned;
+        // absent-is-zero: statistics over a list. A missing count contributes a zero to the distribution rather than a claim about any one competitor.
         competitorCounts = comps.map((c) => c.citations ?? 0);
         basis = "venue_citations";
       }
