@@ -233,6 +233,34 @@ async function main() {
     }
   }
 
+  // 10. Do the charts and the prose cover the same number of questions?
+  //
+  // report-facts builds the grid from the ACTIVE set; memo-inputs builds
+  // by_question from whatever actually ran in the window. Those agree until a
+  // question set changes mid-month, and then the prose reasons over one set
+  // while the charts show another, inside one document. Measured 2026-09-26:
+  // hawaii-theatre's grid held 29 questions against 41 measured, the
+  // difference being exactly the twelve deactivated on the 21st.
+  //
+  // COUNTS, NOT NAMES. The grid stores short display labels ("Broadway touring
+  // shows Honolulu") while citation_keywords holds the full question text, so
+  // comparing them by string matches nothing and reports nothing. The first
+  // version of this check did exactly that: a wrong map failing silently,
+  // inside the tool written to catch wrong maps failing silently.
+  const gridCount = Array.isArray(f.grid?.questions) ? f.grid.questions.length : 0;
+  const measured: any = runSql(
+    `SELECT COUNT(DISTINCT ck.id) n FROM citation_runs cr
+       JOIN citation_keywords ck ON ck.id=cr.keyword_id
+      WHERE ck.client_slug='${slug}' AND cr.run_at >= unixepoch('${monthStart}')
+        AND cr.run_at < unixepoch('${monthStart}','+1 month')`)[0];
+  const measuredCount = Number(measured?.n ?? 0);
+  if (gridCount === 0) {
+    warn("scope", "facts carry no question grid, so chart and prose scope could not be compared");
+  } else if (gridCount !== measuredCount) {
+    warn("scope", `charts cover ${gridCount} questions, ${measuredCount} were measured this period; ` +
+      `the difference is usually a set change mid-window, and the prose and the charts then describe different sets`);
+  }
+
   // Report.
   const fails = findings.filter((x) => x.severity === "FAIL");
   if (!findings.length) console.log("  no findings\n");
