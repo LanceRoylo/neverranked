@@ -1417,20 +1417,33 @@ export async function runDailyMaintenance(env: Env): Promise<void> {
       "SELECT client_slug FROM customers WHERE status IN ('active','pilot')",
     ).all<{ client_slug: string }>()).results;
     for (const { client_slug } of customers) {
+      // WRITTEN, not row-created.
+      //
+      // This read created_at, which the generator's upsert deliberately
+      // preserves: a memo regenerated ten times keeps the timestamp of its
+      // first insert. On 2026-09-26 it alerted "Monthly memo not drafted for
+      // hawaii-theatre (latest 2026-08-24)" about a memo that exists, is for
+      // the current month, and had been regenerated the previous evening. The
+      // row was created on 2026-08-24 and written on 2026-09-25, and the guard
+      // could only see the first of those.
+      //
+      // updated_at is when the memo was last WRITTEN, which is the thing this
+      // guard exists to confirm. A row that exists but has not been rewritten
+      // this month is still correctly overdue, so nothing is weakened.
       const memo = await env.DB.prepare(
-        "SELECT created_at FROM monthly_memos WHERE client_slug = ? ORDER BY created_at DESC LIMIT 1",
-      ).bind(client_slug).first<{ created_at: number }>();
-      if (!memo) continue; // no memo cadence yet -> not overdue
+        "SELECT MAX(updated_at) AS written FROM monthly_memos WHERE client_slug = ?",
+      ).bind(client_slug).first<{ written: number | null }>();
+      if (!memo?.written) continue; // no memo cadence yet -> not overdue
       // graceDay 26: memos draft on the 24th and deliver ~25th, so a missing
       // memo is genuinely overdue by the 26th. Reuses the same "latest monthly
       // outcome predates this month, past grace" logic as the measurement check.
-      if (monthlyRefreshOverdue(now, memo.created_at, 26)) {
-        const last = new Date(memo.created_at * 1000).toISOString().slice(0, 10);
+      if (monthlyRefreshOverdue(now, memo.written, 26)) {
+        const last = new Date(memo.written * 1000).toISOString().slice(0, 10);
         await createAlertIfFresh(env, {
           clientSlug: client_slug,
           type: "memo_generation_missed",
           title: `Monthly memo not drafted for ${client_slug}`,
-          detail: `No memo draft has landed this month (latest ${last}). The 24th draft cron may have missed the 24th specifically, or generation failed. Open /admin/memos and use "Generate drafts now" for ${client_slug}.`,
+          detail: `No memo draft has been WRITTEN this month (last written ${last}). The 24th draft cron may have missed the 24th specifically, or generation failed. Open /admin/memos and use "Generate drafts now" for ${client_slug}.`,
           windowHours: 24 * 20, // at most ~once per customer per month
         });
       }
