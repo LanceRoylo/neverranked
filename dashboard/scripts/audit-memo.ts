@@ -201,6 +201,45 @@ async function main() {
     if (Math.abs(actual - Number(m[2])) <= 0.15) matched++;
     else fail("figure", `"${m[1].slice(0, 50)}" quoted at ${m[2]}%, database says ${actual}%`);
   }
+  // 8b. Engine and cohort percentages, traced to the frozen facts.
+  //
+  // Not every memo quotes per-question figures. hawaii-theatre's asserts
+  // engine shares and cohort standings instead, so check 8 traced 0 of 0 and
+  // the audit covered none of its actual claims while reporting clean.
+  const named: Array<{ name: string; pct: number; kind: string }> = [
+    ...(f.engines || []).map((e: any) => ({ name: String(e.name), pct: Number(e.pct), kind: "engine" })),
+    ...(f.venue?.rows || []).map((r: any) => ({ name: String(r.label), pct: Number(r.pct), kind: "venue" })),
+  ].filter((x) => x.name && Number.isFinite(x.pct));
+
+  // Matching a bare name near a number produces false positives, because
+  // engine and venue names appear INSIDE question names:
+  //
+  //   - Hawaii Theatre Center upcoming events: 84.4%
+  //   - Is Hawaii Theatre Center or Manoa Valley Theatre better ... rose from 45.5%
+  //
+  // Both are per-question figures, and matching "Hawaii Theatre Center"
+  // against them reported the venue's cohort share as wrong when it was not.
+  // Three of ten traced figures failed that way on the first run.
+  //
+  // So: skip list rows, which is where question figures live, and require the
+  // percentage to be INTRODUCED rather than merely nearby. "holds 66%" is a
+  // claim about the named thing; "... 84.4%" forty characters later is not.
+  const LINK = "(?:at|holds|held|returned|sits at|sat at|is|was|rose to|fell to|stands at)";
+  for (const item of named) {
+    const esc = item.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const re = new RegExp(`${esc}[^.\n]{0,24}?\\b${LINK}\\s+(\\d+(?:\\.\\d+)?)\\s*%`, "i");
+    for (const line of b.split("\n")) {
+      if (/^\s*[-*\d]/.test(line)) continue;   // a list row is a question figure
+      const m = line.match(re);
+      if (!m) continue;
+      const quoted = Number(m[1]);
+      checked++;
+      if (Math.abs(quoted - item.pct) <= 1.0) matched++;
+      else fail("figure", `${item.kind} "${item.name}" quoted at ${quoted}%, facts say ${item.pct}%`);
+      break;
+    }
+  }
+
   // A CHECK THAT CHECKED NOTHING MUST SAY SO.
   //
   // On its first run against hawaii-theatre this traced 0 of 0 figures,
