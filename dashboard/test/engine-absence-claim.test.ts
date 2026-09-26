@@ -132,3 +132,20 @@ test("the cadence figures verify, so the gate cannot flag the honest number", ()
   const gen = fs.readFileSync(new URL("../src/lib/memo-generator.ts", import.meta.url), "utf8");
   assert.match(gen, /add\(inp\.cadence\.measurement_days\)/);
 });
+
+test("cadence is absent when it cannot be counted, never zero", () => {
+  // Found in the guard sweep on 2026-09-26, in code written the day before.
+  // A failed lookup produced measurement_days: 0, and the prompt REQUIRES the
+  // memo to describe its instrument from this field, so a transient query
+  // error would have written "measured across 0 days" into a deliverable.
+  // Zero days is not a cadence. It is the absence of one.
+  const fs = require("node:fs") as typeof import("node:fs");
+  const inputs = fs.readFileSync(new URL("../src/lib/memo-inputs.ts", import.meta.url), "utf8");
+  const gen = fs.readFileSync(new URL("../src/lib/memo-generator.ts", import.meta.url), "utf8");
+  assert.match(inputs, /cadence\?: \{/, "the field must be optional on the type");
+  assert.match(inputs, /Number\(cadenceRow\.days\) > 0\n?\s*\? \{/,
+    "a zero or missing count must yield undefined, not a zero cadence");
+  assert.doesNotMatch(inputs, /measurement_days: measurementDays/,
+    "the old unconditional assignment must not return");
+  assert.match(gen, /never write that it ran on zero days/i);
+});

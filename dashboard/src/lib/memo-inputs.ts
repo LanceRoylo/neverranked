@@ -31,7 +31,9 @@ export interface MemoInputs {
    *  the month" -- the plan's words, written when measurement was three
    *  laptop reps. It had actually run on 25 separate days. The plan exists to
    *  grade expectations, not to state what happened. */
-  cadence: { measurement_days: number; readings_per_question_per_engine: number };
+  /** ABSENT when it could not be counted. Never zero: zero days is not a
+   *  cadence, it is the absence of one. */
+  cadence?: { measurement_days: number; readings_per_question_per_engine: number };
   overall: {
     current: { runs: number; cited: number; share_pct: number };
     prior: { runs: number; cited: number; share_pct: number };
@@ -342,13 +344,21 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
        JOIN citation_keywords ck ON ck.id = cr.keyword_id
       WHERE ck.client_slug = ? AND cr.run_at >= ? AND cr.run_at < ?`,
   ).bind(slug, curStart, nowTs).first<{ days: number; runs: number }>().catch(() => null);
-  const measurementDays = cadenceRow?.days ?? 0;
+  // ABSENT, NOT ZERO. A failed lookup used to produce measurement_days: 0,
+  // and the prompt REQUIRES the memo to describe its instrument from this
+  // field, so a transient query error would have written "measured across 0
+  // days" into a customer's deliverable. Zero days is not a cadence; it is the
+  // absence of one, and the two must not share a representation. Found in the
+  // guard sweep on 2026-09-26, in code written the day before, which is the
+  // fourth instance of this shape in three days.
   const questionsAsked = q.size || 1;
-  const cadence = {
-    measurement_days: measurementDays,
-    readings_per_question_per_engine:
-      Math.round(((cadenceRow?.runs ?? 0) / (questionsAsked * 7)) * 10) / 10,
-  };
+  const cadence = cadenceRow && Number(cadenceRow.days) > 0
+    ? {
+        measurement_days: Number(cadenceRow.days),
+        readings_per_question_per_engine:
+          Math.round((Number(cadenceRow.runs ?? 0) / (questionsAsked * 7)) * 10) / 10,
+      }
+    : undefined;
 
   const by_question = Array.from(q.values()).map((v) => ({
     keyword: v.keyword,
