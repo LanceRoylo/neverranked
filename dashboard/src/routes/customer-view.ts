@@ -396,7 +396,17 @@ async function buildFromD1(env: Env, slug: string): Promise<CustomerViewData | n
     .sort((a, b) => b.count - a.count);
 
   const competitors = tc.competitors || [];
-  const ownShare = tc.htc_venue_share_pct ?? 0;
+  // ABSENT IS NOT ZERO, and this one renders to a customer.
+  //
+  // isReadoutShapeSnapshot returns true on engines_breakdown ALONE, so a
+  // snapshot can pass the shape guard while top_competitors carries no venue
+  // rollup. `?? 0` then put "ranked 3 of 35 venues at 0% citation share" in
+  // front of a paying customer: a confident sentence stating the opposite of
+  // an unknown. Fifth instance of this shape in three days, and the first one
+  // pointed straight at a client-facing page.
+  const ownShareRaw = tc.htc_venue_share_pct;
+  const haveOwnShare = typeof ownShareRaw === "number" && Number.isFinite(ownShareRaw);
+  const ownShare = haveOwnShare ? (ownShareRaw as number) : 0;
   // Display name for a cohort row. Property-level attribution (2026-09-07)
   // means `domain` is no longer always a hostname: a chain property with no
   // registered domain of its own carries its path slug there, and
@@ -503,12 +513,17 @@ async function buildFromD1(env: Env, slug: string): Promise<CustomerViewData | n
   const zeroNames = perTool.filter((t) => t.count === 0).map((t) => t.shortName);
   const andList = (xs: string[]): string =>
     xs.length <= 1 ? (xs[0] ?? "") : xs.length === 2 ? `${xs[0]} and ${xs[1]}` : `${xs.slice(0, -1).join(", ")}, and ${xs[xs.length - 1]}`;
-  const baselineStartLine =
-    `Your starting line: cited on ${yourMentions} of ${totalQuestions} questions` +
-    (cohortN > 1
+  // With no venue rollup there is no share and no rank to state. Say what is
+  // known and stop, rather than printing a zero that reads as a measurement.
+  const standingClause = !haveOwnShare
+    ? `. Your standing against the rest of the category was not computed this period`
+    : cohortN > 1
       ? `, ranked ${myRank} of ${cohortN} venues at ${ownShare}% citation share` +
         (iAmLeader ? ` (you hold the top share)` : ` (the cohort leader holds ${leaderShare}%)`)
-      : ` at ${ownShare}% citation share`) +
+      : ` at ${ownShare}% citation share`;
+  const baselineStartLine =
+    `Your starting line: cited on ${yourMentions} of ${totalQuestions} questions` +
+    standingClause +
     `. ` +
     (zeroNames.length
       ? `${zeroNames.length} of 7 measured surfaces show zero so far${zeroNames.length <= 4 ? ` (${andList(zeroNames)})` : ""}, which is where next month's work points. `
