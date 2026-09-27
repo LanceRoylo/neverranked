@@ -218,3 +218,52 @@ test("the per-surface rule is in the system prompt too", () => {
   assert.match(SRC, /Week-over-week movement is stated PER SURFACE/);
   assert.match(SRC, /the week's finding is that nothing moved/);
 });
+
+/* The control and the by-design small denominator need labels on their own rows.
+ *
+ * bing is the classic-search control. Putting it in a table of citation rates
+ * invites the one sentence the house rule forbids: that it cited or answered.
+ * google_ai_overview's denominator is ~227 against ~450 because citation_runs
+ * never holds a non-reading and no row is written when no overview rendered --
+ * a finding about how often Google shows one, not missing coverage.
+ */
+const WITH_CONTROL = [
+  { engine: "bing",               prev_runs: 469, prev_cited: 0,  cur_runs: 472, cur_cited: 1 },
+  { engine: "google_ai_overview", prev_runs: 258, prev_cited: 32, cur_runs: 227, cur_cited: 31 },
+  { engine: "gemini",             prev_runs: 471, prev_cited: 132, cur_runs: 448, cur_cited: 101 },
+];
+
+test("bing is labelled the control on its own row", () => {
+  const b = weekOverWeekBlock(stats({
+    sharedKeywords: 67, prevWeekCitations: 504, sharedRunsPrev: 2917,
+    newCitationsThisWeek: 483, sharedRunsCur: 3006, perEngineWow: WITH_CONTROL,
+  }));
+  assert.match(b, /bing[^\n]*classic-search CONTROL/);
+  assert.match(b, /It does not cite or answer/);
+});
+
+test("bing never appears in the moved list, however far it moves", () => {
+  const b = weekOverWeekBlock(stats({
+    sharedKeywords: 10, prevWeekCitations: 10, sharedRunsPrev: 100,
+    newCitationsThisWeek: 40, sharedRunsCur: 100,
+    perEngineWow: [
+      // A 20-point swing on the control still may not be called a surface that moved.
+      { engine: "bing",   prev_runs: 100, prev_cited: 5,  cur_runs: 100, cur_cited: 25 },
+      { engine: "gemini", prev_runs: 100, prev_cited: 20, cur_runs: 100, cur_cited: 21 },
+    ],
+  }));
+  assert.match(b, /bing[^\n]*\(\+20\.0pp/, "the control's numbers are still shown");
+  assert.doesNotMatch(b, /Surfaces that moved at least 2 points: bing/);
+  assert.match(b, /No surface moved as much as 2 points/);
+});
+
+test("the AI Overview denominator is labelled by-design, not a gap", () => {
+  const b = weekOverWeekBlock(stats({
+    sharedKeywords: 67, prevWeekCitations: 504, sharedRunsPrev: 2917,
+    newCitationsThisWeek: 483, sharedRunsCur: 3006, perEngineWow: WITH_CONTROL,
+  }));
+  assert.match(b, /google_ai_overview[^\n]*smaller denominator BY DESIGN/);
+  assert.match(b, /NOT missing coverage/);
+  // A real engine gets no such excuse appended.
+  assert.doesNotMatch(b, /gemini[^\n]*BY DESIGN/);
+});

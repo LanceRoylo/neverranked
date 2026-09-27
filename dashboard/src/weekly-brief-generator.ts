@@ -374,10 +374,31 @@ export function weekOverWeekBlock(stats: WeeklyStats): string {
         continue;
       }
       const d = cr - pr;
+      // Two surfaces are read wrong without a label on the row itself.
+      //
+      // bing is the classic-search CONTROL. Listing it in a table of citation
+      // rates invites exactly the sentence the house rule forbids, that it
+      // cited or answered something. Its 0.2% is one row in 472.
+      //
+      // google_ai_overview carries a much smaller denominator than the rest
+      // (227 against ~450) because citation_runs never holds a non-reading and
+      // no row is written when no overview renders. That is a finding about
+      // how often Google shows an overview, not a gap in our coverage, and
+      // reading it as a gap is how a real result gets written off.
+      const note = e.engine === "bing"
+        ? "  [classic-search CONTROL: it returns results. It does not cite or answer. Never call it an AI tool.]"
+        : e.engine === "google_ai_overview"
+          ? "  [smaller denominator BY DESIGN: a row exists only when an overview rendered, so this is how often Google showed one, NOT missing coverage.]"
+          : "";
       lines.push(
-        `    ${e.engine.padEnd(19)} ${pr.toFixed(1)}% -> ${cr.toFixed(1)}%  (${d >= 0 ? "+" : ""}${d.toFixed(1)}pp, ${e.prev_runs} -> ${e.cur_runs} runs)`,
+        `    ${e.engine.padEnd(19)} ${pr.toFixed(1)}% -> ${cr.toFixed(1)}%  (${d >= 0 ? "+" : ""}${d.toFixed(1)}pp, ${e.prev_runs} -> ${e.cur_runs} runs)${note}`,
       );
-      if (Math.abs(d) >= 2) moved.push(`${e.engine} ${d >= 0 ? "up" : "down"} ${Math.abs(d).toFixed(1)}pp`);
+      // bing is excluded from the movement list whatever it does: a "surface
+      // that moved" reads as an AI tool changing behaviour, and the control is
+      // not one. Its own row above still shows the numbers.
+      if (Math.abs(d) >= 2 && e.engine !== "bing") {
+        moved.push(`${e.engine} ${d >= 0 ? "up" : "down"} ${Math.abs(d).toFixed(1)}pp`);
+      }
     }
     lines.push(
       moved.length > 0
