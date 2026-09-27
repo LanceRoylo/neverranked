@@ -69,26 +69,32 @@ export function snapshotMissingAlert(i: SnapshotAlertInput): BoundStatement {
   const body =
     `The month-to-date readout snapshot was not written because ${r.human}. ` +
     `Still missing as of ${stamp}. ${r.fix} ` +
-    `Left unfixed, the readout falls back to a legacy-shape row and renders wrong on the 25th. ` +
-    `(This row refreshes while the problem persists. Its date is when it STARTED.)`;
+    `Left unfixed, the readout falls back to a legacy-shape row and renders wrong on the 25th.`;
 
   return {
     sql: `INSERT INTO admin_inbox
-            (kind, title, body, action_url, target_type, target_id, target_slug, urgency, status, created_at)
-          VALUES ('readout_snapshot_missing', ?, ?, '/admin/qa', ?, 0, ?, ?, 'pending', ?)
+            (kind, title, body, action_url, target_type, target_id, target_slug, urgency, status, created_at, last_seen_at)
+          VALUES ('readout_snapshot_missing', ?, ?, '/admin/qa', ?, 0, ?, ?, 'pending', ?, ?)
           ON CONFLICT (kind, target_type, target_id) DO UPDATE SET
             title       = excluded.title,
             body        = excluded.body,
             urgency     = excluded.urgency,
             status      = 'pending',
             resolved_at = NULL,
-            resolved_by = NULL`,
+            resolved_by = NULL,
+            -- created_at stays: it is when this problem STARTED, which is worth
+            -- keeping. last_seen_at is when it last fired, which is what "how
+            -- old is this" means. Before the column existed this file carried
+            -- the distinction as a caveat in the body text, which no query
+            -- could read and no sort could use.
+            last_seen_at = excluded.last_seen_at`,
     binds: [
       title,
       body,
       `readout:${i.clientSlug}`,
       i.clientSlug,
       i.paying ? "high" : "normal",
+      i.now,
       i.now,
     ],
   };

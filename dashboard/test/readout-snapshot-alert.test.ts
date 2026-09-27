@@ -66,7 +66,12 @@ test("keyed per client so two clients cannot collide on the unique index", () =>
 test("created_at is not bumped, so a three-week gap cannot look like today", () => {
   const { sql } = alert("no_runs_in_window");
   assert.match(sql, /ON CONFLICT \(kind, target_type, target_id\) DO UPDATE/);
-  assert.doesNotMatch(sql.slice(sql.indexOf("DO UPDATE")), /created_at/);
+  const onConflict = sql.slice(sql.indexOf("DO UPDATE"));
+  // No ASSIGNMENT, rather than absence of the word: the clause now carries a
+  // comment explaining why created_at is left alone, which a bare
+  // /created_at/ matched.
+  assert.doesNotMatch(onConflict, /created_at\s*=/);
+  assert.match(onConflict, /last_seen_at\s*=\s*excluded\.last_seen_at/);
 });
 
 test("bind count matches the placeholders", () => {

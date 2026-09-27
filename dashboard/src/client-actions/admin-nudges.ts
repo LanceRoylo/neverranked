@@ -115,8 +115,8 @@ async function maybeInsertNudge(
   try {
     await env.DB.prepare(
       `INSERT INTO admin_inbox
-         (kind, title, body, action_url, target_type, target_id, target_slug, urgency, status, created_at)
-       VALUES (?, ?, ?, ?, 'client', ?, ?, 'normal', 'pending', unixepoch())`,
+         (kind, title, body, action_url, target_type, target_id, target_slug, urgency, status, created_at, last_seen_at)
+       VALUES (?, ?, ?, ?, 'client', ?, ?, 'normal', 'pending', unixepoch(), unixepoch())`,
     )
       .bind(input.kind, input.title, input.body, input.action_url, input.target_id, input.target_slug)
       .run();

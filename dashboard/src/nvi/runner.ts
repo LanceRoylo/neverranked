@@ -135,14 +135,15 @@ export async function runMonthlyNviReport(
     const now = Math.floor(Date.now() / 1000);
     await env.DB.prepare(
       `INSERT INTO admin_inbox
-         (kind, title, body, action_url, target_type, target_id, target_slug, urgency, status, created_at)
-       VALUES ('nvi_report_generated', ?, ?, ?, 'nvi_report', ?, ?, 'low', 'pending', ?)`
+         (kind, title, body, action_url, target_type, target_id, target_slug, urgency, status, created_at, last_seen_at)
+       VALUES ('nvi_report_generated', ?, ?, ?, 'nvi_report', ?, ?, 'low', 'pending', ?, ?)`
     ).bind(
       `NVI report generated: ${clientSlug} (${reportingPeriod})`,
       `AI Presence Score ${presence.score}/100 (Grade ${presence.grade}). ${presence.promptsCited} of ${presence.promptsTotal} tracked prompts cited across ${presence.enginesCited} engines. Auto-approved and ready to send.`,
       `/admin/nvi/preview/${reportId}`,
       reportId,
       clientSlug,
+      now,
       now,
     ).run();
   } catch (e) {

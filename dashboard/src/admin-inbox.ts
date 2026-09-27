@@ -216,6 +216,32 @@ async function sendAdminEmail(env: Env, subject: string, text: string): Promise<
   return true;
 }
 
+/**
+ * How old is this item, honestly.
+ *
+ * The inbox showed `${fmtAge(now - created_at)} old` in all three of its render
+ * sites. For a check that re-fires daily that string is the age of the FIRST
+ * occurrence, which is how two live problems came to read as 147 and 146 days
+ * old on 2026-09-27 and were nearly closed as stale. One of them carried
+ * figures from that same month.
+ *
+ * Both numbers matter and they answer different questions: created_at is how
+ * long this has gone unfixed, last_seen_at is whether it is still happening.
+ * So report both whenever they differ, and never report the first alone.
+ */
+export function inboxAge(now: number, item: { created_at: number; last_seen_at: number | null }): {
+  first: string;
+  last: string | null;
+  text: string;
+} {
+  const first = fmtAge(now - item.created_at);
+  const seen = item.last_seen_at ?? item.created_at;
+  // A day of slack: a daily check fires at a slightly different second each
+  // run, and "first seen 5d ago, last fired 5d ago" is noise, not information.
+  if (seen - item.created_at < 86_400) return { first, last: null, text: `${first} old` };
+  return { first, last: fmtAge(now - seen), text: `open ${first} \u00b7 last fired ${fmtAge(now - seen)} ago` };
+}
+
 interface ImmediateNotifyParams extends AddInboxParams {
   id: number;
   created_at: number;
@@ -280,10 +306,10 @@ export async function sendInboxMorningSummary(env: Env): Promise<void> {
   lines.push("");
   const now = Math.floor(Date.now() / 1000);
   for (const item of items.slice(0, 10)) {
-    const age = fmtAge(now - item.created_at);
+    const age = inboxAge(now, item);
     const tag = item.urgency === "high" ? "[HIGH]" : item.urgency === "low" ? "[low]" : "";
     const slug = item.target_slug ? ` (${item.target_slug})` : "";
-    lines.push(`  ${tag} ${item.title}${slug} — ${age} old`);
+    lines.push(`  ${tag} ${item.title}${slug} — ${age.text}`);
     lines.push(`    ${INBOX_BASE}/${item.id}`);
   }
   lines.push("");

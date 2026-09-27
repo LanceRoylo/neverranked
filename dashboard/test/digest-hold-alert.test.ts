@@ -49,11 +49,18 @@ test("a repeat hold updates the existing row instead of throwing", () => {
 test("created_at is never overwritten, so a chronic hold cannot look fresh", () => {
   const { sql } = input();
   const onConflict = sql.slice(sql.indexOf("DO UPDATE"));
-  assert.doesNotMatch(
+    // Assert no ASSIGNMENT, not mere absence of the word: the clause now carries
+    // a comment explaining why created_at is left alone, and a bare /created_at/
+    // matched that comment.
+    assert.doesNotMatch(
     onConflict,
-    /created_at/,
+    /created_at\s*=/,
     "bumping created_at makes a six-day outage read as one day old",
   );
+  // The other half of the same rule: the re-fire time must be recorded
+  // somewhere, or "not bumped" just means the age is wrong in the other
+  // direction.
+  assert.match(onConflict, /last_seen_at\s*=\s*excluded\.last_seen_at/);
 });
 
 test("a paying client outranks an unpaid beta", () => {
@@ -68,11 +75,17 @@ test("a paying client's row says so in the title, where it gets scanned", () => 
   assert.doesNotMatch(String(input({ paying: false }).binds[0]), /PAYING CLIENT/);
 });
 
-test("the body carries the current issues and dates the START of the holds", () => {
+test("the body carries the current issues, and the dates live in columns", () => {
   const body = String(input().binds[1]);
   assert.match(body, /Empty section; No signal/);
   assert.match(body, /Still held as of 2026-\d\d-\d\d/);
-  assert.match(body, /date is when the holds STARTED/);
+
+  // This used to assert the body explained, in prose, that its row's date was
+  // the first hold and not the latest -- a caveat written because nothing in
+  // the schema carried the difference. last_seen_at now does, so the reader
+  // shows both dates and the caveat is gone. A sentence no query can read is
+  // not a fix; asserting one keeps the workaround in place.
+  assert.doesNotMatch(body, /STARTED/);
 });
 
 test("bind count matches the placeholders in the statement", () => {

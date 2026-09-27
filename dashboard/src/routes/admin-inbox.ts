@@ -9,20 +9,7 @@
 
 import type { Env, User } from "../types";
 import { layout, html, esc, redirect } from "../render";
-import {
-  getPendingInbox,
-  getResolvedInbox,
-  getInboxItem,
-  getInboxStats,
-  resolveInboxItem,
-  snoozeInboxItem,
-} from "../admin-inbox";
-
-function fmtAge(seconds: number): string {
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h`;
-  return `${Math.floor(seconds / 86400)}d`;
-}
+import { getInboxItem, getInboxStats, getPendingInbox, getResolvedInbox, inboxAge, resolveInboxItem, snoozeInboxItem } from "../admin-inbox";
 
 function urgencyBadge(urgency: string): string {
   const colors: Record<string, string> = { high: "var(--red)", normal: "var(--text-mute)", low: "var(--text-faint)" };
@@ -50,14 +37,14 @@ export async function handleInboxList(user: User, env: Env, url: URL): Promise<R
   const rows = items.length === 0
     ? `<div class="empty"><h3>Nothing here</h3><p style="color:var(--text-mute)">${view === "resolved" ? "No resolved items yet." : "Inbox zero. Nothing needs your attention right now."}</p></div>`
     : items.map((it) => {
-        const age = fmtAge(now - it.created_at);
+        const age = inboxAge(now, it);
         const slug = it.target_slug ? `<span style="color:var(--text-mute);margin-left:8px">${esc(it.target_slug)}</span>` : "";
         return `
           <div style="border:1px solid var(--line);border-radius:6px;padding:16px;margin-bottom:12px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px">
             <div style="flex:1;min-width:0">
               <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
                 ${urgencyBadge(it.urgency)}
-                <span style="color:var(--text-faint);font-size:12px">${age} old &middot; ${esc(it.kind)}</span>
+                <span style="color:var(--text-faint);font-size:12px">${esc(age.text)} &middot; ${esc(it.kind)}</span>
               </div>
               <a href="/admin/inbox/${it.id}" style="color:var(--text);text-decoration:none;font-size:15px;font-weight:500">${esc(it.title)}</a>
               ${slug}
@@ -105,7 +92,7 @@ export async function handleInboxDetail(id: number, user: User, env: Env): Promi
   }
 
   const now = Math.floor(Date.now() / 1000);
-  const age = fmtAge(now - item.created_at);
+  const age = inboxAge(now, item);
   const isPending = item.status === "pending" || item.status === "snoozed";
 
   const actionForm = isPending ? `
@@ -137,7 +124,7 @@ export async function handleInboxDetail(id: number, user: User, env: Env): Promi
       <div style="display:flex;align-items:center;gap:12px;margin-top:8px">
         ${urgencyBadge(item.urgency)}
         ${statusBadge(item.status)}
-        <span style="color:var(--text-faint);font-size:12px">${age} old &middot; ${esc(item.kind)}${item.target_slug ? " &middot; " + esc(item.target_slug) : ""}</span>
+        <span style="color:var(--text-faint);font-size:12px">${esc(age.text)} &middot; ${esc(item.kind)}${item.target_slug ? " &middot; " + esc(item.target_slug) : ""}</span>
       </div>
       <h1 style="margin-top:12px">${esc(item.title)}</h1>
     </div>

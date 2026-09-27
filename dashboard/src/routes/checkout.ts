@@ -774,8 +774,15 @@ export async function handleStripeWebhook(
         ].join("\n");
         try {
           await env.DB.prepare(
-            `INSERT INTO admin_inbox (kind, urgency, title, body, action_url, target_slug, created_at, status)
-               VALUES (?, ?, ?, ?, ?, ?, ?, 'open')`,
+            // status is 'pending', not 'open'. 'open' is not in the InboxStatus union
+            // and no reader matches it: getPendingInbox selects 'pending'/'snoozed',
+            // getResolvedInbox selects approved/rejected/resolved, and the hub count
+            // and digest both filter 'pending'. A row written 'open' appears in NO
+            // list and NO count -- a paid signup landing where nobody would see it.
+            // Raw SQL is how it got past the type. last_seen_at is stamped so the
+            // column is never NULL for a row this writer creates.
+            `INSERT INTO admin_inbox (kind, urgency, title, body, action_url, target_slug, created_at, last_seen_at, status)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
           ).bind(
             `${plan}_signup`,
             "high",
@@ -783,6 +790,7 @@ export async function handleStripeWebhook(
             checklistBody,
             `/admin/clients/${encodeURIComponent(slug)}`,
             slug,
+            now,
             now,
           ).run();
           console.log(`[checkout] ${plan} admin_inbox row created for ${email}`);
@@ -1482,8 +1490,9 @@ export async function handlePulseWaitlist(
   //    If the welcome email failed, mark high so Lance can resend.
   try {
     await env.DB.prepare(
-      `INSERT INTO admin_inbox (kind, urgency, title, body, action_url, target_slug, created_at, status)
-         VALUES (?, ?, ?, ?, ?, ?, ?, 'open')`
+      // See the kickoff/retainer writer above: 'open' matched no reader.
+      `INSERT INTO admin_inbox (kind, urgency, title, body, action_url, target_slug, created_at, last_seen_at, status)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')`
     ).bind(
       "pulse_signup",
       emailSent ? "low" : "high",
@@ -1493,6 +1502,7 @@ export async function handlePulseWaitlist(
       `Domain: ${rawDomain}\nSlug: ${slug}\nNote: ${note || "(none)"}\nWelcome email: ${emailSent ? "sent" : "FAILED"}\nSubmitted: ${new Date(now * 1000).toISOString()}`,
       `/admin/clients/${encodeURIComponent(slug)}`,
       slug,
+      now,
       now,
     ).run();
   } catch (e) {

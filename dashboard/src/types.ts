@@ -558,6 +558,14 @@ export interface AdminInboxItem {
   resolution_note: string | null;
   resolved_by: number | null;
   created_at: number;
+  /**
+   * When this item last FIRED. created_at is when it was first seen and is
+   * never bumped by the upsert, so for a recurring check the two diverge and
+   * only this one answers "is this still happening?". Nullable: rows written
+   * before migration 0125 were backfilled to created_at, but a writer that
+   * forgets to stamp it leaves NULL, so every reader must COALESCE.
+   */
+  last_seen_at: number | null;
   resolved_at: number | null;
   snoozed_until: number | null;
 }

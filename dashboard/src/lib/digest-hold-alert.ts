@@ -70,22 +70,27 @@ export function holdInboxUpsert(i: HoldAlertInput): BoundStatement {
   const body =
     `Recipient: ${i.recipient}. Still held as of ${stamp}. ` +
     `Voice pass: ${i.voicePass}. Substance pass: ${i.substancePass}. ` +
-    `Issues: ${i.issues.join("; ").slice(0, 800)} ` +
-    `(This row refreshes on every hold. Its date is when the holds STARTED, not the latest one.)`;
+    `Issues: ${i.issues.join("; ").slice(0, 800)}`;
 
   return {
     // ON CONFLICT names the real constraint. Without it this is the
     // statement that has thrown daily since May.
     sql: `INSERT INTO admin_inbox
-            (kind, title, body, action_url, target_type, target_id, target_slug, urgency, status, created_at)
-          VALUES ('digest_held_by_grader', ?, ?, '/admin/email-test', ?, 0, ?, ?, 'pending', ?)
+            (kind, title, body, action_url, target_type, target_id, target_slug, urgency, status, created_at, last_seen_at)
+          VALUES ('digest_held_by_grader', ?, ?, '/admin/email-test', ?, 0, ?, ?, 'pending', ?, ?)
           ON CONFLICT (kind, target_type, target_id) DO UPDATE SET
             title       = excluded.title,
             body        = excluded.body,
             urgency     = excluded.urgency,
             status      = 'pending',
             resolved_at = NULL,
-            resolved_by = NULL`,
-    binds: [title, body, `digest:${i.clientSlug}`, i.clientSlug, urgency, i.now],
+            resolved_by = NULL,
+            -- created_at stays: it is when this problem STARTED, which is worth
+            -- keeping. last_seen_at is when it last fired, which is what "how
+            -- old is this" means. Before the column existed this file carried
+            -- the distinction as a caveat in the body text, which no query
+            -- could read and no sort could use.
+            last_seen_at = excluded.last_seen_at`,
+    binds: [title, body, `digest:${i.clientSlug}`, i.clientSlug, urgency, i.now, i.now],
   };
 }
