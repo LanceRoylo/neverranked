@@ -50,6 +50,16 @@ export interface WeeklyStats {
   sharedKeywords: number;
   sharedRunsCur: number;           // runs over the shared keywords, this week
   sharedRunsPrev: number;          // runs over the shared keywords, prior week
+  /**
+   * Per-surface rates over the shared keywords. The pooled rate averages
+   * surfaces that move in OPPOSITE directions, and it also moves when the mix
+   * between them shifts even if no surface changed. Both happened in September.
+   */
+  perEngineWow: {
+    engine: string;
+    prev_runs: number; prev_cited: number;
+    cur_runs: number; cur_cited: number;
+  }[];
 }
 
 export async function aggregateLastWeek(env: Env, weekStartsAt?: number): Promise<WeeklyStats> {
@@ -126,16 +136,27 @@ export async function aggregateLastWeek(env: Env, weekStartsAt?: number): Promis
   // the other moved the total. The totals went 827, then 578, then 483, and
   // the drafts in the review queue called that a citation decline.
   //
-  // Every cause was OURS, and measured 2026-09-27 they are not the ones first
-  // written here. The 827 -> 578 fall is not the 2026-09-14 and-scene pause: by
-  // then and-scene had already gone DARK on 09-09, five days early and
-  // undetected, so the week of 09-07 holds three days of its runs against the
-  // prior week's seven (1,115 -> 502). hawaii-theatre lost 1,404 -> 934 in the
-  // same window to sweep-order starvation as prince-waikiki's set grew
-  // (1,111 -> 1,302), and openai and google_ai_overview both ran short.
-  // hawaii-theatre's 25-to-18 cut on 09-21 is real but lands in the LATER
-  // window. Attribution by assumption was wrong twice here; this paragraph is
-  // what the rows actually say.
+  // Every cause was OURS. Measured against the rows on 2026-09-27, and none of
+  // them is what was first written here:
+  //
+  //  - and-scene went DARK on 09-09, five days before its 09-14 cost pause and
+  //    undetected at the time, so the week of 09-07 holds three days of its runs
+  //    against the prior week's seven (1,115 -> 502).
+  //  - hawaii-theatre did NOT lose runs. Its baseline is ~110-143/day and the
+  //    week of 09-07 sat at 934, right on it. The PRIOR week was inflated to
+  //    1,404 by extra sweeps on 09-01 to 09-03 (467 runs on 09-02 against a
+  //    ~133 baseline). An inflated comparison week, not starvation: HTC has a
+  //    measurement_registry row and sorts FIRST, so it is the best protected.
+  //  - the engine MIX moved. openai cites least and had been failing hard (111
+  //    failures on 09-03, a total outage on 09-12), so its recovery took it from
+  //    219 runs to 366 while gemini fell 717 -> 549 with the smaller keyword
+  //    set. A pooled rate drops on that alone.
+  //  - hawaii-theatre's 25-to-18 cut on 09-21 is real but lands in the LATER
+  //    window.
+  //
+  // Sweep-order starvation was asserted here twice before anyone measured it.
+  // There is currently no starvation at all: since 09-14 openai has run at
+  // 102-103% of gemini for every client.
   //
   // This brief is PUBLISHED at /weekly/<slug>. That would have put a claim
   // about the AI citation landscape in public whose entire cause was us
@@ -178,6 +199,38 @@ export async function aggregateLastWeek(env: Env, weekStartsAt?: number): Promis
   const prevCitations = sharedKeywords > 0 ? (lfl?.prev ?? 0) : 0;
   const sharedRunsCur = sharedKeywords > 0 ? (lfl?.cur_runs ?? 0) : 0;
   const sharedRunsPrev = sharedKeywords > 0 ? (lfl?.prev_runs ?? 0) : 0;
+
+  // Per surface, over those same shared keywords.
+  //
+  // Pooling hides two different things. Direction: in the week of 09-14 the
+  // pooled rate fell 17.3% to 16.1% while gemini fell 28.0 to 22.5 and
+  // perplexity 22.1 to 19.6, but anthropic and google_ai_overview both ROSE.
+  // Mix: openai fails often and cites least (15.9%), so a week where it
+  // recovers from an outage pushes the pooled rate down on its own. It
+  // contributed 219 runs one week and 366 the next while failing 111 times on
+  // 09-03 alone. Neither is a change in how AI tools cite.
+  const engWowRes = sharedKeywords > 0
+    ? await env.DB.prepare(
+        `WITH both AS (
+           SELECT keyword_id FROM citation_runs WHERE run_at >= ?3 AND run_at < ?4
+           INTERSECT
+           SELECT keyword_id FROM citation_runs WHERE run_at >= ?1 AND run_at < ?2
+         )
+         SELECT engine,
+                SUM(CASE WHEN run_at <  ?3 THEN 1 ELSE 0 END) AS prev_runs,
+                SUM(CASE WHEN run_at <  ?3 AND client_cited = 1 THEN 1 ELSE 0 END) AS prev_cited,
+                SUM(CASE WHEN run_at >= ?3 THEN 1 ELSE 0 END) AS cur_runs,
+                SUM(CASE WHEN run_at >= ?3 AND client_cited = 1 THEN 1 ELSE 0 END) AS cur_cited
+           FROM citation_runs
+          WHERE run_at >= ?1 AND run_at < ?4
+            AND keyword_id IN (SELECT keyword_id FROM both)
+          GROUP BY engine
+          ORDER BY engine`,
+      ).bind(prevStart, prevEnd, start, end)
+       .all<{ engine: string; prev_runs: number; prev_cited: number; cur_runs: number; cur_cited: number }>()
+       .catch(() => null)
+    : null;
+  const perEngineWow = engWowRes?.results ?? [];
   if (sharedKeywords === 0) {
     console.log("[weekly-brief] no keywords measured in both weeks; week-over-week comparison withheld.");
   }
@@ -207,6 +260,7 @@ export async function aggregateLastWeek(env: Env, weekStartsAt?: number): Promis
     sharedKeywords,
     sharedRunsCur,
     sharedRunsPrev,
+    perEngineWow,
   };
 }
 
@@ -251,6 +305,7 @@ GROUNDING RULES (the stats block in the user message is your ONLY source):
 - Every surface has its own run count. Rates compare across surfaces, absolute counts do not. Never assert that two surfaces were asked the same questions or saw the same query set, because the source does not establish that.
 - A LEVEL is not a CHANGE. "the citation rate is 16%" may never be written as "the citation rate drops 16%", in the title or anywhere else. If you state a movement, state the two numbers it is between. A draft titled "Citation Rate Drops 16%" about a rate that WAS 16% is the exact error this rule exists to stop.
 - Week-over-week movement is the RATE change in the Week over week block, never the difference between two absolute citation counts. If that block carries a VOLUME WARNING, the count difference is a measurement-coverage artifact and you may not present it as the market citing more or less.
+- Week-over-week movement is stated PER SURFACE, from the per-surface lines. The pooled rate averages surfaces that move in opposite directions and also moves when the balance of runs between them changes, so it may not be the headline. If the per-surface block says no surface moved 2 points, the week's finding is that nothing moved, and you say so.
 - Query volume is ours. We choose how many questions to ask and how often. Any change in it is a fact about our instrument, and writing it as a change in AI behaviour is the same failure as reporting a question-set change as a ranking movement.
 - If a detail would make the brief more interesting but is not in the stats block, leave it out. A thin accurate brief is correct. An interesting invented one is a retraction.
 
@@ -305,6 +360,37 @@ export function weekOverWeekBlock(stats: WeeklyStats): string {
     `  The rate is the week-over-week finding. ${curRate.toFixed(1)}% is a LEVEL, not a change:`,
     `  never write a level as a drop or a rise.`,
   ];
+
+  // Per surface. This is the part that is actually reportable: a surface's own
+  // rate over the same questions, against its own prior rate.
+  if (stats.perEngineWow.length > 0) {
+    lines.push("", "  Per surface, over those same questions (prior -> this week):");
+    const moved: string[] = [];
+    for (const e of stats.perEngineWow) {
+      const pr = e.prev_runs > 0 ? (e.prev_cited / e.prev_runs) * 100 : null;
+      const cr = e.cur_runs > 0 ? (e.cur_cited / e.cur_runs) * 100 : null;
+      if (pr === null || cr === null) {
+        lines.push(`    ${e.engine.padEnd(19)} not measured in both weeks; no movement may be stated`);
+        continue;
+      }
+      const d = cr - pr;
+      lines.push(
+        `    ${e.engine.padEnd(19)} ${pr.toFixed(1)}% -> ${cr.toFixed(1)}%  (${d >= 0 ? "+" : ""}${d.toFixed(1)}pp, ${e.prev_runs} -> ${e.cur_runs} runs)`,
+      );
+      if (Math.abs(d) >= 2) moved.push(`${e.engine} ${d >= 0 ? "up" : "down"} ${Math.abs(d).toFixed(1)}pp`);
+    }
+    lines.push(
+      moved.length > 0
+        ? `  Surfaces that moved at least 2 points: ${moved.join(", ")}.`
+        : "  No surface moved as much as 2 points. Say that plainly rather than",
+    );
+    if (moved.length === 0) lines.push("  finding a trend in the pooled figure.");
+    lines.push(
+      "  Report movement PER SURFACE. The pooled rate above averages surfaces that",
+      "  can move in opposite directions, and it also shifts when the balance of runs",
+      "  between them changes even if no surface moved at all.",
+    );
+  }
 
   if (volSkew >= 0.1) {
     lines.push(

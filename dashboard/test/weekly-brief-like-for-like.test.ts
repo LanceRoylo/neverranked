@@ -2,20 +2,23 @@
  *
  * The week-over-week citation delta was two raw sums over citation_runs, with
  * no join and no scoping, so any question measured in one week and not the
- * other moved the total. Every such change in September 2026 was ours.
+ * other moved the total. Totals went 827, then 578, then 483, and two drafts
+ * sat in the review queue calling it a citation decline.
  *
- * Which ones, measured from D1 on 2026-09-27 rather than assumed: and-scene
- * went DARK on 09-09, five days before the 09-14 cost pause and undetected at
- * the time; hawaii-theatre lost runs to sweep-order starvation as prince's set
- * grew; openai and google_ai_overview both ran short; and hawaii-theatre's
- * 25-to-18 cut on 09-21 lands in the later window. The first version of this
- * comment blamed the 09-14 pause for a fall that preceded it.
+ * This brief PUBLISHES at /weekly/<slug>. That would have put a claim about the
+ * AI citation landscape in public whose every cause was ours, from a practice
+ * that sells measurement integrity. Same shape as the retracted 45-to-95.
  *
- * Totals went 827, then 578, then 483, and two drafts sat in the review queue
- * calling it a citation decline. This brief PUBLISHES at /weekly/<slug>, so
- * that would have put a claim about the AI citation landscape in public whose
- * whole cause was us turning measurement off. Same shape as the retracted
- * 45-to-95 figure, from a practice that sells measurement integrity. */
+ * The causes, measured from D1 on 2026-09-27 rather than assumed: and-scene went
+ * DARK on 09-09, five days before its 09-14 cost pause and undetected at the
+ * time; the week BEFORE was inflated by extra sweeps on 09-01 to 09-03, so
+ * hawaii-theatre's apparent loss is a high baseline and not starvation; the
+ * engine mix shifted as openai recovered from an outage, and it cites least of
+ * the six; and hawaii-theatre's 25-to-18 cut on 09-21 lands in the later window.
+ *
+ * Earlier versions of this comment blamed the 09-14 pause for a fall that
+ * preceded it, then blamed sweep starvation that was not happening. Both were
+ * inferred from notes instead of measured. */
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
