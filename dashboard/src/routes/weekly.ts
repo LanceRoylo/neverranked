@@ -259,6 +259,14 @@ export async function handleAdminBriefReject(briefId: number, user: User, env: E
   return redirect(`/admin/weekly-brief/${briefId}`);
 }
 
+/** A rejected regenerate request says why, in the response, not in a log. */
+function badRequest(message: string): Response {
+  return new Response(JSON.stringify({ ok: false, error: message }, null, 2), {
+    status: 400,
+    headers: { "content-type": "application/json" },
+  });
+}
+
 export async function handleAdminBriefRegenerate(env: Env, request: Request): Promise<Response> {
   const form = await request.formData();
   const overwriteIdRaw = form.get("overwrite_id");
@@ -268,7 +276,34 @@ export async function handleAdminBriefRegenerate(env: Env, request: Request): Pr
       await env.DB.prepare(`DELETE FROM weekly_briefs WHERE id = ? AND status = 'draft'`).bind(id).run();
     }
   }
-  const result = await generateWeeklyBrief(env);
+  // Optional target week, so a stale draft can be regenerated instead of only
+  // the default one. Without this the route always regenerated
+  // mostRecentMonday-7, which made the week-of-09-07 draft unreachable while
+  // appearing to offer regeneration.
+  //
+  // Must be a Monday: weekSlug() names the row from this value, so any other
+  // day creates an off-cadence slug that no longer matches the week it covers.
+  // Must not be in the future: aggregating a window that has not happened
+  // returns a sparse brief, which the generator would then refuse in a less
+  // obvious place.
+  let weekStartsAt: number | undefined;
+  const weekRaw = form.get("week");
+  if (weekRaw) {
+    const t = Date.parse(`${String(weekRaw).trim()}T00:00:00Z`);
+    if (!Number.isFinite(t)) {
+      return badRequest(`week must be YYYY-MM-DD, got "${String(weekRaw)}"`);
+    }
+    const d = new Date(t);
+    if (d.getUTCDay() !== 1) {
+      return badRequest(`week must be a Monday (UTC); ${String(weekRaw)} is a ${["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][d.getUTCDay()]}`);
+    }
+    weekStartsAt = Math.floor(t / 1000);
+    if (weekStartsAt + 7 * 86400 > Math.floor(Date.now() / 1000)) {
+      return badRequest(`the week starting ${String(weekRaw)} has not finished yet`);
+    }
+  }
+
+  const result = await generateWeeklyBrief(env, weekStartsAt);
   if (result.briefId) return redirect(`/admin/weekly-brief/${result.briefId}`);
   return new Response(JSON.stringify(result, null, 2), {
     status: result.ok ? 200 : 400,
