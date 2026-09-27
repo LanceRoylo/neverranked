@@ -57,11 +57,17 @@ rows(q(`SELECT id, COALESCE(client_slug,'-') s, type, substr(title,1,58) t,
 
 // 3. The queue I was not opening.
 section("ADMIN INBOX, pending");
-rows(q(`SELECT kind, COALESCE(target_slug,'-') s, substr(title,1,54) t, urgency,
-               CAST((unixepoch()-created_at)/86400 AS INT) age
+// TWO ages, because they mean different things. addInboxItem upserts and
+// refreshes the body without touching created_at, so "first" is when this
+// problem was first ever seen and "last" is when it last fired. Reading the
+// first as the second showed a failure carrying September figures as 146 days
+// old, and nearly got it closed as stale.
+rows(q(`SELECT kind, COALESCE(target_slug,'-') s, substr(title,1,48) t, urgency,
+               CAST((unixepoch()-created_at)/86400 AS INT) first_age,
+               CAST((unixepoch()-COALESCE(last_seen_at,created_at))/86400 AS INT) last_age
           FROM admin_inbox WHERE status NOT IN ('done','dismissed','resolved')
-         ORDER BY created_at`),
-  (r) => `${String(r.age).padStart(3)}d  ${String(r.urgency).padEnd(6)} ${String(r.s).padEnd(16)} ${String(r.kind).padEnd(22)} ${r.t}`);
+         ORDER BY COALESCE(last_seen_at,created_at) DESC`),
+  (r) => `last ${String(r.last_age).padStart(3)}d / first ${String(r.first_age).padStart(3)}d  ${String(r.urgency).padEnd(6)} ${String(r.s).padEnd(15)} ${String(r.kind).padEnd(22)} ${r.t}`);
 
 // 4. Drafts waiting on a human, and anything that publishes.
 section("AWAITING REVIEW");

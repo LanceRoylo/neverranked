@@ -1,0 +1,22 @@
+-- An inbox item's age was the age of its FIRST occurrence, forever.
+--
+-- addInboxItem upserts on (kind, target_type, target_id) and refreshes title,
+-- body, action_url and urgency, but not created_at. So a check that fires every
+-- day keeps the timestamp of the first time it ever fired, and the queue shows
+-- a live problem as ancient.
+--
+-- Measured 2026-09-27. Two items read as 147 and 146 days old and were about to
+-- be closed as stale. One was genuinely resolved long ago. The other carried
+-- figures from THIS month: the weekly-brief generator failing validation on
+-- "client citations rose from 517 to 827", which are weeks 34 and 35 of
+-- September. A current failure wearing a May timestamp.
+--
+-- Same shape as the memo watchdog on 2026-09-26, which read monthly_memos'
+-- created_at for the same reason and called a memo written the previous
+-- evening "not drafted".
+--
+-- Backfill sets last_seen_at = created_at: the only honest starting value, and
+-- it makes every existing row look exactly as old as it does today rather than
+-- silently resetting the queue.
+ALTER TABLE admin_inbox ADD COLUMN last_seen_at INTEGER;
+UPDATE admin_inbox SET last_seen_at = created_at WHERE last_seen_at IS NULL;

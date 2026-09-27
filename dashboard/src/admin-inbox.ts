@@ -43,13 +43,19 @@ export async function addInboxItem(env: Env, params: AddInboxParams): Promise<nu
 
   const result = await env.DB.prepare(
     `INSERT INTO admin_inbox
-       (kind, title, body, action_url, target_type, target_id, target_slug, urgency, status, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)
+       (kind, title, body, action_url, target_type, target_id, target_slug, urgency, status, created_at, last_seen_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)
      ON CONFLICT(kind, target_type, target_id) DO UPDATE SET
        title = excluded.title,
        body = excluded.body,
        action_url = excluded.action_url,
-       urgency = excluded.urgency
+       urgency = excluded.urgency,
+       -- created_at deliberately NOT touched: it records when this problem was
+       -- first seen, which is worth keeping. last_seen_at records when it last
+       -- fired, which is what "how old is this" actually means. Reading the
+       -- first as the second showed a failure carrying September figures as
+       -- 146 days old, and nearly got it closed as stale.
+       last_seen_at = excluded.last_seen_at
      RETURNING id`,
   ).bind(
     params.kind,
@@ -61,6 +67,7 @@ export async function addInboxItem(env: Env, params: AddInboxParams): Promise<nu
     params.target_slug ?? null,
     urgency,
     now,
+    now, // last_seen_at: refreshed on every re-fire, unlike created_at
   ).first<{ id: number }>();
 
   const id = result?.id ?? 0;
