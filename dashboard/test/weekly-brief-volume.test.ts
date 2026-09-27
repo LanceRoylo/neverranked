@@ -114,3 +114,37 @@ test("run volume is scoped to the shared questions, not the whole week", () => {
     /COUNT\(\*\) FROM citation_runs\s*\n\s*WHERE run_at >= \?3 AND run_at < \?4 AND keyword_id IN \(SELECT keyword_id FROM both\)\) AS cur_runs/,
   );
 });
+
+/* Regeneration must actually regenerate.
+ *
+ * generateWeeklyBrief returned ok:true for ANY existing row for that week,
+ * whatever its status. So "regenerate the two bad drafts" would have handed
+ * back the two bad drafts and reported success -- a synthetic success, which is
+ * not a delivery. A published brief still may not be silently replaced.
+ */
+test("an unpublished brief is superseded, a published one is never touched", () => {
+  const guard = SRC.slice(SRC.indexOf("// Already generated for this week?"));
+
+  assert.match(
+    guard,
+    /if \(existing\?\.status === "published"\)/,
+    "a published brief must be detected specifically, not by mere existence",
+  );
+  assert.match(guard, /refusing to replace it/);
+  assert.match(
+    guard,
+    /slug = slug \|\| '-superseded-' \|\| id, status = 'rejected'/,
+    "an unpublished brief must be moved aside so the new INSERT can take the slug",
+  );
+  assert.match(guard, /WHERE id = \? AND status <> 'published'/, "the UPDATE must re-check status");
+  // A zero-change UPDATE must abort rather than fall through to a slug collision.
+  assert.match(guard, /changes \?\? 0\) === 0/);
+  assert.match(guard, /nothing regenerated/);
+
+  // The old blanket early-return must be gone.
+  assert.doesNotMatch(
+    guard.slice(0, guard.indexOf("stats.totalCitationRuns < 10")),
+    /if \(existing\) return \{ ok: true/,
+    "returning ok:true for any existing row is the synthetic success this removes",
+  );
+});

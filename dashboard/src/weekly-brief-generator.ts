@@ -458,10 +458,38 @@ export async function generateWeeklyBrief(env: Env, weekStartsAt?: number): Prom
   const slug = weekSlug(stats.weekStartsAt);
 
   // Already generated for this week?
+  //
+  // This used to return ok:true for ANY existing row, whatever its status, so
+  // asking to regenerate a bad draft handed back the bad draft and reported
+  // success. Both September drafts had to be regenerated after the
+  // week-over-week basis was fixed, and this would have silently refused while
+  // looking like it worked -- a synthetic success, which is not a delivery.
+  //
+  // A PUBLISHED brief is never replaced silently: it is public and may already
+  // be linked or indexed. Anything else has not been delivered to anyone, so it
+  // is superseded and regenerated. The old row is kept, not deleted: it is the
+  // evidence of what the generator used to say. Its slug is moved aside because
+  // slug is UNIQUE, and only 'published' rows are ever served.
   const existing = await env.DB.prepare(
     `SELECT id, status FROM weekly_briefs WHERE slug = ?`,
   ).bind(slug).first<{ id: number; status: string }>();
-  if (existing) return { ok: true, briefId: existing.id, slug };
+  if (existing?.status === "published") {
+    console.log(`[weekly-brief] ${slug} is already published; refusing to replace it.`);
+    return { ok: true, briefId: existing.id, slug };
+  }
+  if (existing) {
+    const moved = await env.DB.prepare(
+      `UPDATE weekly_briefs
+          SET slug = slug || '-superseded-' || id, status = 'rejected'
+        WHERE id = ? AND status <> 'published'`,
+    ).bind(existing.id).run();
+    if (!moved.success || (moved.meta?.changes ?? 0) === 0) {
+      // Never proceed to an INSERT that would collide on the unique slug and
+      // fail somewhere less visible than here.
+      return { ok: false, error: `could not supersede existing ${existing.status} brief ${existing.id} for ${slug}; nothing regenerated` };
+    }
+    console.log(`[weekly-brief] superseded ${existing.status} brief ${existing.id} for ${slug}; regenerating.`);
+  }
 
   // Refuse to generate if there's almost no data -- a sparse brief is
   // worse than no brief.
