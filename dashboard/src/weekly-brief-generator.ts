@@ -44,6 +44,10 @@ export interface WeeklyStats {
   trackedKeywords: number;         // count of active citation_keywords across all clients
   newCitationsThisWeek: number;    // client_cited rows added this week
   prevWeekCitations: number;       // for week-over-week delta
+  /** Questions measured in BOTH weeks. The delta is computed over these only,
+   *  so a set change cannot masquerade as a citation movement. Zero means no
+   *  comparable pair and no delta may be stated. */
+  sharedKeywords: number;
 }
 
 export async function aggregateLastWeek(env: Env, weekStartsAt?: number): Promise<WeeklyStats> {
@@ -113,15 +117,47 @@ export async function aggregateLastWeek(env: Env, weekStartsAt?: number): Promis
     `SELECT COUNT(*) AS n FROM citation_keywords WHERE active = 1`,
   ).first<{ n: number }>())?.n ?? 0;
 
-  // Week-over-week new citations delta
-  const newCitations = (await env.DB.prepare(
-    `SELECT SUM(CASE WHEN client_cited = 1 THEN 1 ELSE 0 END) AS n
-       FROM citation_runs WHERE run_at >= ? AND run_at < ?`,
-  ).bind(start, end).first<{ n: number }>())?.n ?? 0;
-  const prevCitations = (await env.DB.prepare(
-    `SELECT SUM(CASE WHEN client_cited = 1 THEN 1 ELSE 0 END) AS n
-       FROM citation_runs WHERE run_at >= ? AND run_at < ?`,
-  ).bind(prevStart, prevEnd).first<{ n: number }>())?.n ?? 0;
+  // Week-over-week citations, LIKE FOR LIKE.
+  //
+  // These two counts used to be raw sums over citation_runs in each window,
+  // with no join and no scoping, so any question measured in one week and not
+  // the other moved the total. Every such change in September was OURS:
+  // and-scene's 49 keywords were switched off on 2026-09-14 as a cost
+  // decision, and hawaii-theatre's set was cut from 25 questions to 18 on
+  // 2026-09-21. The totals went 827, then 578, then 483, and the drafts in
+  // the review queue called that a citation decline.
+  //
+  // This brief is PUBLISHED at /weekly/<slug>. That would have put a claim
+  // about the AI citation landscape in public whose entire cause was us
+  // turning off measurement, from a practice that sells measurement
+  // integrity. It is the same shape as the retracted 45-to-95 figure.
+  //
+  // So both weeks are counted over the SAME keywords: those with runs in both
+  // windows. A question added or dropped between them cannot move the delta.
+  const lfl = await env.DB.prepare(
+    `WITH both AS (
+       SELECT keyword_id FROM citation_runs WHERE run_at >= ?3 AND run_at < ?4
+       INTERSECT
+       SELECT keyword_id FROM citation_runs WHERE run_at >= ?1 AND run_at < ?2
+     )
+     SELECT
+       (SELECT COUNT(DISTINCT keyword_id) FROM both) AS shared_keywords,
+       (SELECT SUM(CASE WHEN client_cited = 1 THEN 1 ELSE 0 END) FROM citation_runs
+          WHERE run_at >= ?3 AND run_at < ?4 AND keyword_id IN (SELECT keyword_id FROM both)) AS cur,
+       (SELECT SUM(CASE WHEN client_cited = 1 THEN 1 ELSE 0 END) FROM citation_runs
+          WHERE run_at >= ?1 AND run_at < ?2 AND keyword_id IN (SELECT keyword_id FROM both)) AS prev`,
+  ).bind(prevStart, prevEnd, start, end)
+   .first<{ shared_keywords: number | null; cur: number | null; prev: number | null }>()
+   .catch(() => null);
+
+  const sharedKeywords = lfl?.shared_keywords ?? 0;
+  // No shared keywords means no comparable pair, and a delta computed from
+  // nothing is worse than no delta at all.
+  const newCitations = sharedKeywords > 0 ? (lfl?.cur ?? 0) : 0;
+  const prevCitations = sharedKeywords > 0 ? (lfl?.prev ?? 0) : 0;
+  if (sharedKeywords === 0) {
+    console.log("[weekly-brief] no keywords measured in both weeks; week-over-week comparison withheld.");
+  }
 
   const totalRuns = enginesRes.results.reduce((s, r) => s + r.runs, 0);
 
@@ -145,6 +181,7 @@ export async function aggregateLastWeek(env: Env, weekStartsAt?: number): Promis
     trackedKeywords,
     newCitationsThisWeek: newCitations,
     prevWeekCitations: prevCitations,
+    sharedKeywords,
   };
 }
 
@@ -205,9 +242,13 @@ interface GeneratedBrief {
 function buildUserMessage(stats: WeeklyStats): string {
   const fmtPct = (n: number, total: number) => total > 0 ? `${Math.round((n / total) * 100)}%` : "0%";
   const sentTotal = stats.sentimentBreakdown.positive + stats.sentimentBreakdown.neutral + stats.sentimentBreakdown.negative;
-  const wow = stats.prevWeekCitations === 0
-    ? "(no prior-week baseline yet)"
-    : `${stats.newCitationsThisWeek > stats.prevWeekCitations ? "up" : stats.newCitationsThisWeek < stats.prevWeekCitations ? "down" : "flat"} from ${stats.prevWeekCitations} citations the week before`;
+  // State the basis with the number, always. A delta whose basis is invisible
+  // is how a set change gets published as a market movement.
+  const wow = stats.sharedKeywords === 0
+    ? "(NO comparable prior week: no question was measured in both weeks, so there is NO week-over-week movement and you may not state or imply one)"
+    : stats.prevWeekCitations === 0
+      ? "(no prior-week baseline yet)"
+      : `${stats.newCitationsThisWeek > stats.prevWeekCitations ? "up" : stats.newCitationsThisWeek < stats.prevWeekCitations ? "down" : "flat"} from ${stats.prevWeekCitations} citations the week before, counted over the ${stats.sharedKeywords} questions measured in BOTH weeks so the two are like for like`;
 
   return `Week analyzed: ${new Date(stats.weekStartsAt * 1000).toISOString().slice(0,10)} to ${new Date(stats.weekEndsAt * 1000).toISOString().slice(0,10)}
 
