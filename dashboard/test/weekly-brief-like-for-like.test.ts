@@ -2,9 +2,14 @@
  *
  * The week-over-week citation delta was two raw sums over citation_runs, with
  * no join and no scoping, so any question measured in one week and not the
- * other moved the total. Every such change in September 2026 was ours:
- * and-scene's 49 keywords switched off on the 14th as a cost decision, and
- * hawaii-theatre's set cut from 25 questions to 18 on the 21st.
+ * other moved the total. Every such change in September 2026 was ours.
+ *
+ * Which ones, measured from D1 on 2026-09-27 rather than assumed: and-scene
+ * went DARK on 09-09, five days before the 09-14 cost pause and undetected at
+ * the time; hawaii-theatre lost runs to sweep-order starvation as prince's set
+ * grew; openai and google_ai_overview both ran short; and hawaii-theatre's
+ * 25-to-18 cut on 09-21 lands in the later window. The first version of this
+ * comment blamed the 09-14 pause for a fall that preceded it.
  *
  * Totals went 827, then 578, then 483, and two drafts sat in the review queue
  * calling it a citation decline. This brief PUBLISHES at /weekly/<slug>, so
@@ -36,6 +41,11 @@ test("no shared questions means no delta, not a zero", () => {
 test("the basis travels with the number into the prompt", () => {
   // A delta whose basis is invisible is how a set change gets published as a
   // market movement.
-  assert.match(SRC, /measured in BOTH weeks so the two are like for like/);
+  assert.match(SRC, /measured in BOTH weeks/);
   assert.match(SRC, /sharedKeywords: number;/, "the basis must be part of the stats contract");
+  // The basis is now two things, not one: which questions, and how many times
+  // each was asked. Scoping the questions alone still let a 23% swing in run
+  // volume publish as a citation decline. See weekly-brief-volume.test.ts.
+  assert.match(SRC, /sharedRunsCur: number;/, "the denominator must travel too");
+  assert.match(SRC, /sharedRunsPrev: number;/);
 });

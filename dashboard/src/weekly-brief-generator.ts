@@ -48,6 +48,8 @@ export interface WeeklyStats {
    *  so a set change cannot masquerade as a citation movement. Zero means no
    *  comparable pair and no delta may be stated. */
   sharedKeywords: number;
+  sharedRunsCur: number;           // runs over the shared keywords, this week
+  sharedRunsPrev: number;          // runs over the shared keywords, prior week
 }
 
 export async function aggregateLastWeek(env: Env, weekStartsAt?: number): Promise<WeeklyStats> {
@@ -121,11 +123,19 @@ export async function aggregateLastWeek(env: Env, weekStartsAt?: number): Promis
   //
   // These two counts used to be raw sums over citation_runs in each window,
   // with no join and no scoping, so any question measured in one week and not
-  // the other moved the total. Every such change in September was OURS:
-  // and-scene's 49 keywords were switched off on 2026-09-14 as a cost
-  // decision, and hawaii-theatre's set was cut from 25 questions to 18 on
-  // 2026-09-21. The totals went 827, then 578, then 483, and the drafts in
-  // the review queue called that a citation decline.
+  // the other moved the total. The totals went 827, then 578, then 483, and
+  // the drafts in the review queue called that a citation decline.
+  //
+  // Every cause was OURS, and measured 2026-09-27 they are not the ones first
+  // written here. The 827 -> 578 fall is not the 2026-09-14 and-scene pause: by
+  // then and-scene had already gone DARK on 09-09, five days early and
+  // undetected, so the week of 09-07 holds three days of its runs against the
+  // prior week's seven (1,115 -> 502). hawaii-theatre lost 1,404 -> 934 in the
+  // same window to sweep-order starvation as prince-waikiki's set grew
+  // (1,111 -> 1,302), and openai and google_ai_overview both ran short.
+  // hawaii-theatre's 25-to-18 cut on 09-21 is real but lands in the LATER
+  // window. Attribution by assumption was wrong twice here; this paragraph is
+  // what the rows actually say.
   //
   // This brief is PUBLISHED at /weekly/<slug>. That would have put a claim
   // about the AI citation landscape in public whose entire cause was us
@@ -145,9 +155,20 @@ export async function aggregateLastWeek(env: Env, weekStartsAt?: number): Promis
        (SELECT SUM(CASE WHEN client_cited = 1 THEN 1 ELSE 0 END) FROM citation_runs
           WHERE run_at >= ?3 AND run_at < ?4 AND keyword_id IN (SELECT keyword_id FROM both)) AS cur,
        (SELECT SUM(CASE WHEN client_cited = 1 THEN 1 ELSE 0 END) FROM citation_runs
-          WHERE run_at >= ?1 AND run_at < ?2 AND keyword_id IN (SELECT keyword_id FROM both)) AS prev`,
+          WHERE run_at >= ?1 AND run_at < ?2 AND keyword_id IN (SELECT keyword_id FROM both)) AS prev,
+       -- Run volume over the SAME keywords. Intersecting the question set is
+       -- not enough: a question measured in both weeks but asked 30% fewer
+       -- times in one of them moves the citation total on its own. Both
+       -- September drafts were built on windows like that -- 4,203 runs
+       -- against 3,255 over an identical 88 questions, a 23% volume gap
+       -- published as "citations fell 30%".
+       (SELECT COUNT(*) FROM citation_runs
+          WHERE run_at >= ?3 AND run_at < ?4 AND keyword_id IN (SELECT keyword_id FROM both)) AS cur_runs,
+       (SELECT COUNT(*) FROM citation_runs
+          WHERE run_at >= ?1 AND run_at < ?2 AND keyword_id IN (SELECT keyword_id FROM both)) AS prev_runs`,
   ).bind(prevStart, prevEnd, start, end)
-   .first<{ shared_keywords: number | null; cur: number | null; prev: number | null }>()
+   .first<{ shared_keywords: number | null; cur: number | null; prev: number | null;
+            cur_runs: number | null; prev_runs: number | null }>()
    .catch(() => null);
 
   const sharedKeywords = lfl?.shared_keywords ?? 0;
@@ -155,6 +176,8 @@ export async function aggregateLastWeek(env: Env, weekStartsAt?: number): Promis
   // nothing is worse than no delta at all.
   const newCitations = sharedKeywords > 0 ? (lfl?.cur ?? 0) : 0;
   const prevCitations = sharedKeywords > 0 ? (lfl?.prev ?? 0) : 0;
+  const sharedRunsCur = sharedKeywords > 0 ? (lfl?.cur_runs ?? 0) : 0;
+  const sharedRunsPrev = sharedKeywords > 0 ? (lfl?.prev_runs ?? 0) : 0;
   if (sharedKeywords === 0) {
     console.log("[weekly-brief] no keywords measured in both weeks; week-over-week comparison withheld.");
   }
@@ -182,6 +205,8 @@ export async function aggregateLastWeek(env: Env, weekStartsAt?: number): Promis
     newCitationsThisWeek: newCitations,
     prevWeekCitations: prevCitations,
     sharedKeywords,
+    sharedRunsCur,
+    sharedRunsPrev,
   };
 }
 
@@ -224,6 +249,9 @@ GROUNDING RULES (the stats block in the user message is your ONLY source):
 - A count is not a description. Never characterise the content of an individual citation, mention or thread. If the source says one mention was negative, you may say one mention was negative and nothing about what it said.
 - The source carries no dates, no thread ages and no recency signal. Never claim anything is recent, old, current or trending over time beyond the one prior-week figure given.
 - Every surface has its own run count. Rates compare across surfaces, absolute counts do not. Never assert that two surfaces were asked the same questions or saw the same query set, because the source does not establish that.
+- A LEVEL is not a CHANGE. "the citation rate is 16%" may never be written as "the citation rate drops 16%", in the title or anywhere else. If you state a movement, state the two numbers it is between. A draft titled "Citation Rate Drops 16%" about a rate that WAS 16% is the exact error this rule exists to stop.
+- Week-over-week movement is the RATE change in the Week over week block, never the difference between two absolute citation counts. If that block carries a VOLUME WARNING, the count difference is a measurement-coverage artifact and you may not present it as the market citing more or less.
+- Query volume is ours. We choose how many questions to ask and how often. Any change in it is a fact about our instrument, and writing it as a change in AI behaviour is the same failure as reporting a question-set change as a ranking movement.
 - If a detail would make the brief more interesting but is not in the stats block, leave it out. A thin accurate brief is correct. An interesting invented one is a retraction.
 
 OUTPUT FORMAT (strict JSON):
@@ -239,16 +267,67 @@ interface GeneratedBrief {
   body_markdown: string;
 }
 
+/**
+ * The week-over-week block, stated as a RATE.
+ *
+ * Intersecting the question set stopped a set change from moving the delta. It
+ * did not stop a VOLUME change, and that is what the two September drafts
+ * actually were. Draft 2 compared 4,203 runs against 3,255 over an identical
+ * 88 questions and called the 30% fall in citations a citation decline. The
+ * rate over those same questions went 18.8% to 16.0%: real, and less than half
+ * the drop that was about to be published.
+ *
+ * A count divided by a denominator nobody states is the same defect as the
+ * question-set drift and the 45-to-95 figure: our own instrument, reported as
+ * the market. So the rate leads, both denominators are named, and when volume
+ * moves materially the count delta is explicitly disallowed as a finding.
+ */
+export function weekOverWeekBlock(stats: WeeklyStats): string {
+  if (stats.sharedKeywords === 0) {
+    return "  NO comparable prior week: no question was measured in both weeks, so there\n" +
+           "  is NO week-over-week movement and you may not state or imply one.";
+  }
+  if (stats.sharedRunsPrev === 0 || stats.sharedRunsCur === 0) {
+    return "  No prior-week baseline yet. State no week-over-week movement.";
+  }
+
+  const curRate = (stats.newCitationsThisWeek / stats.sharedRunsCur) * 100;
+  const prevRate = (stats.prevWeekCitations / stats.sharedRunsPrev) * 100;
+  const pp = curRate - prevRate;
+  const dir = Math.abs(pp) < 0.05 ? "flat" : pp > 0 ? "up" : "down";
+  const volSkew = Math.abs(stats.sharedRunsCur - stats.sharedRunsPrev) / stats.sharedRunsPrev;
+
+  const lines = [
+    `  Counted ONLY over the ${stats.sharedKeywords} questions measured in BOTH weeks.`,
+    `  Prior week: ${stats.prevWeekCitations} citations in ${stats.sharedRunsPrev} runs (${prevRate.toFixed(1)}%)`,
+    `  This week:  ${stats.newCitationsThisWeek} citations in ${stats.sharedRunsCur} runs (${curRate.toFixed(1)}%)`,
+    `  CITATION RATE: ${dir}${dir === "flat" ? "" : ` ${Math.abs(pp).toFixed(1)} percentage points`}.`,
+    `  The rate is the week-over-week finding. ${curRate.toFixed(1)}% is a LEVEL, not a change:`,
+    `  never write a level as a drop or a rise.`,
+  ];
+
+  if (volSkew >= 0.1) {
+    lines.push(
+      `  VOLUME WARNING: we ran ${Math.round(volSkew * 100)}% ${stats.sharedRunsCur < stats.sharedRunsPrev ? "FEWER" : "MORE"} queries this week than last`,
+      `  over the same questions. That gap is OURS, not the market's. You may NOT`,
+      `  characterise the difference between ${stats.prevWeekCitations} and ${stats.newCitationsThisWeek} citations as a citation`,
+      `  increase or decrease.`,
+      `  The rate is also affected: it pools every question and surface, so when`,
+      `  volume moves this much the MIX behind the two rates differs too, and part`,
+      `  of the rate change is that mix. Report the rate change as the measured`,
+      `  change, say plainly that query volume differed between the two weeks, and`,
+      `  do not attribute either to AI tools citing differently.`,
+    );
+  }
+  return lines.join("\n");
+}
+
 function buildUserMessage(stats: WeeklyStats): string {
   const fmtPct = (n: number, total: number) => total > 0 ? `${Math.round((n / total) * 100)}%` : "0%";
   const sentTotal = stats.sentimentBreakdown.positive + stats.sentimentBreakdown.neutral + stats.sentimentBreakdown.negative;
   // State the basis with the number, always. A delta whose basis is invisible
   // is how a set change gets published as a market movement.
-  const wow = stats.sharedKeywords === 0
-    ? "(NO comparable prior week: no question was measured in both weeks, so there is NO week-over-week movement and you may not state or imply one)"
-    : stats.prevWeekCitations === 0
-      ? "(no prior-week baseline yet)"
-      : `${stats.newCitationsThisWeek > stats.prevWeekCitations ? "up" : stats.newCitationsThisWeek < stats.prevWeekCitations ? "down" : "flat"} from ${stats.prevWeekCitations} citations the week before, counted over the ${stats.sharedKeywords} questions measured in BOTH weeks so the two are like for like`;
+  const wow = weekOverWeekBlock(stats);
 
   return `Week analyzed: ${new Date(stats.weekStartsAt * 1000).toISOString().slice(0,10)} to ${new Date(stats.weekEndsAt * 1000).toISOString().slice(0,10)}
 
@@ -262,7 +341,10 @@ function buildUserMessage(stats: WeeklyStats): string {
   Never count Bing among the AI tools and never attribute answering behaviour to it.
   Together these are seven measured surfaces.
   Total runs this week:     ${stats.totalCitationRuns}
-  New client citations:     ${stats.newCitationsThisWeek} (${wow})
+  New client citations:     ${stats.newCitationsThisWeek}
+
+## Week over week
+${wow}
 
   Per engine:
 ${stats.perEngine.map(e => `    ${e.engine.padEnd(12)} ${e.runs} runs, ${e.client_cited} cited (${fmtPct(e.client_cited, e.runs)})`).join("\n")}
