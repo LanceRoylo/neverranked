@@ -21,6 +21,7 @@
  */
 
 import type { Env } from "./types";
+import { computeComparison, describeMovement, type ComparisonResult } from "./lib/compare-periods";
 import { addInboxItem } from "./admin-inbox";
 
 const MODEL = "claude-sonnet-4-5";
@@ -48,18 +49,15 @@ export interface WeeklyStats {
    *  so a set change cannot masquerade as a citation movement. Zero means no
    *  comparable pair and no delta may be stated. */
   sharedKeywords: number;
-  sharedRunsCur: number;           // runs over the shared keywords, this week
-  sharedRunsPrev: number;          // runs over the shared keywords, prior week
   /**
-   * Per-surface rates over the shared keywords. The pooled rate averages
-   * surfaces that move in OPPOSITE directions, and it also moves when the mix
-   * between them shifts even if no surface changed. Both happened in September.
+   * The week-over-week comparison, from the shared primitive. This used to be
+   * four loose fields plus a per-engine array that this file compared itself,
+   * and its pooled figure had NO engine filter: it averaged citation-grade and
+   * model-knowledge surfaces together, with the Bing control in the
+   * denominator. On the week of 09-14 that published "down 1.2 points" when
+   * citation-grade surfaces were down 2.6 and model-knowledge was up 0.2.
    */
-  perEngineWow: {
-    engine: string;
-    prev_runs: number; prev_cited: number;
-    cur_runs: number; cur_cited: number;
-  }[];
+  comparison: ComparisonResult;
 }
 
 export async function aggregateLastWeek(env: Env, weekStartsAt?: number): Promise<WeeklyStats> {
@@ -165,50 +163,28 @@ export async function aggregateLastWeek(env: Env, weekStartsAt?: number): Promis
   //
   // So both weeks are counted over the SAME keywords: those with runs in both
   // windows. A question added or dropped between them cannot move the delta.
-  const lfl = await env.DB.prepare(
+  // ONE query now: the shared question set, and per-surface counts over it.
+  // The pooled figures are computed by comparePeriods(), which pools within a
+  // layer and never across, and excludes the control from every pool.
+  //
+  // What this replaces had no engine filter at all. It divided every citation
+  // by every run, so a citation-grade share and a share of answers-that-name-you
+  // were averaged together with the Bing control sitting in the denominator.
+  // For the week of 09-14 that produced "down 1.2 points" when citation-grade
+  // surfaces were down 2.6 and model-knowledge was up 0.2. The layer rule was
+  // already written down in engine-layer.ts; this file just did not follow it.
+  const kwRow = await env.DB.prepare(
     `WITH both AS (
        SELECT keyword_id FROM citation_runs WHERE run_at >= ?3 AND run_at < ?4
        INTERSECT
        SELECT keyword_id FROM citation_runs WHERE run_at >= ?1 AND run_at < ?2
      )
-     SELECT
-       (SELECT COUNT(DISTINCT keyword_id) FROM both) AS shared_keywords,
-       (SELECT SUM(CASE WHEN client_cited = 1 THEN 1 ELSE 0 END) FROM citation_runs
-          WHERE run_at >= ?3 AND run_at < ?4 AND keyword_id IN (SELECT keyword_id FROM both)) AS cur,
-       (SELECT SUM(CASE WHEN client_cited = 1 THEN 1 ELSE 0 END) FROM citation_runs
-          WHERE run_at >= ?1 AND run_at < ?2 AND keyword_id IN (SELECT keyword_id FROM both)) AS prev,
-       -- Run volume over the SAME keywords. Intersecting the question set is
-       -- not enough: a question measured in both weeks but asked 30% fewer
-       -- times in one of them moves the citation total on its own. Both
-       -- September drafts were built on windows like that -- 4,203 runs
-       -- against 3,255 over an identical 88 questions, a 23% volume gap
-       -- published as "citations fell 30%".
-       (SELECT COUNT(*) FROM citation_runs
-          WHERE run_at >= ?3 AND run_at < ?4 AND keyword_id IN (SELECT keyword_id FROM both)) AS cur_runs,
-       (SELECT COUNT(*) FROM citation_runs
-          WHERE run_at >= ?1 AND run_at < ?2 AND keyword_id IN (SELECT keyword_id FROM both)) AS prev_runs`,
+     SELECT COUNT(DISTINCT keyword_id) AS shared_keywords FROM both`,
   ).bind(prevStart, prevEnd, start, end)
-   .first<{ shared_keywords: number | null; cur: number | null; prev: number | null;
-            cur_runs: number | null; prev_runs: number | null }>()
+   .first<{ shared_keywords: number | null }>()
    .catch(() => null);
+  const sharedKeywords = kwRow?.shared_keywords ?? 0;
 
-  const sharedKeywords = lfl?.shared_keywords ?? 0;
-  // No shared keywords means no comparable pair, and a delta computed from
-  // nothing is worse than no delta at all.
-  const newCitations = sharedKeywords > 0 ? (lfl?.cur ?? 0) : 0;
-  const prevCitations = sharedKeywords > 0 ? (lfl?.prev ?? 0) : 0;
-  const sharedRunsCur = sharedKeywords > 0 ? (lfl?.cur_runs ?? 0) : 0;
-  const sharedRunsPrev = sharedKeywords > 0 ? (lfl?.prev_runs ?? 0) : 0;
-
-  // Per surface, over those same shared keywords.
-  //
-  // Pooling hides two different things. Direction: in the week of 09-14 the
-  // pooled rate fell 17.3% to 16.1% while gemini fell 28.0 to 22.5 and
-  // perplexity 22.1 to 19.6, but anthropic and google_ai_overview both ROSE.
-  // Mix: openai fails often and cites least (15.9%), so a week where it
-  // recovers from an outage pushes the pooled rate down on its own. It
-  // contributed 219 runs one week and 366 the next while failing 111 times on
-  // 09-03 alone. Neither is a change in how AI tools cite.
   const engWowRes = sharedKeywords > 0
     ? await env.DB.prepare(
         `WITH both AS (
@@ -230,10 +206,27 @@ export async function aggregateLastWeek(env: Env, weekStartsAt?: number): Promis
        .all<{ engine: string; prev_runs: number; prev_cited: number; cur_runs: number; cur_cited: number }>()
        .catch(() => null)
     : null;
-  const perEngineWow = engWowRes?.results ?? [];
+
   if (sharedKeywords === 0) {
     console.log("[weekly-brief] no keywords measured in both weeks; week-over-week comparison withheld.");
   }
+
+  // Instrument events are not wired in yet (migration 0126 created the table on
+  // 2026-09-27 and nothing populates it from here). Passing none is the honest
+  // current state: this brief cannot yet refuse a comparison that spans an
+  // adapter change, and that gap is why the step detector exists.
+  const comparison = computeComparison({
+    sharedKeywords,
+    perSurface: (engWowRes?.results ?? []).map((e) => ({
+      engine: e.engine,
+      prevRuns: e.prev_runs,
+      prevHits: e.prev_cited,
+      curRuns: e.cur_runs,
+      curHits: e.cur_cited,
+    })),
+    curWindow: { start, end },
+    prevWindow: { start: prevStart, end: prevEnd },
+  });
 
   const totalRuns = enginesRes.results.reduce((s, r) => s + r.runs, 0);
 
@@ -255,12 +248,10 @@ export async function aggregateLastWeek(env: Env, weekStartsAt?: number): Promis
     topReferrerEngines: refRes.results,
     trackedClients,
     trackedKeywords,
-    newCitationsThisWeek: newCitations,
-    prevWeekCitations: prevCitations,
+    newCitationsThisWeek: comparison.basis.curRuns > 0 ? sumHits(comparison, "cur") : 0,
+    prevWeekCitations: comparison.basis.prevRuns > 0 ? sumHits(comparison, "prev") : 0,
     sharedKeywords,
-    sharedRunsCur,
-    sharedRunsPrev,
-    perEngineWow,
+    comparison,
   };
 }
 
@@ -304,7 +295,7 @@ GROUNDING RULES (the stats block in the user message is your ONLY source):
 - The source carries no dates, no thread ages and no recency signal. Never claim anything is recent, old, current or trending over time beyond the one prior-week figure given.
 - Every surface has its own run count. Rates compare across surfaces, absolute counts do not. Never assert that two surfaces were asked the same questions or saw the same query set, because the source does not establish that.
 - A LEVEL is not a CHANGE. "the citation rate is 16%" may never be written as "the citation rate drops 16%", in the title or anywhere else. If you state a movement, state the two numbers it is between. A draft titled "Citation Rate Drops 16%" about a rate that WAS 16% is the exact error this rule exists to stop.
-- Week-over-week movement is the RATE change in the Week over week block, never the difference between two absolute citation counts. If that block carries a VOLUME WARNING, the count difference is a measurement-coverage artifact and you may not present it as the market citing more or less.
+- Week-over-week movement is the RATE change in the Week over week block, never the difference between two absolute citation counts. Where that block says no movement can be stated, there is no movement to report: say plainly that the two periods are not comparable and why, and never reconstruct the figure from the raw counts yourself.
 - Week-over-week movement is stated PER SURFACE, from the per-surface lines. The pooled rate averages surfaces that move in opposite directions and also moves when the balance of runs between them changes, so it may not be the headline. If the per-surface block says no surface moved 2 points, the week's finding is that nothing moved, and you say so.
 - Query volume is ours. We choose how many questions to ask and how often. Any change in it is a fact about our instrument, and writing it as a change in AI behaviour is the same failure as reporting a question-set change as a ranking movement.
 - If a detail would make the brief more interesting but is not in the stats block, leave it out. A thin accurate brief is correct. An interesting invented one is a retraction.
@@ -322,110 +313,81 @@ interface GeneratedBrief {
   body_markdown: string;
 }
 
+/** Non-control citations in one window, for the headline count line. */
+export function sumHits(c: ComparisonResult, side: "cur" | "prev"): number {
+  return c.perSurface
+    .filter((s) => s.layer !== "control")
+    .reduce((a, s) => a + (side === "cur" ? s.curHits : s.prevHits), 0);
+}
+
 /**
- * The week-over-week block, stated as a RATE.
+ * The week-over-week block.
  *
- * Intersecting the question set stopped a set change from moving the delta. It
- * did not stop a VOLUME change, and that is what the two September drafts
- * actually were. Draft 2 compared 4,203 runs against 3,255 over an identical
- * 88 questions and called the 30% fall in citations a citation decline. The
- * rate over those same questions went 18.8% to 16.0%: real, and less than half
- * the drop that was about to be published.
+ * Renders comparePeriods(); it computes nothing itself. Every rule it used to
+ * carry privately now lives in the primitive and is shared with the monthly
+ * memo, which is the point: this file got the same class of thing wrong three
+ * times in one day and a fourth time after being "fixed".
  *
- * A count divided by a denominator nobody states is the same defect as the
- * question-set drift and the 45-to-95 figure: our own instrument, reported as
- * the market. So the rate leads, both denominators are named, and when volume
- * moves materially the count delta is explicitly disallowed as a finding.
+ * The fourth: the pooled figure had no engine filter, so it averaged
+ * citation-grade and model-knowledge surfaces together with the Bing control in
+ * the denominator. For the week of 09-14 that reads "down 1.2 points" when
+ * citation-grade was down 2.6 and model-knowledge was up 0.2.
  */
 export function weekOverWeekBlock(stats: WeeklyStats): string {
-  if (stats.sharedKeywords === 0) {
+  const c = stats.comparison;
+  const lines: string[] = [];
+
+  if (c.basis.sharedKeywords === 0) {
     return "  NO comparable prior week: no question was measured in both weeks, so there\n" +
            "  is NO week-over-week movement and you may not state or imply one.";
   }
-  if (stats.sharedRunsPrev === 0 || stats.sharedRunsCur === 0) {
-    return "  No prior-week baseline yet. State no week-over-week movement.";
-  }
 
-  const curRate = (stats.newCitationsThisWeek / stats.sharedRunsCur) * 100;
-  const prevRate = (stats.prevWeekCitations / stats.sharedRunsPrev) * 100;
-  const pp = curRate - prevRate;
-  const dir = Math.abs(pp) < 0.05 ? "flat" : pp > 0 ? "up" : "down";
-  const volSkew = Math.abs(stats.sharedRunsCur - stats.sharedRunsPrev) / stats.sharedRunsPrev;
+  lines.push(`  Counted ONLY over the ${c.basis.sharedKeywords} questions measured in BOTH weeks.`);
+  lines.push("");
 
-  const lines = [
-    `  Counted ONLY over the ${stats.sharedKeywords} questions measured in BOTH weeks.`,
-    `  Prior week: ${stats.prevWeekCitations} citations in ${stats.sharedRunsPrev} runs (${prevRate.toFixed(1)}%)`,
-    `  This week:  ${stats.newCitationsThisWeek} citations in ${stats.sharedRunsCur} runs (${curRate.toFixed(1)}%)`,
-    `  CITATION RATE: ${dir}${dir === "flat" ? "" : ` ${Math.abs(pp).toFixed(1)} percentage points`}.`,
-    `  The rate is the week-over-week finding. ${curRate.toFixed(1)}% is a LEVEL, not a change:`,
-    `  never write a level as a drop or a rise.`,
-  ];
+  // Pooled PER LAYER. There is deliberately no all-surface figure: a citation
+  // share and a share of answers-that-name-you have different numerators and
+  // different denominators, so their average is not a quantity.
+  lines.push("  The two layers are reported separately and are NOT comparable to each other:");
+  lines.push(`    Surfaces that search the web and cite sources: ${describeMovement(c.pooled.citation, "rate").replace(/^rate: /, "")}`);
+  lines.push(`    Surfaces that answer from training:            ${describeMovement(c.pooled.model_knowledge, "rate").replace(/^rate: /, "")}`);
+  lines.push("  A percentage here is a LEVEL. Never write a level as a drop or a rise.");
+  lines.push("");
 
-  // Per surface. This is the part that is actually reportable: a surface's own
-  // rate over the same questions, against its own prior rate.
-  if (stats.perEngineWow.length > 0) {
-    lines.push("", "  Per surface, over those same questions (prior -> this week):");
-    const moved: string[] = [];
-    for (const e of stats.perEngineWow) {
-      const pr = e.prev_runs > 0 ? (e.prev_cited / e.prev_runs) * 100 : null;
-      const cr = e.cur_runs > 0 ? (e.cur_cited / e.cur_runs) * 100 : null;
-      if (pr === null || cr === null) {
-        lines.push(`    ${e.engine.padEnd(19)} not measured in both weeks; no movement may be stated`);
-        continue;
-      }
-      const d = cr - pr;
-      // Two surfaces are read wrong without a label on the row itself.
-      //
-      // bing is the classic-search CONTROL. Listing it in a table of citation
-      // rates invites exactly the sentence the house rule forbids, that it
-      // cited or answered something. Its 0.2% is one row in 472.
-      //
-      // google_ai_overview carries a much smaller denominator than the rest
-      // (227 against ~450) because citation_runs never holds a non-reading and
-      // no row is written when no overview renders. That is a finding about
-      // how often Google shows an overview, not a gap in our coverage, and
-      // reading it as a gap is how a real result gets written off.
-      const note = e.engine === "bing"
-        ? "  [classic-search CONTROL: it returns results. It does not cite or answer. Never call it an AI tool.]"
-        : e.engine === "google_ai_overview"
-          ? "  [smaller denominator BY DESIGN: a row exists only when an overview rendered, so this is how often Google showed one, NOT missing coverage.]"
-          : "";
-      lines.push(
-        `    ${e.engine.padEnd(19)} ${pr.toFixed(1)}% -> ${cr.toFixed(1)}%  (${d >= 0 ? "+" : ""}${d.toFixed(1)}pp, ${e.prev_runs} -> ${e.cur_runs} runs)${note}`,
-      );
-      // bing is excluded from the movement list whatever it does: a "surface
-      // that moved" reads as an AI tool changing behaviour, and the control is
-      // not one. Its own row above still shows the numbers.
-      if (Math.abs(d) >= 2 && e.engine !== "bing") {
-        moved.push(`${e.engine} ${d >= 0 ? "up" : "down"} ${Math.abs(d).toFixed(1)}pp`);
-      }
+  lines.push("  Per surface, over those same questions (prior -> this week):");
+  for (const s of c.perSurface) {
+    const note = s.engine === "bing"
+      ? "  [classic-search CONTROL: it returns results. It does not cite or answer. Never call it an AI tool.]"
+      : s.engine === "google_ai_overview"
+        ? "  [smaller denominator BY DESIGN: a row exists only when an overview rendered, so this is how often Google showed one, NOT missing coverage.]"
+        : "";
+    if (s.movement.kind === "withheld") {
+      lines.push(`    ${s.engine.padEnd(19)} no movement may be stated: ${s.movement.reason}${note}`);
+      continue;
     }
+    const m = s.movement;
     lines.push(
-      moved.length > 0
-        ? `  Surfaces that moved at least 2 points: ${moved.join(", ")}.`
-        : "  No surface moved as much as 2 points. Say that plainly rather than",
-    );
-    if (moved.length === 0) lines.push("  finding a trend in the pooled figure.");
-    lines.push(
-      "  Report movement PER SURFACE. The pooled rate above averages surfaces that",
-      "  can move in opposite directions, and it also shifts when the balance of runs",
-      "  between them changes even if no surface moved at all.",
+      `    ${s.engine.padEnd(19)} ${m.prevRate.toFixed(1)}% -> ${m.curRate.toFixed(1)}%  ` +
+      `(${m.deltaPp >= 0 ? "+" : ""}${m.deltaPp.toFixed(1)}pp, ${s.prevRuns} -> ${s.curRuns} runs)${note}`,
     );
   }
 
-  if (volSkew >= 0.1) {
-    lines.push(
-      `  VOLUME WARNING: we ran ${Math.round(volSkew * 100)}% ${stats.sharedRunsCur < stats.sharedRunsPrev ? "FEWER" : "MORE"} queries this week than last`,
-      `  over the same questions. That gap is OURS, not the market's. You may NOT`,
-      `  characterise the difference between ${stats.prevWeekCitations} and ${stats.newCitationsThisWeek} citations as a citation`,
-      `  increase or decrease.`,
-      `  The rate is also affected: it pools every question and surface, so when`,
-      `  volume moves this much the MIX behind the two rates differs too, and part`,
-      `  of the rate change is that mix. Report the rate change as the measured`,
-      `  change, say plainly that query volume differed between the two weeks, and`,
-      `  do not attribute either to AI tools citing differently.`,
-    );
+  lines.push(
+    c.movedSurfaces.length > 0
+      ? `  Surfaces that moved at least 2 points: ${c.movedSurfaces.join(", ")}.`
+      : "  No surface moved as much as 2 points. Say that plainly rather than finding a trend.",
+  );
+  lines.push(
+    "  Report movement PER SURFACE and PER LAYER. Where a figure above says no",
+    "  movement may be stated, you may not state one, and you may not work around",
+    "  it by comparing the raw counts yourself.",
+  );
+
+  if (c.events.length > 0) {
+    lines.push("", "  INSTRUMENT CHANGES inside these windows (these are OURS, not the market):");
+    for (const e of c.events) lines.push(`    ${e.kind}: ${e.detail}`);
   }
+
   return lines.join("\n");
 }
 

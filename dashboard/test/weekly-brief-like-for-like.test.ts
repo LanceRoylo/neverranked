@@ -36,19 +36,22 @@ test("the unscoped raw sums are gone", () => {
 });
 
 test("no shared questions means no delta, not a zero", () => {
-  assert.match(SRC, /sharedKeywords > 0 \? \(lfl\?\.cur \?\? 0\) : 0/);
+  // The refusal now lives in comparePeriods(), which this file hands the
+  // shared-keyword count and nothing else. Asserting the old private
+  // expression would pin an implementation that deliberately no longer exists.
+  assert.match(SRC, /sharedKeywords = kwRow\?\.shared_keywords \?\? 0/);
+  assert.match(SRC, /no keywords measured in both weeks/);
   assert.match(SRC, /NO comparable prior week/);
   assert.match(SRC, /you may not state or imply one/i);
 });
 
 test("the basis travels with the number into the prompt", () => {
   // A delta whose basis is invisible is how a set change gets published as a
-  // market movement.
+  // market movement. The basis is three things now, not one: which questions,
+  // how many times each was asked, and which LAYER the figure belongs to.
+  // All three are carried by ComparisonResult rather than by loose fields here.
   assert.match(SRC, /measured in BOTH weeks/);
-  assert.match(SRC, /sharedKeywords: number;/, "the basis must be part of the stats contract");
-  // The basis is now two things, not one: which questions, and how many times
-  // each was asked. Scoping the questions alone still let a 23% swing in run
-  // volume publish as a citation decline. See weekly-brief-volume.test.ts.
-  assert.match(SRC, /sharedRunsCur: number;/, "the denominator must travel too");
-  assert.match(SRC, /sharedRunsPrev: number;/);
+  assert.match(SRC, /comparison: ComparisonResult;/, "the basis must be part of the stats contract");
+  assert.match(SRC, /prevRuns\} -> \$\{s\.curRuns\} runs/, "per-surface denominators are printed");
+  assert.match(SRC, /NOT comparable to each other/, "the two layers are never averaged");
 });
