@@ -89,3 +89,57 @@ test("new migrations are idempotent (CREATE ... IF NOT EXISTS)", () => {
     `Non-idempotent DDL in new migrations (add IF NOT EXISTS):\n${offenders.join("\n")}`,
   );
 });
+
+/**
+ * The hole this guardrail had, found the hard way on 2026-09-27.
+ *
+ * `npm run db:migrate` died on 0122 with "duplicate column name:
+ * deactivated_at", blocking every later migration including the one actually
+ * being applied. 0122 through 0125 had been applied with `d1 execute --file`,
+ * which changes the schema and writes NOTHING to d1_migrations, so wrangler
+ * tried to re-run four already-applied migrations.
+ *
+ * All four are `ALTER TABLE ... ADD COLUMN`. That is not a CREATE, so the test
+ * above passed every one of them, and SQLite has no IF NOT EXISTS for adding a
+ * column, so they can never be made idempotent. The guardrail written to
+ * prevent this exact outage gave four false all-clears.
+ *
+ * ADD COLUMN cannot be banned, so the rule is that a migration using it has to
+ * SAY it is not re-runnable. The marker is cheap and it puts the fact in front
+ * of whoever writes the next one, which is the only moment it can help.
+ *
+ * ADD_COLUMN_BASELINE is set at the last applied migration rather than at
+ * BASELINE, for the same reason BASELINE exists: retro-editing applied
+ * migrations to satisfy a linter is the kind of change that causes incidents.
+ */
+const ADD_COLUMN_BASELINE = 126;
+
+test("a new ADD COLUMN migration declares that it is not re-runnable", () => {
+  const addColumnRe = /\bALTER\s+TABLE\b[\s\S]*?\bADD\s+COLUMN\b/i;
+  const markerRe = /NOT\s+IDEMPOTENT/i;
+  const offenders: string[] = [];
+
+  for (const f of files) {
+    const m = f.match(/^(\d{4})_/);
+    if (!m) continue;
+    if (Number(m[1]) <= ADD_COLUMN_BASELINE) continue;
+    const sql = readFileSync(`${migrationsDir}/${f}`, "utf8");
+    const stripped = sql
+      .replace(/--[^\n]*/g, "")
+      .replace(/\/\*[\s\S]*?\*\//g, "");
+    // The marker is looked for in the ORIGINAL text, since it is a comment.
+    if (addColumnRe.test(stripped) && !markerRe.test(sql)) {
+      offenders.push(f);
+    }
+  }
+
+  assert.deepEqual(
+    offenders,
+    [],
+    "These migrations ADD COLUMN, which SQLite cannot make idempotent, without saying so.\n" +
+      "Add a comment containing NOT IDEMPOTENT explaining that the file must be applied\n" +
+      "via `npm run db:migrate` and never with `d1 execute`, which writes no ledger row\n" +
+      "and leaves the next apply to die on a duplicate column:\n" +
+      offenders.join("\n"),
+  );
+});
