@@ -1546,6 +1546,29 @@ export async function runDailyMaintenance(env: Env): Promise<void> {
     console.log(`[cron] qa_citation_sanity_sweep failed: ${e instanceof Error ? e.message : String(e)}`);
   }
 
+  // Invoice watch. Two questions nobody was asking: has this month's invoice
+  // been issued, and has an issued one been paid. NR-PW-002 sat 13 days past
+  // due with no record of receipt anywhere, while its SEND was documented in
+  // forensic detail.
+  try {
+    const { logCronRun } = await import("./lib/cron-log");
+    const { watchInvoices } = await import("./lib/invoice-watch");
+    const started = Date.now();
+    const r = await watchInvoices(env);
+    await logCronRun(
+      env,
+      "invoice_watch",
+      "success",
+      Date.now() - started,
+      `missing=${r.missing.length} overdue=${r.overdue.length} raised=${r.raised}`,
+    );
+    console.log(`[cron] invoice_watch: missing=${r.missing.join(",") || "none"} overdue=${r.overdue.join(",") || "none"}`);
+  } catch (e) {
+    const { logCronRun } = await import("./lib/cron-log");
+    await logCronRun(env, "invoice_watch", "failure", 0, e instanceof Error ? e.message : String(e));
+    console.log(`[cron] invoice_watch failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+
   // Step detector. Writes instrument_events, which is the ONLY thing
   // comparePeriods() reads when deciding whether a comparison may be stated.
   // The log it feeds depends on somebody remembering to record the day they
