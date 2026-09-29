@@ -1546,6 +1546,32 @@ export async function runDailyMaintenance(env: Env): Promise<void> {
     console.log(`[cron] qa_citation_sanity_sweep failed: ${e instanceof Error ? e.message : String(e)}`);
   }
 
+  // Step detector. Writes instrument_events, which is the ONLY thing
+  // comparePeriods() reads when deciding whether a comparison may be stated.
+  // The log it feeds depends on somebody remembering to record the day they
+  // changed an engine adapter, and the day you change an adapter is the day
+  // you are thinking about the adapter. This is the backstop: Perplexity moved
+  // to the Agent API on 2026-08-23 and was found by eye 35 days later, one day
+  // before the wrong number reached a client.
+  try {
+    const { logCronRun } = await import("./lib/cron-log");
+    const { sweepStepChanges } = await import("./lib/step-change-sweep");
+    const started = Date.now();
+    const r = await sweepStepChanges(env);
+    await logCronRun(
+      env,
+      "instrument_step_sweep",
+      "success",
+      Date.now() - started,
+      `checked=${r.checked} found=${r.found} written=${r.written} suppressed=${r.suppressed}`,
+    );
+    console.log(`[cron] instrument_step_sweep: ${r.written} written of ${r.found} found across ${r.checked} pairs`);
+  } catch (e) {
+    const { logCronRun } = await import("./lib/cron-log");
+    await logCronRun(env, "instrument_step_sweep", "failure", 0, e instanceof Error ? e.message : String(e));
+    console.log(`[cron] instrument_step_sweep failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+
   try {
     const { logCronRun } = await import("./lib/cron-log");
     const { sweepNviDriftAudits } = await import("./lib/qa-nvi-drift");
