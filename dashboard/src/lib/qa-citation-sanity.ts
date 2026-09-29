@@ -16,6 +16,7 @@
  */
 
 import type { Env } from "../types";
+import { isControlEngine } from "./engine-layer";
 import { recordAudit, type AuditResult } from "./qa-auditor";
 import { gradeWithLLM } from "./qa-llm-grader";
 
@@ -49,6 +50,26 @@ const SANITY_SCHEMA = {
   },
 };
 
+/**
+ * The control is never graded on whether it answered.
+ *
+ * Bing organic RETURNS RESULTS. It does not answer, and it is measured
+ * precisely to show what keyword search does with a question. Asking a grader
+ * "is this response plausible and on-topic" about it produces a red every time
+ * and the red is correct: on 2026-09-29 all 15 red citation_sanity verdicts in
+ * the prior week were bing, none were an AI surface, and the reasons were
+ * "provides game links" and "does not address the query about hotels in
+ * Hawaii". Those are the published Fact Bank finding, not a defect.
+ *
+ * The cost was not a wasted API call. `13 QA red verdict(s) this week` is what
+ * turned the weekly summary yellow, so the health colour was being driven
+ * entirely by the control behaving as designed. An alarm for expected
+ * behaviour is noise, and noise buries the real signal.
+ *
+ * Keyed on isControlEngine() rather than a literal "bing" so this stays true
+ * if the control ever changes. A second private copy of which surface is the
+ * control is the bug this codebase keeps rediscovering.
+ */
 export async function auditOneCitationRun(
   env: Env,
   runId: number,
@@ -60,6 +81,14 @@ export async function auditOneCitationRun(
      JOIN citation_keywords ck ON ck.id = cr.keyword_id
      WHERE cr.id = ?`
   ).bind(runId).first<{ id: number; engine: string; response_text: string; cited_urls: string; keyword: string }>();
+
+  // See the note above: grading the control on "did it answer" is a red every
+  // time, correctly, and means nothing. Guarded here as well as in the sweep so
+  // a manual or future caller cannot reintroduce it.
+  if (row && isControlEngine(row.engine)) {
+    console.log(`[qa-citation-sanity] skipping ${row.engine} run #${runId}: the control returns results, it does not answer`);
+    return null;
+  }
 
   if (!row) return null;
   // Skip empty responses (caught by other audits)
@@ -133,9 +162,16 @@ export async function sweepCitationSanityAudits(env: Env, samplesPerEngine = 2):
     ORDER BY engine, id`
   ).bind(dayAgo, samplesPerEngine).all<{ id: number; engine: string }>()).results;
 
+  // Drop the control before spending a grader call on it. Filtered here rather
+  // than in the SQL so the one place that knows which surface is the control
+  // stays engine-layer.ts.
+  const gradable = rows.filter((r) => !isControlEngine(r.engine));
+  const skipped = rows.length - gradable.length;
+
   const details: string[] = [];
   let audited = 0;
-  for (const r of rows) {
+  if (skipped > 0) details.push(`skipped ${skipped} control run(s): the control returns results, it does not answer`);
+  for (const r of gradable) {
     try {
       const result = await auditOneCitationRun(env, r.id);
       if (result) {
