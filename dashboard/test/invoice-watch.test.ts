@@ -75,3 +75,35 @@ test("the reminder tells you the exact command to run", () => {
   // The invoice exists only because somebody remembers to run the script.
   assert.match(SRC, /render-invoice\.mjs \$\{c\.client_slug\} \$\{period\}/);
 });
+
+/* Every inbox item needs a stable upsert key, or a daily sweep duplicates it.
+ *
+ * The first production run on 2026-09-30 wrote item 87 with target_id NULL.
+ * admin-inbox upserts ON CONFLICT(kind, target_type, target_id), and SQLite
+ * treats NULL as distinct in a unique index, so that conflict can never match.
+ * Left alone it would have written a fresh high-urgency row about the same
+ * unpaid invoice every morning: seven identical alerts in a week, which is the
+ * noise that buries the real one. Caught the next day, before it duplicated.
+ */
+test("both alerts carry a target_id, so the daily sweep upserts", () => {
+  assert.match(SRC, /target_id: c\.rid/, "the missing-invoice reminder needs a key");
+  assert.match(SRC, /target_id: inv\.rid/, "the overdue alert needs a key");
+  assert.match(SRC, /SELECT rowid AS rid, client_slug, name, mrr_cents FROM customers/);
+  assert.match(SRC, /SELECT rowid AS rid, invoice_no/);
+});
+
+test("the two alert kinds do not share a target_type", () => {
+  // They key on different things, per client and per invoice. Sharing a
+  // target_type would let a client's missing-invoice reminder collide with an
+  // invoice row that happened to share a rowid.
+  assert.match(SRC, /target_type: "invoice_missing"/);
+  assert.match(SRC, /target_type: "invoice_overdue"/);
+  assert.doesNotMatch(SRC, /target_type: "invoice",/);
+});
+
+test("overdue keys per invoice, missing keys per client", () => {
+  // A second overdue invoice must get its own row. But next month's
+  // missing-invoice reminder should REPLACE this month's, not stack beside it.
+  assert.match(SRC, /Stable per INVOICE, so a second overdue invoice gets its own row/);
+  assert.match(SRC, /Per client rather than per period so next month's reminder REPLACES/);
+});

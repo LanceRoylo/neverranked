@@ -30,8 +30,9 @@ export interface InvoiceWatchResult {
   raised: number;
 }
 
-interface CustomerRow { client_slug: string; name: string; mrr_cents: number; }
+interface CustomerRow { rid: number; client_slug: string; name: string; mrr_cents: number; }
 interface InvoiceRow {
+  rid: number;
   invoice_no: string;
   client_slug: string;
   total_cents: number;
@@ -60,7 +61,7 @@ export async function watchInvoices(env: Env, nowSec?: number): Promise<InvoiceW
   // buries the real alert.
   if (d.getUTCDate() >= ISSUE_DAY) {
     const customers = (await env.DB.prepare(
-      `SELECT client_slug, name, mrr_cents FROM customers
+      `SELECT rowid AS rid, client_slug, name, mrr_cents FROM customers
         WHERE status IN ('active') AND mrr_cents > 0
         ORDER BY client_slug`,
     ).all<CustomerRow>()).results;
@@ -80,7 +81,18 @@ export async function watchInvoices(env: Env, nowSec?: number): Promise<InvoiceW
           `Generate it with:\n` +
           `  node scripts/render-invoice.mjs ${c.client_slug} ${period} --number <NEXT-NO>\n\n` +
           `then record the row so this stops asking.`,
-        target_type: "invoice",
+        target_type: "invoice_missing",
+        // Stable per CLIENT, deliberately not per period. Without a target_id
+        // this upsert can never match: SQLite treats NULL as distinct in a
+        // unique index, so ON CONFLICT never fires and a daily sweep writes a
+        // fresh high-urgency row every morning. That is how one unpaid invoice
+        // becomes seven identical alerts in a week, which is the noise that
+        // buries the real one.
+        //
+        // Per client rather than per period so next month's reminder REPLACES
+        // this month's rather than stacking beside it. Title and body carry the
+        // period, and the upsert refreshes both.
+        target_id: c.rid,
         target_slug: c.client_slug,
         urgency: "high",
       });
@@ -91,7 +103,7 @@ export async function watchInvoices(env: Env, nowSec?: number): Promise<InvoiceW
   // 2. Issued, past due, and no payment recorded.
   const cutoff = now - OVERDUE_GRACE_DAYS * 86_400;
   const due = (await env.DB.prepare(
-    `SELECT invoice_no, client_slug, total_cents, due_at, sent_at
+    `SELECT rowid AS rid, invoice_no, client_slug, total_cents, due_at, sent_at
        FROM client_invoices
       WHERE paid_at IS NULL
         AND status = 'sent'
@@ -112,7 +124,11 @@ export async function watchInvoices(env: Env, nowSec?: number): Promise<InvoiceW
         `This does NOT mean the client has not paid. It means nothing here records that they have. ` +
         `Check the bank, then set paid_at so this stops asking. If it really is unpaid, that is a ` +
         `different conversation and this alert is not it.`,
-      target_type: "invoice",
+      target_type: "invoice_overdue",
+      // Stable per INVOICE, so a second overdue invoice gets its own row
+      // rather than overwriting the first. See the note above on why NULL
+      // here would duplicate daily instead of upserting.
+      target_id: inv.rid,
       target_slug: inv.client_slug,
       urgency: "high",
     });
