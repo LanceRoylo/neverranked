@@ -214,3 +214,114 @@ test("describeMovement cannot print numbers for a withheld movement", () => {
   const flat = describeMovement({ kind: "stated", prevRate: 21.7, curRate: 21.6, deltaPp: -0.1 }, "Gemma");
   assert.equal(flat, "Gemma: 21.7% to 21.6%, flat.");
 });
+
+/* ── Basis and event relevance, added 2026-10-01 ─────────────────────────
+ *
+ * The paying client's October memo compares against September, and September
+ * carries three events: the client lost 12 questions on 09-23 and got them
+ * back on 09-24, a laptop bridge overwrote readout snapshots on 09-23, and
+ * extra sweeps inflated volume 09-01 to 09-03. Before this, any one of them
+ * withheld every figure, so the decided basis could never have been used.
+ */
+import { stableCore, type ComparisonBasis } from "../src/lib/compare-periods";
+
+const SEPT_EVENTS: InstrumentEvent[] = [
+  { occurred_at: 1788220800, kind: "backfill", scope: "global", detail: "Extra sweeps 09-01 to 09-03 inflated run volume." },
+  { occurred_at: 1789257600, kind: "question_set_changed", scope: "client", client_slug: "client-a", detail: "lost 12 of 30" },
+  { occurred_at: 1789344000, kind: "question_set_changed", scope: "client", client_slug: "client-a", detail: "12 restored" },
+  { occurred_at: 1789257600, kind: "snapshot_overwritten", scope: "global", detail: "bridge overwrote readout snapshots" },
+];
+
+/* Synthetic, stable on every surface, so only the events can withhold it. */
+const CALM: SurfaceCounts[] = [
+  { engine: "perplexity",         prevRuns: 500, prevHits: 100, curRuns: 505, curHits: 101 },
+  { engine: "openai",             prevRuns: 500, prevHits: 50,  curRuns: 498, curHits: 50 },
+  { engine: "gemini",             prevRuns: 500, prevHits: 80,  curRuns: 502, curHits: 81 },
+  { engine: "google_ai_overview", prevRuns: 300, prevHits: 30,  curRuns: 301, curHits: 30 },
+  { engine: "anthropic",          prevRuns: 500, prevHits: 40,  curRuns: 500, curHits: 41 },
+  { engine: "gemma",              prevRuns: 500, prevHits: 45,  curRuns: 499, curHits: 45 },
+  { engine: "bing",               prevRuns: 500, prevHits: 5,   curRuns: 500, curHits: 5 },
+];
+
+const run = (basis: ComparisonBasis, events = SEPT_EVENTS) =>
+  computeComparison({
+    basis,
+    sharedKeywords: 18,
+    perSurface: CALM,
+    curWindow: { start: 0, end: 1 },
+    prevWindow: { start: 0, end: 1 },
+    events,
+  });
+
+test("stableCore returns the paying client's 18 from September's real coverage pattern", () => {
+  const days = Array.from({ length: 30 }, (_, i) => `2026-09-${String(i + 1).padStart(2, "0")}`);
+  const m = new Map<string, Set<string>>();
+  for (let i = 0; i < 18; i++) m.set(`orig-${i}`, new Set(days));
+  for (let i = 0; i < 12; i++) m.set(`added-${i}`, new Set(days.filter((d) => d !== "2026-09-01" && d !== "2026-09-24")));
+  const core = stableCore(m);
+  assert.equal(core.length, 18);
+  assert.ok(core.every((k) => k.startsWith("orig-")));
+});
+
+test("a day nobody was measured does not knock everyone out of the core", () => {
+  // A fleet-wide outage is the instrument missing a day, not the question.
+  const m = new Map([
+    ["a", new Set(["d1", "d3"])],
+    ["b", new Set(["d1", "d3"])],
+  ]);
+  assert.deepEqual(stableCore(m).sort(), ["a", "b"]);
+  assert.deepEqual(stableCore(new Map()), []);
+});
+
+test("on the stable core, September's events set aside and the figures are stated", () => {
+  const c = run("stable_core");
+  assert.equal(c.events.length, 0);
+  assert.equal(c.setAside.length, 4);
+  stated(c.pooled.citation);
+  stated(c.pooled.model_knowledge);
+  assert.equal(c.basis.kind, "stable_core");
+});
+
+test("on the shared basis, a client's question-set change still withholds", () => {
+  // The default basis includes the questions that changed. Nothing about the
+  // stable-core exemption may leak into it.
+  const c = run("shared");
+  assert.equal(c.events.length, 2);
+  assert.ok(c.events.every((e) => e.kind === "question_set_changed"));
+  assert.match(withheld(c.pooled.citation).reason, /question_set_changed/);
+});
+
+test("an engine change still withholds on any basis", () => {
+  const c = run("stable_core", [
+    ...SEPT_EVENTS,
+    { occurred_at: 1789257600, kind: "engine_adapter_changed", scope: "engine", engine: "perplexity", detail: "Agent API" },
+  ]);
+  withheld(c.perSurface.find((s) => s.engine === "perplexity")!.movement);
+  withheld(c.pooled.citation);
+  stated(c.pooled.model_knowledge);
+});
+
+test("an unrecognised event kind still withholds: the default is refusal", () => {
+  const c = run("stable_core", [{ occurred_at: 1, kind: "something_new", scope: "global", detail: "?" }]);
+  withheld(c.pooled.citation);
+  withheld(c.pooled.model_knowledge);
+});
+
+test("a backfill big enough to matter is still refused, by the volume check", () => {
+  // HTC 2026-09-02: 467 runs against a ~133/day baseline. Over one week that
+  // is far past the skew limit, so setting the event aside loses nothing.
+  const week = 133 * 7;
+  const spiked = week - 133 + 467;
+  const c = computeComparison({
+    sharedKeywords: 22,
+    perSurface: [
+      { engine: "perplexity", prevRuns: Math.round(spiked / 2), prevHits: 100, curRuns: Math.round(week / 2), curHits: 70 },
+      { engine: "gemini",     prevRuns: Math.round(spiked / 2), prevHits: 100, curRuns: Math.round(week / 2), curHits: 70 },
+    ],
+    curWindow: { start: 0, end: 1 },
+    prevWindow: { start: 0, end: 1 },
+    events: [SEPT_EVENTS[0]],
+  });
+  assert.equal(c.setAside.length, 1);
+  assert.match(withheld(c.pooled.citation).reason, /fewer queries/);
+});

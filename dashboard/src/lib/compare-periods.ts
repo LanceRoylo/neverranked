@@ -1,8 +1,11 @@
 /**
  * compare-periods.ts — the one place that compares two measurement windows.
  *
- * NOT YET WIRED TO ANYTHING. Built ahead of the 2026-10-15 boundary so that
- * landing it is a wiring job rather than a build. Nothing imports this yet.
+ * Wired into the weekly brief (which does not yet pass instrument events). NOT
+ * yet in the monthly memo: that wiring waits for the generator freeze to lift
+ * on 2026-10-15. The paying client's October memo is the first paid comparison,
+ * and its basis was decided 2026-10-01: stable_core, the 18 questions that ran
+ * every day of September.
  *
  * WHY THIS EXISTS. Comparison is what this practice sells and it was the least
  * centralized thing in the code. Five surfaces each computed their own
@@ -83,7 +86,95 @@ export interface SurfaceComparison extends SurfaceCounts {
   runSkew: number;
 }
 
+/**
+ * Which questions the counts were drawn from.
+ *
+ *   "shared"      questions measured at least once in both windows. The default.
+ *   "stable_core" questions measured on EVERY day either window measured
+ *                 anything, chosen by stableCore() below. A question-set change
+ *                 cannot touch this basis by construction: a question that was
+ *                 dropped, added or restored misses at least one measured day
+ *                 and is excluded. So a client's question_set_changed event
+ *                 does not withhold a stable_core comparison.
+ *
+ * The caller declares the basis and is trusted to have built the counts from
+ * it. Declaring stable_core over counts that were not filtered through
+ * stableCore() would be a false statement this module cannot detect.
+ */
+export type ComparisonBasis = "shared" | "stable_core";
+
+/**
+ * Event kinds that change no citation_runs row, so cannot confound a
+ * comparison built from runs.
+ *
+ * snapshot_overwritten: the 2026-09-23 bridge run replaced readout snapshots.
+ * It was filed as a global backfill, which withheld every comparison for every
+ * client across that date although not one run had changed.
+ */
+export const RUN_NEUTRAL_KINDS: readonly string[] = ["snapshot_overwritten"];
+
+/**
+ * Event kinds whose whole effect is extra or missing runs on questions that
+ * were measured anyway. Volume and mix are measured directly from the counts
+ * by VOLUME_SKEW_LIMIT and SURFACE_MIX_LIMIT, which is a better judge than a
+ * calendar overlap: HTC's 467-run day on 2026-09-02 against a 133 baseline
+ * fails the skew check on a weekly basis, as it should, and one inflated day
+ * diluted across a month does not.
+ */
+export const VOLUME_KINDS: readonly string[] = ["backfill"];
+
+/**
+ * Questions measured on every day that anything was measured.
+ *
+ * `daysByKeyword` maps each question to the set of UTC days (YYYY-MM-DD) it
+ * has at least one run on, across BOTH windows. A day on which nothing ran at
+ * all (a fleet-wide outage) is not counted against anyone: the question did
+ * not miss it, the instrument did.
+ *
+ * The paying client, September 2026: 18 questions ran all 30 days. The 12 added
+ * on 09-02 missed 09-01 (they did not exist) and 09-24 (deactivated by the
+ * forensic bridge on 09-23, restored the next day). This returns the 18.
+ */
+export function stableCore<K>(daysByKeyword: Map<K, Set<string>>): K[] {
+  const measuredDays = new Set<string>();
+  for (const days of daysByKeyword.values()) for (const d of days) measuredDays.add(d);
+  if (measuredDays.size === 0) return [];
+  const out: K[] = [];
+  for (const [k, days] of daysByKeyword) {
+    let all = true;
+    for (const d of measuredDays) if (!days.has(d)) { all = false; break; }
+    if (all) out.push(k);
+  }
+  return out;
+}
+
+/** Why an event that overlaps the window was not allowed to withhold. */
+export interface SetAsideEvent {
+  event: InstrumentEvent;
+  why: string;
+}
+
+/**
+ * Does this event bear on a comparison built from runs on this basis? Returns
+ * null when it does, or the reason it does not. The reason travels in the
+ * result so a reader can see every event that was considered and set aside.
+ */
+function setAsideReason(e: InstrumentEvent, basis: ComparisonBasis): string | null {
+  if (RUN_NEUTRAL_KINDS.includes(e.kind)) {
+    return "changed no measurement rows";
+  }
+  if (VOLUME_KINDS.includes(e.kind)) {
+    return "changed run volume only, which the volume and mix checks measure directly";
+  }
+  if (e.kind === "question_set_changed" && e.scope === "client" && basis === "stable_core") {
+    return "the changed questions are outside the stable core this comparison uses";
+  }
+  return null;
+}
+
 export interface ComparisonInput {
+  /** Defaults to "shared". See ComparisonBasis. */
+  basis?: ComparisonBasis;
   /** Questions measured in BOTH windows. Zero means there is no comparison. */
   sharedKeywords: number;
   perSurface: SurfaceCounts[];
@@ -95,6 +186,7 @@ export interface ComparisonInput {
 
 export interface ComparisonResult {
   basis: {
+    kind: ComparisonBasis;
     sharedKeywords: number;
     /** Non-control runs only. The control is not part of any pooled figure. */
     curRuns: number;
@@ -111,7 +203,10 @@ export interface ComparisonResult {
   pooled: Record<"citation" | "model_knowledge", Movement>;
   /** Surfaces that moved at least 2 points. Never contains the control. */
   movedSurfaces: string[];
+  /** Events that bore on the comparison and could withhold it. */
   events: InstrumentEvent[];
+  /** Events inside the window that were considered and found not to bear. */
+  setAside: SetAsideEvent[];
 }
 
 /** Aggregate run volume gap above which a pooled figure is not stated. */
@@ -159,7 +254,14 @@ function eventsFor(engine: string, events: InstrumentEvent[]): InstrumentEvent[]
  * and a pure function is the only shape those cases can be pinned as tests.
  */
 export function computeComparison(input: ComparisonInput): ComparisonResult {
-  const events = input.events ?? [];
+  const basisKind: ComparisonBasis = input.basis ?? "shared";
+  const events: InstrumentEvent[] = [];
+  const setAside: SetAsideEvent[] = [];
+  for (const e of input.events ?? []) {
+    const why = setAsideReason(e, basisKind);
+    if (why === null) events.push(e);
+    else setAside.push({ event: e, why });
+  }
 
   // A comparison with no shared question is not a weak comparison, it is not a
   // comparison. Everything downstream is withheld rather than zeroed.
@@ -216,6 +318,7 @@ export function computeComparison(input: ComparisonInput): ComparisonResult {
 
   return {
     basis: {
+      kind: basisKind,
       sharedKeywords: input.sharedKeywords,
       curRuns: basisCur,
       prevRuns: basisPrev,
@@ -225,6 +328,7 @@ export function computeComparison(input: ComparisonInput): ComparisonResult {
     pooled,
     movedSurfaces,
     events,
+    setAside,
   };
 }
 
