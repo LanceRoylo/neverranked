@@ -211,10 +211,26 @@ export async function aggregateLastWeek(env: Env, weekStartsAt?: number): Promis
     console.log("[weekly-brief] no keywords measured in both weeks; week-over-week comparison withheld.");
   }
 
-  // Instrument events are not wired in yet (migration 0126 created the table on
-  // 2026-09-27 and nothing populates it from here). Passing none is the honest
-  // current state: this brief cannot yet refuse a comparison that spans an
-  // adapter change, and that gap is why the step detector exists.
+  // Instrument events, wired 2026-10-01. Until then this passed none, so the
+  // brief could not refuse a comparison spanning an adapter change, a question
+  // set change or a step the detector had found. Fleet-wide, so every client's
+  // events are loaded: a step in any client's numbers is inside a fleet figure.
+  // A load failure passes an unrecognised global event rather than none, which
+  // withholds: not knowing whether the instrument changed is not the same as
+  // knowing it did not.
+  const { loadInstrumentEvents } = await import("./lib/compare-loader");
+  const events = await loadInstrumentEvents(
+    env,
+    { start: prevStart, end: prevEnd },
+    { start, end },
+    null,
+  ).catch((e) => [{
+    occurred_at: start,
+    kind: "events_unavailable",
+    scope: "global" as const,
+    detail: `instrument_events could not be read (${e instanceof Error ? e.message : String(e)}), so no comparison can be cleared`,
+  }]);
+
   const comparison = computeComparison({
     sharedKeywords,
     perSurface: (engWowRes?.results ?? []).map((e) => ({
@@ -226,6 +242,7 @@ export async function aggregateLastWeek(env: Env, weekStartsAt?: number): Promis
     })),
     curWindow: { start, end },
     prevWindow: { start: prevStart, end: prevEnd },
+    events,
   });
 
   const totalRuns = enginesRes.results.reduce((s, r) => s + r.runs, 0);
@@ -386,6 +403,10 @@ export function weekOverWeekBlock(stats: WeeklyStats): string {
   if (c.events.length > 0) {
     lines.push("", "  INSTRUMENT CHANGES inside these windows (these are OURS, not the market):");
     for (const e of c.events) lines.push(`    ${e.kind}: ${e.detail}`);
+  }
+  if (c.setAside.length > 0) {
+    lines.push("", "  Also inside these windows, considered and found not to affect these figures:");
+    for (const s of c.setAside) lines.push(`    ${s.event.kind}: ${s.why}`);
   }
 
   return lines.join("\n");
