@@ -70,6 +70,8 @@ async function gatherData(env: Env): Promise<SummaryData> {
   const SECONDS_PER_DAY_LOCAL = 86400;
   const CRON_EXPECTED: Record<string, number> = {
     daily_tasks: SECONDS_PER_DAY_LOCAL,
+    daily_maintenance: SECONDS_PER_DAY_LOCAL,
+    month_start: SECONDS_PER_DAY_LOCAL,
     auth_cleanup: SECONDS_PER_DAY_LOCAL,
     inbox_morning_summary: SECONDS_PER_DAY_LOCAL,
     weekly_scans: 7 * SECONDS_PER_DAY_LOCAL,

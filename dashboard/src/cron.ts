@@ -1014,6 +1014,94 @@ export async function runPostSweepEvaluation(env: Env): Promise<void> {
   }
 }
 
+/**
+ * Held until the NVI report is audited. While true, runMonthStartWork records
+ * which subscriptions were due and runs none of them.
+ *
+ * Two reasons, both found 2026-10-01. The report's "AI Presence Score" is
+ * approved without a human reading it, which has not been audited against the
+ * claims rules every other client deliverable now passes. And the runner calls
+ * runWeeklyCitations() for the client, a full out-of-sweep measurement batch.
+ * HTC has been sweep-measured since 2026-09-14, so that batch would add a
+ * day of extra runs to the 1st of every month and skew any volume-based
+ * comparison spanning it. No NVI report has been generated since July, so
+ * holding it changes nothing a client currently receives.
+ */
+export const NVI_MONTHLY_PAUSED = true;
+
+export interface MonthStartResult {
+  nviDue: string[];
+  nviRan: string[];
+  nviPaused: boolean;
+  recapsAttempted: boolean;
+}
+
+/**
+ * Work that only does anything on particular days of the month, isolated on
+ * its own cron trigger (06:45 UTC) since 2026-10-01.
+ *
+ * It used to sit inside runDailyMaintenance in the 06:00 invocation. On the
+ * 1st of August, September and October that invocation died and left no
+ * cron_runs row at all: not a failure row, nothing. The day-2 runs all
+ * succeeded, so the killer was day-1-only work, and the heaviest by far was
+ * the NVI runner, which performs a full synchronous citation run inside an
+ * invocation already carrying the nightly sweep. The 06:00 batch has hit
+ * "Too many subrequests by single Worker invocation" twice before (see the
+ * 06:30 handler), and once the budget is gone the logging write fails with
+ * everything else, which is why nothing recorded the deaths.
+ *
+ * A separate ctx.waitUntil would NOT fix this: every waitUntil in one
+ * scheduled event shares that event's budget. Only a separate trigger gets a
+ * fresh one. This uses the fifth and last trigger Cloudflare allows.
+ *
+ * It runs and logs every day, even when there is nothing due, so the cadence
+ * watch can tell a quiet day from a trigger that never fired.
+ */
+export async function runMonthStartWork(env: Env, nowMs: number = Date.now()): Promise<MonthStartResult> {
+  const out: MonthStartResult = { nviDue: [], nviRan: [], nviPaused: NVI_MONTHLY_PAUSED, recapsAttempted: false };
+
+  // NVI monthly report runs. Each subscription has a delivery_day (1-28);
+  // when today's UTC day matches, the runner fires for that subscription.
+  // Reports land as 'pending' for review at /admin/nvi. Idempotent: the
+  // runner refuses a second report for the same client and period.
+  try {
+    const todayDay = new Date(nowMs).getUTCDate();
+    const subs = (await env.DB.prepare(
+      "SELECT client_slug FROM nvi_subscriptions WHERE active = 1 AND delivery_day = ?"
+    ).bind(todayDay).all<{ client_slug: string }>()).results;
+    out.nviDue = subs.map((s) => s.client_slug);
+    if (subs.length > 0 && NVI_MONTHLY_PAUSED) {
+      console.log(`[cron month_start] nvi: ${subs.length} due (${out.nviDue.join(", ")}), NOT run: NVI_MONTHLY_PAUSED`);
+    } else if (subs.length > 0) {
+      const period = nviCurrentPeriod();
+      const { runMonthlyNviReport } = await import("./nvi/runner");
+      for (const sub of subs) {
+        try {
+          const r = await runMonthlyNviReport(env, sub.client_slug, period);
+          if (r.ok) out.nviRan.push(sub.client_slug);
+          console.log(`[cron month_start] nvi: ${sub.client_slug} ${period} -> ${r.ok ? `report ${r.reportId} score ${r.score}` : `skipped: ${r.reason}`}`);
+        } catch (e) {
+          console.log(`[cron month_start] nvi runner failed for ${sub.client_slug}: ${e instanceof Error ? e.message : String(e)}`);
+        }
+      }
+    }
+  } catch (e) {
+    console.log(`[cron month_start] nvi: ${e instanceof Error ? e.message : String(e)}`);
+  }
+
+  // Monthly recap: only fires on days 1-2, self-guards against re-fire via
+  // email_delivery_log. Annual recap: early January only.
+  try {
+    await maybeSendMonthlyRecaps(env);
+    await maybeSendAnnualRecaps(env);
+    out.recapsAttempted = true;
+  } catch (e) {
+    console.log(`[cron month_start] recaps failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+
+  return out;
+}
+
 export async function runDailyMaintenance(env: Env): Promise<void> {
   // Each of these does its own D1 work and some have an unguarded top-level
   // query (e.g. sendOnboardingDripEmails' initial SELECT). An unwrapped throw
@@ -1243,33 +1331,9 @@ export async function runDailyMaintenance(env: Env): Promise<void> {
     console.log(`[cron] readiness cross-map block failed: ${e instanceof Error ? e.message : String(e)}`);
   }
 
-  // NVI monthly report runs.
-  // Each subscription has a delivery_day (1-28). When today's day-
-  // of-month UTC matches, kick off the runner for that subscription.
-  // Multiple subscriptions on the same day fan out one runner each.
-  // Reports land as 'pending' and wait for admin review at /admin/nvi
-  // before customer delivery. Idempotent: runner refuses to create
-  // a second report for the same client+period.
-  try {
-    const todayDay = new Date().getUTCDate();
-    const subs = (await env.DB.prepare(
-      "SELECT client_slug FROM nvi_subscriptions WHERE active = 1 AND delivery_day = ?"
-    ).bind(todayDay).all<{ client_slug: string }>()).results;
-    if (subs.length > 0) {
-      const period = nviCurrentPeriod();
-      const { runMonthlyNviReport } = await import("./nvi/runner");
-      for (const sub of subs) {
-        try {
-          const r = await runMonthlyNviReport(env, sub.client_slug, period);
-          console.log(`[cron] nvi: ${sub.client_slug} ${period} -> ${r.ok ? `report ${r.reportId} score ${r.score}` : `skipped: ${r.reason}`}`);
-        } catch (e) {
-          console.log(`[cron] nvi runner failed for ${sub.client_slug}: ${e instanceof Error ? e.message : String(e)}`);
-        }
-      }
-    }
-  } catch (e) {
-    console.log(`[cron] nvi: ${e instanceof Error ? e.message : String(e)}`);
-  }
+  // NVI monthly reports and the monthly/annual recaps used to run here. They
+  // moved to runMonthStartWork() on its own 06:45 trigger on 2026-10-01. See
+  // that function for why.
 
   // Monthly memo drafts. On the 24th (the day before the 25th delivery
   // cadence), draft a memo for every active/pilot customer and drop them
@@ -1700,11 +1764,6 @@ export async function runDailyMaintenance(env: Env): Promise<void> {
   } catch (e) {
     console.log(`[cron] onboarding drift check failed: ${e}`);
   }
-  // Monthly recap: only fires on day 1 of the month, self-guards
-  // against re-fire via email_delivery_log.
-  await maybeSendMonthlyRecaps(env);
-  // Annual recap: only fires in early January, summarizes prior year.
-  await maybeSendAnnualRecaps(env);
   // Expiring card check: warns customers 30 days before their card on
   // file expires. Self-guards via email_delivery_log so it only nags
   // each customer once per (card, month).

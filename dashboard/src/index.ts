@@ -3909,7 +3909,10 @@ Once verified working, the user-OAuth path becomes vestigial. The legacy code st
     //   "0 6 * * *"  -> heavy daily: citation sweep, QA sweeps, scans
     //   "15 6 * * *" -> delivery ONLY: digests + founder weekly summary
     //                   (separate invocation so the sweep can't starve it)
+    //   "45 6 * * *" -> month-start work: NVI reports on delivery day,
+    //                   monthly + annual recaps (see runMonthStartWork)
     //   "0 17 * * *" -> 7am Pacific/Honolulu = founder inbox morning summary
+    // That is five, Cloudflare's cap. There is no spare trigger.
     // event.cron is undefined on manual/test triggers; fall back to hour.
     const scheduledAt = new Date(event.scheduledTime ?? Date.now());
     const hour = scheduledAt.getUTCHours();
@@ -4013,6 +4016,27 @@ Once verified working, the user-OAuth path becomes vestigial. The legacy code st
           })
         );
       }
+      return;
+    }
+
+    // --- Month-start invocation (06:45, DAILY) ---
+    // Its own trigger because a separate ctx.waitUntil inside 06:00 would
+    // still share that invocation's budget, and the 1st-of-month work is what
+    // exhausted it on 08-01, 09-01 and 10-01. Runs every day so the cadence
+    // watch sees it; on most days it finds nothing due and returns.
+    if (cron === "45 6 * * *") {
+      ctx.waitUntil(
+        withCronLogging(env, "month_start", async () => {
+          const { runMonthStartWork } = await import("./cron");
+          return runMonthStartWork(env, scheduledAt.getTime());
+        }, (r) =>
+          `nvi_due=${r.nviDue.length}${r.nviDue.length ? ` (${r.nviDue.join(",")})` : ""}` +
+          ` nvi_ran=${r.nviRan.length}${r.nviPaused ? " nvi_paused" : ""}` +
+          ` recaps=${r.recapsAttempted ? "checked" : "failed"}`,
+        ).catch((e) => {
+          console.log(`[cron 06:45] month_start failed: ${e instanceof Error ? e.message : e}`);
+        }),
+      );
       return;
     }
 

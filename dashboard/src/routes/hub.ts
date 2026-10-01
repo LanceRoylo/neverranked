@@ -34,6 +34,8 @@ const SECONDS_PER_DAY = 86400;
 // internals; if a cron cadence changes, update both.
 const CRON_CADENCE: Record<string, number> = {
   daily_tasks: SECONDS_PER_DAY,
+  daily_maintenance: SECONDS_PER_DAY,
+  month_start: SECONDS_PER_DAY,
   auth_cleanup: SECONDS_PER_DAY,
   inbox_morning_summary: SECONDS_PER_DAY,
   anomaly_detection: SECONDS_PER_DAY,

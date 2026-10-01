@@ -41,7 +41,9 @@ const ENGINE_MIN_ROWS_YELLOW = 3;
 //       red if >3x or never ran
 const SECONDS_PER_DAY = 86400;
 const CRON_EXPECTED_CADENCE: Record<string, { seconds: number; description: string }> = {
-  daily_tasks: { seconds: SECONDS_PER_DAY, description: "Daily at 6am UTC (citations + drips + sweeps)" },
+  daily_tasks: { seconds: SECONDS_PER_DAY, description: "Daily at 6am UTC (citation sweep dispatch)" },
+  daily_maintenance: { seconds: SECONDS_PER_DAY, description: "Daily at 6am UTC (drips, sweeps, watchdogs, memo drafts, invoice watch)" },
+  month_start: { seconds: SECONDS_PER_DAY, description: "Daily at 6:45am UTC (NVI reports on delivery day, monthly + annual recaps)" },
   auth_cleanup: { seconds: SECONDS_PER_DAY, description: "Daily at 6am UTC (auth token cleanup)" },
   inbox_morning_summary: { seconds: SECONDS_PER_DAY, description: "Daily at 7am Pacific (founder morning email)" },
   anomaly_detection: { seconds: SECONDS_PER_DAY, description: "Daily after citation cron (auto-tuned thresholds with 14d baseline)" },

@@ -85,6 +85,10 @@ export const CRON_EXPECTED_CADENCE: Record<string, number> = {
   // the query-set hash -- could have stopped dead without raising anything.
   // A monitor that watches half a split task reports health it cannot see.
   daily_maintenance: SECONDS_PER_DAY,
+  // Added 2026-10-01. The 1st-of-month work (NVI reports, recaps) moved to
+  // its own 06:45 trigger. It logs every day, including the days it has
+  // nothing to do, so a trigger that never registered is visible here.
+  month_start: SECONDS_PER_DAY,
   auth_cleanup: SECONDS_PER_DAY,
   inbox_morning_summary: SECONDS_PER_DAY,
   weekly_scans: 7 * SECONDS_PER_DAY,
@@ -367,6 +371,48 @@ async function detectEngineAnomalies(env: Env): Promise<{ alertsCreated: number;
 // Cron task freshness detection
 // ---------------------------------------------------------------------------
 
+/**
+ * Tasks that must leave a row EVERY day, checked per day rather than by
+ * cadence.
+ *
+ * The cadence check below cannot see a single missed day. Its threshold is 2x
+ * cadence, 48 hours for a daily task, and a task that misses one morning runs
+ * again the next, so the gap never reaches 48 hours at the moment anyone
+ * looks. That is exactly how daily_maintenance died on 2026-08-01, 09-01 and
+ * 10-01 without one alert: the 1st-of-month work exhausted the 06:00
+ * invocation's budget, the run never logged, and the next morning's success
+ * made the miss invisible. Three months of the NVI report went with it.
+ */
+export const MUST_RUN_DAILY = ["daily_tasks", "daily_maintenance"] as const;
+
+/** Both tasks are dispatched by the 06:00 UTC trigger. */
+export const DAILY_TRIGGER_HOUR_UTC = 6;
+
+/**
+ * How long after 06:00 a run may still be in flight. The longest observed
+ * daily_tasks run is 449s (2026-09-02); daily_maintenance peaks near 270s.
+ * Detection runs at 06:30, so 25 minutes is about three times the worst case.
+ */
+export const DAILY_RUN_GRACE_SEC = 25 * 60;
+
+/**
+ * Pure: did a task that must run daily leave no row today?
+ *
+ * Any status counts as having run. A 'failure' row is evidence the task
+ * started and the wrapper caught the error; this check is about the case
+ * where there is no row at all, which is what a killed invocation leaves.
+ *
+ * Returns null when it is too early in the UTC day to judge.
+ */
+export function missedTodaysRun(nowSec: number, latestRowAt: number | null): { missed: boolean; day: string } | null {
+  const d = new Date(nowSec * 1000);
+  const dayStart = Math.floor(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) / 1000);
+  const triggerAt = dayStart + DAILY_TRIGGER_HOUR_UTC * 3600;
+  if (nowSec < triggerAt + DAILY_RUN_GRACE_SEC) return null;
+  const day = d.toISOString().slice(0, 10);
+  return { missed: latestRowAt === null || latestRowAt < triggerAt, day };
+}
+
 async function detectCronAnomalies(env: Env): Promise<{ alertsCreated: number; details: string[] }> {
   const details: string[] = [];
   let alertsCreated = 0;
@@ -403,6 +449,36 @@ async function detectCronAnomalies(env: Env): Promise<{ alertsCreated: number; d
         details.push(`${taskName} overdue already alerted in last 24h`);
       }
     }
+  }
+
+  // Per-day check. See MUST_RUN_DAILY for why the cadence loop above is
+  // structurally blind to a one-day miss.
+  for (const taskName of MUST_RUN_DAILY) {
+    const row = await env.DB.prepare(
+      "SELECT MAX(ran_at) as last_row FROM cron_runs WHERE task_name = ?"
+    ).bind(taskName).first<{ last_row: number | null }>();
+    const verdict = missedTodaysRun(now, row?.last_row ?? null);
+    if (!verdict || !verdict.missed) continue;
+
+    // Fingerprint carries the date so each missed day raises once and two
+    // misses in a row are two alerts. A separate type from
+    // anomaly_cron_overdue on purpose: that one auto-closes when the task is
+    // current again, and a missed day is a fact about that day which the
+    // next morning's success does not undo.
+    const fingerprint = `cron:${taskName}:missed:${verdict.day}`;
+    if (await alertAlreadyExists(env, "anomaly_cron_missed", fingerprint)) continue;
+    await createAlert(
+      env,
+      "anomaly_cron_missed",
+      `${taskName}: no run recorded today (${verdict.day})`,
+      `${fingerprint} | ${taskName} is dispatched by the 06:00 UTC trigger and has written no cron_runs row ` +
+      `since then, not even a failure. A run that throws is logged as a failure; NO row means the ` +
+      `invocation was killed before the wrapper could write, most often by exhausting the per-invocation ` +
+      `subrequest budget, at which point the logging write fails too. Everything after the point of death ` +
+      `did not run today. Check what is special about ${verdict.day}.`,
+    );
+    alertsCreated++;
+    details.push(`ALERT: ${taskName} left no row on ${verdict.day}`);
   }
 
   return { alertsCreated, details };
