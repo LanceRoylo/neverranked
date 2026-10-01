@@ -45,19 +45,22 @@ export async function handleInjectScript(
   request?: Request,
   ctx?: ExecutionContext,
 ): Promise<Response> {
-  if (HOSTED_INJECTION_RETIRED) {
-    return new Response("/* NeverRanked: not configured */", {
-      headers: {
-        "Content-Type": "application/javascript; charset=utf-8",
-        "Cache-Control": "public, max-age=300, s-maxage=300",
-        "Access-Control-Allow-Origin": "*",
-      },
-    });
-  }
-
   // Bot-analytics logging is opportunistic: we only have the request
   // when the route was called from the main fetch handler. The legacy
   // call signature (slug + env only) is still supported.
+  //
+  // ABOVE the retirement return ON PURPOSE. It used to sit below it, so when
+  // HOSTED_INJECTION_RETIRED landed on 2026-09-08 this stopped recording and
+  // nobody noticed: bot_hits has its last row dated 2026-09-09, across every
+  // pattern, and the "AI bots crawling your site" view has been empty since.
+  // Killing the serve path was right. Killing the only instrument that records
+  // which AI crawlers and agents reach a client's pages was collateral damage,
+  // and it is the measurement that matters most as agents start browsing on
+  // people's behalf.
+  //
+  // This observes a request that is already arriving and writes one row. It
+  // reads nothing from the client's site, sends nothing to it, and returns the
+  // same inert response either way, so measurement-only is untouched.
   if (request && ctx) {
     const ua = request.headers.get("user-agent");
     const ip = request.headers.get("cf-connecting-ip") || request.headers.get("x-forwarded-for");
@@ -68,6 +71,16 @@ export async function handleInjectScript(
       ip,
       refererPath: ref,
     }));
+  }
+
+  if (HOSTED_INJECTION_RETIRED) {
+    return new Response("/* NeverRanked: not configured */", {
+      headers: {
+        "Content-Type": "application/javascript; charset=utf-8",
+        "Cache-Control": "public, max-age=300, s-maxage=300",
+        "Access-Control-Allow-Origin": "*",
+      },
+    });
   }
   // Get config
   let config = await env.DB.prepare(
