@@ -1022,7 +1022,7 @@ export async function runPostSweepEvaluation(env: Env): Promise<void> {
  * approved without a human reading it, which has not been audited against the
  * claims rules every other client deliverable now passes. And the runner calls
  * runWeeklyCitations() for the client, a full out-of-sweep measurement batch.
- * HTC has been sweep-measured since 2026-09-14, so that batch would add a
+ * The only NVI subscriber is now sweep-measured, so that batch would add a
  * day of extra runs to the 1st of every month and skew any volume-based
  * comparison spanning it. No NVI report has been generated since July, so
  * holding it changes nothing a client currently receives.
