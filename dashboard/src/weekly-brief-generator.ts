@@ -38,6 +38,9 @@ export interface WeeklyStats {
   topBots: { bot: string; hits: number }[];
   totalReddit: number;
   topSubreddits: { subreddit: string; hits: number }[];
+  /** Distinct subreddits this week. topSubreddits is capped at 8, so without
+   *  this the writer cannot know the list is cut off and invents the rest. */
+  distinctSubreddits: number;
   sentimentBreakdown: { positive: number; neutral: number; negative: number };
   totalReferrerVisits: number;
   topReferrerEngines: { engine: string; visits: number }[];
@@ -96,6 +99,9 @@ export async function aggregateLastWeek(env: Env, weekStartsAt?: number): Promis
   ).bind(start, end).all<{ subreddit: string; hits: number }>();
   const totalReddit = (await env.DB.prepare(
     `SELECT COUNT(*) AS n FROM reddit_citations WHERE run_at >= ? AND run_at < ?`,
+  ).bind(start, end).first<{ n: number }>())?.n ?? 0;
+  const distinctSubreddits = (await env.DB.prepare(
+    `SELECT COUNT(DISTINCT subreddit) AS n FROM reddit_citations WHERE run_at >= ? AND run_at < ?`,
   ).bind(start, end).first<{ n: number }>())?.n ?? 0;
 
   // Sentiment
@@ -256,6 +262,7 @@ export async function aggregateLastWeek(env: Env, weekStartsAt?: number): Promis
     topBots: botsRes.results,
     totalReddit,
     topSubreddits: subsRes.results,
+    distinctSubreddits,
     sentimentBreakdown: {
       positive: sentRes?.pos ?? 0,
       neutral: sentRes?.neu ?? 0,
@@ -315,13 +322,15 @@ GROUNDING RULES (the stats block in the user message is your ONLY source):
 - Week-over-week movement is the RATE change in the Week over week block, never the difference between two absolute citation counts. Where that block says no movement can be stated, there is no movement to report: say plainly that the two periods are not comparable and why, and never reconstruct the figure from the raw counts yourself.
 - Week-over-week movement is stated PER SURFACE, from the per-surface lines. The pooled rate averages surfaces that move in opposite directions and also moves when the balance of runs between them changes, so it may not be the headline. If the per-surface block says no surface moved 2 points, the week's finding is that nothing moved, and you say so.
 - Query volume is ours. We choose how many questions to ask and how often. Any change in it is a fact about our instrument, and writing it as a change in AI behaviour is the same failure as reporting a question-set change as a ranking movement.
+- When the stats block lists more than one instrument change, do not single one out as the reason the weeks are not comparable. Say the window contains that many recorded changes to our own measurement and name them briefly. The block does not say which one mattered most, so neither can you.
+- A section marked NOT MEASURED is missing data. Never turn it into a zero, a "none" or a "no activity".
 - If a detail would make the brief more interesting but is not in the stats block, leave it out. A thin accurate brief is correct. An interesting invented one is a retraction.
 
 OUTPUT FORMAT (strict JSON):
 {
   "title": "Specific, declarative, under 70 chars. NOT 'Weekly Brief #X' -- name what actually happened.",
   "summary": "1-2 sentences. The hook. Used as the archive list entry and the meta description.",
-  "body_markdown": "The full brief in Markdown. Use ## for section headers. 600-1200 words. Open with the most notable measured result, then sections for each angle (engine activity, Reddit, sentiment, referral traffic, etc). Close by naming what next week's numbers would have to show to confirm or contradict this week's reading. Do not predict."
+  "body_markdown": "The full brief in Markdown. Use ## for section headers. 600-1200 words. Open with the most notable measured result, then sections for each angle that was measured (engine activity, Reddit, sentiment, referral traffic). Skip any angle marked NOT MEASURED. End on the last measured fact. Do not add a section about next week, and do not say whether next week's figures will be comparable."
 }`;
 
 interface GeneratedBrief {
@@ -412,6 +421,58 @@ export function weekOverWeekBlock(stats: WeeklyStats): string {
   return lines.join("\n");
 }
 
+/**
+ * A pipe that recorded nothing is NOT MEASURED, never zero.
+ *
+ * The week of 2026-09-21 draft said "No bot crawler activity was recorded" and
+ * "Zero human visits arrived from AI engines". Bot logging had been dark from
+ * 09-10 to 09-30 (last row 09-09, and 127 rows on 10-01 once restored), and
+ * referrer_hits has never held a single row. Both sentences rendered a broken
+ * or never-built pipe as a measured absence, the defect this codebase has
+ * shipped more than any other.
+ *
+ * A live bot pipe logs a hundred-plus rows a day, so a week with none is a
+ * dead pipe, not a quiet web. There is no honest zero to report here.
+ */
+const NOT_MEASURED = (what: string) =>
+  `  NOT MEASURED this week: ${what} recorded no rows in this window. That is missing\n` +
+  `  data, not zero activity. Do not write that there was none, zero, or no activity.\n` +
+  `  Leave this angle out of the brief entirely.`;
+
+export function botBlock(stats: WeeklyStats): string {
+  if (stats.totalBotHits === 0) return NOT_MEASURED("bot logging");
+  return `  Total bot fetches: ${stats.totalBotHits}\n  Top bots:\n` +
+    stats.topBots.map((b) => `    ${b.bot}: ${b.hits} fetches`).join("\n");
+}
+
+export function referralBlock(stats: WeeklyStats): string {
+  if (stats.totalReferrerVisits === 0) return NOT_MEASURED("referral tracking");
+  return `  Total: ${stats.totalReferrerVisits}\n  Per engine:\n` +
+    stats.topReferrerEngines.map((r) => `    ${r.engine}: ${r.visits} visits`).join("\n");
+}
+
+/**
+ * The list is capped, and says so. The 09-21 draft wrote "Five others appeared
+ * once" and then named four, because it was handed eight rows and no total.
+ */
+export function redditBlock(stats: WeeklyStats): string {
+  if (stats.totalReddit === 0) return NOT_MEASURED("Reddit citation extraction");
+  const listedThreads = stats.topSubreddits.reduce((a, s) => a + s.hits, 0);
+  const lines = [
+    `  Total reddit threads cited by AI: ${stats.totalReddit}, across ${stats.distinctSubreddits} subreddits`,
+    `  Top subreddits:`,
+    ...stats.topSubreddits.map((s) => `    r/${s.subreddit}: ${s.hits} thread mentions`),
+  ];
+  if (stats.topSubreddits.length < stats.distinctSubreddits || listedThreads < stats.totalReddit) {
+    lines.push(
+      `  This list is CUT OFF: it shows ${stats.topSubreddits.length} of ${stats.distinctSubreddits} subreddits ` +
+      `and ${listedThreads} of ${stats.totalReddit} threads. Say nothing about the subreddits not listed, ` +
+      `not even how many there are or how often they appeared.`,
+    );
+  }
+  return lines.join("\n");
+}
+
 function buildUserMessage(stats: WeeklyStats): string {
   const fmtPct = (n: number, total: number) => total > 0 ? `${Math.round((n / total) * 100)}%` : "0%";
   const sentTotal = stats.sentimentBreakdown.positive + stats.sentimentBreakdown.neutral + stats.sentimentBreakdown.negative;
@@ -440,14 +501,10 @@ ${wow}
 ${stats.perEngine.map(e => `    ${e.engine.padEnd(12)} ${e.runs} runs, ${e.client_cited} cited (${fmtPct(e.client_cited, e.runs)})`).join("\n")}
 
 ## Reddit thread citations
-  Total reddit threads cited by AI: ${stats.totalReddit}
-  Top subreddits:
-${stats.topSubreddits.map(s => `    r/${s.subreddit}: ${s.hits} thread mentions`).join("\n")}
+${redditBlock(stats)}
 
 ## Bot crawler activity
-  Total bot fetches: ${stats.totalBotHits}
-  Top bots:
-${stats.topBots.map(b => `    ${b.bot}: ${b.hits} fetches`).join("\n")}
+${botBlock(stats)}
 
 ## Sentiment of AI mentions (where client was named)
   Positive: ${stats.sentimentBreakdown.positive} (${fmtPct(stats.sentimentBreakdown.positive, sentTotal)})
@@ -455,9 +512,7 @@ ${stats.topBots.map(b => `    ${b.bot}: ${b.hits} fetches`).join("\n")}
   Negative: ${stats.sentimentBreakdown.negative} (${fmtPct(stats.sentimentBreakdown.negative, sentTotal)})
 
 ## Real human visits from AI engines (referral traffic)
-  Total: ${stats.totalReferrerVisits}
-  Per engine:
-${stats.topReferrerEngines.map(r => `    ${r.engine}: ${r.visits} visits`).join("\n")}
+${referralBlock(stats)}
 
 ---
 

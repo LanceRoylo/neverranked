@@ -239,6 +239,19 @@ function layerOf(engine: string): CompareLayer {
   return l === "unknown" ? "unknown" : l;
 }
 
+/**
+ * Name every event in a refusal, not the first one found.
+ *
+ * Until 2026-10-01 the reason quoted own[0] only. The week of 09-21 carried
+ * four events and the first was a client pause whose questions were not even
+ * in the compared set, so the brief's headline blamed the one change that
+ * could not have mattered.
+ */
+function describeEvents(own: InstrumentEvent[]): string {
+  if (own.length === 1) return `${own[0].kind}: ${own[0].detail}`;
+  return `${own.length} recorded changes: ` + own.map((e) => e.kind).join(", ");
+}
+
 /** Events that bear on a given surface: global ones, plus its own. */
 function eventsFor(engine: string, events: InstrumentEvent[]): InstrumentEvent[] {
   return events.filter(
@@ -285,10 +298,9 @@ export function computeComparison(input: ComparisonInput): ComparisonResult {
         reason: `not measured in ${prevRate === null ? "the prior" : "this"} window, so it has no rate there`,
       };
     } else if (own.length > 0) {
-      const e = own[0];
       movement = {
         kind: "withheld",
-        reason: `an instrument change lands inside the window (${e.kind}: ${e.detail})`,
+        reason: `an instrument change lands inside the window (${describeEvents(own)})`,
       };
     } else {
       movement = { kind: "stated", prevRate, curRate, deltaPp: curRate - prevRate };
@@ -362,7 +374,7 @@ function pooledFor(
     if (own.length > 0) {
       return {
         kind: "withheld",
-        reason: `an instrument change affects ${s.engine} inside the window (${own[0].kind}: ${own[0].detail})`,
+        reason: `an instrument change affects ${s.engine} inside the window (${describeEvents(own)})`,
       };
     }
   }
