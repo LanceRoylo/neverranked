@@ -323,6 +323,7 @@ GROUNDING RULES (the stats block in the user message is your ONLY source):
 - Week-over-week movement is stated PER SURFACE, from the per-surface lines. The pooled rate averages surfaces that move in opposite directions and also moves when the balance of runs between them changes, so it may not be the headline. If the per-surface block says no surface moved 2 points, the week's finding is that nothing moved, and you say so.
 - Query volume is ours. We choose how many questions to ask and how often. Any change in it is a fact about our instrument, and writing it as a change in AI behaviour is the same failure as reporting a question-set change as a ranking movement.
 - When the stats block lists more than one instrument change, do not single one out as the reason the weeks are not comparable. Say the window contains that many recorded changes to our own measurement and name them briefly. The block does not say which one mattered most, so neither can you.
+- WITHHELD is not flat. Where movement is withheld, never write held, steady, stable, flat, unchanged or consistent with the prior period, in the title, summary or body. Those are comparisons too.
 - A section marked NOT MEASURED is missing data. Never turn it into a zero, a "none" or a "no activity".
 - If a detail would make the brief more interesting but is not in the stats block, leave it out. A thin accurate brief is correct. An interesting invented one is a retraction.
 
@@ -375,8 +376,8 @@ export function weekOverWeekBlock(stats: WeeklyStats): string {
   // share and a share of answers-that-name-you have different numerators and
   // different denominators, so their average is not a quantity.
   lines.push("  The two layers are reported separately and are NOT comparable to each other:");
-  lines.push(`    Surfaces that search the web and cite sources: ${describeMovement(c.pooled.citation, "rate").replace(/^rate: /, "")}`);
-  lines.push(`    Surfaces that answer from training:            ${describeMovement(c.pooled.model_knowledge, "rate").replace(/^rate: /, "")}`);
+  lines.push(`    Surfaces that search the web and cite sources: ${publicReason(describeMovement(c.pooled.citation, "rate").replace(/^rate: /, ""))}`);
+  lines.push(`    Surfaces that answer from training:            ${publicReason(describeMovement(c.pooled.model_knowledge, "rate").replace(/^rate: /, ""))}`);
   lines.push("  A percentage here is a LEVEL. Never write a level as a drop or a rise.");
   lines.push("");
 
@@ -388,7 +389,12 @@ export function weekOverWeekBlock(stats: WeeklyStats): string {
         ? "  [smaller denominator BY DESIGN: a row exists only when an overview rendered, so this is how often Google showed one, NOT missing coverage.]"
         : "";
     if (s.movement.kind === "withheld") {
-      lines.push(`    ${s.engine.padEnd(19)} no movement may be stated: ${s.movement.reason}${note}`);
+      // Event reasons carry our internal notes ("a paying client", migration
+      // numbers, "do not re-arm"). This prompt writes a PUBLIC brief, so an
+      // instrument-change refusal is rendered generically and the events are
+      // listed below by kind only. Volume and mix reasons carry no client
+      // detail and pass through.
+      lines.push(`    ${s.engine.padEnd(19)} no movement may be stated: ${publicReason(s.movement.reason)}${note}`);
       continue;
     }
     const m = s.movement;
@@ -398,27 +404,71 @@ export function weekOverWeekBlock(stats: WeeklyStats): string {
     );
   }
 
-  lines.push(
-    c.movedSurfaces.length > 0
-      ? `  Surfaces that moved at least 2 points: ${c.movedSurfaces.join(", ")}.`
-      : "  No surface moved as much as 2 points. Say that plainly rather than finding a trend.",
-  );
+  // movedSurfaces only ever contains STATED movements. Read as "nothing
+  // moved" when every surface was withheld, it produced "citation rates held
+  // steady" on 2026-10-01 for a week in which Gemini's raw rate went 22.5% to
+  // 27.7%. Withheld is not flat. "No surface moved" may only be said when
+  // every AI surface was actually compared.
+  const ai = c.perSurface.filter((s) => s.layer !== "control");
+  const withheldCount = ai.filter((s) => s.movement.kind === "withheld").length;
+  if (withheldCount > 0) {
+    lines.push(
+      `  Movement is WITHHELD for ${withheldCount} of ${ai.length} AI surfaces. For those you may not say`,
+      "  they moved, rose, fell, held, held steady, stayed flat, were stable or were",
+      "  consistent with the prior week. Each of those is a comparison. The finding is",
+      "  only that the weeks cannot be compared, and why.",
+    );
+    if (c.movedSurfaces.length > 0) {
+      lines.push(`  Of the surfaces that WERE compared, these moved at least 2 points: ${c.movedSurfaces.join(", ")}.`);
+    }
+  } else {
+    lines.push(
+      c.movedSurfaces.length > 0
+        ? `  Surfaces that moved at least 2 points: ${c.movedSurfaces.join(", ")}.`
+        : "  No surface moved as much as 2 points. Say that plainly rather than finding a trend.",
+    );
+  }
   lines.push(
     "  Report movement PER SURFACE and PER LAYER. Where a figure above says no",
     "  movement may be stated, you may not state one, and you may not work around",
     "  it by comparing the raw counts yourself.",
   );
 
+  // Kind and scope only. The detail column is an internal record, written for
+  // us ("a paying client", migration numbers, causes), and the 10-01 draft
+  // quoted it into a public brief. The writer gets what changed, not the notes.
   if (c.events.length > 0) {
     lines.push("", "  INSTRUMENT CHANGES inside these windows (these are OURS, not the market):");
-    for (const e of c.events) lines.push(`    ${e.kind}: ${e.detail}`);
+    for (const e of c.events) lines.push(`    ${publicEventLine(e)}`);
+    lines.push("  Describe these only as listed. Add no counts, clients, causes or dates.");
   }
   if (c.setAside.length > 0) {
     lines.push("", "  Also inside these windows, considered and found not to affect these figures:");
-    for (const s of c.setAside) lines.push(`    ${s.event.kind}: ${s.why}`);
+    for (const s of c.setAside) lines.push(`    ${publicEventLine(s.event)}: ${s.why}`);
   }
 
   return lines.join("\n");
+}
+
+/**
+ * Strip an instrument-event refusal down to what a public brief may see.
+ * compare-periods puts the event's internal detail into the reason; volume,
+ * mix and missing-window reasons carry no client detail and pass through.
+ */
+export function publicReason(text: string): string {
+  return text.replace(
+    /an instrument change (lands inside|affects \S+ inside) the window \([^)]*(\)[^)]*)*\)/g,
+    "an instrument change of ours lands inside the window (listed below)",
+  );
+}
+
+/** An instrument event as a public brief may describe it: kind and scope, no notes. */
+export function publicEventLine(e: { kind: string; scope: string; engine?: string | null }): string {
+  const what = e.kind.replace(/_/g, " ");
+  const where = e.scope === "engine" && e.engine
+    ? ` on ${e.engine}`
+    : e.scope === "client" ? " for one tracked client" : " across all measurement";
+  return `${what}${where}`;
 }
 
 /**
@@ -467,7 +517,7 @@ export function redditBlock(stats: WeeklyStats): string {
     lines.push(
       `  This list is CUT OFF: it shows ${stats.topSubreddits.length} of ${stats.distinctSubreddits} subreddits ` +
       `and ${listedThreads} of ${stats.totalReddit} threads. Say nothing about the subreddits not listed, ` +
-      `not even how many there are or how often they appeared.`,
+      `not even how many there are or how often they appeared, and do not mention that the list is cut off.`,
     );
   }
   return lines.join("\n");

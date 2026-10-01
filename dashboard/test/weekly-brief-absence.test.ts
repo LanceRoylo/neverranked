@@ -96,3 +96,63 @@ test("the writer is told not to forecast, not to pick a cause, and not to zero a
   assert.match(src, /do not single one out as the reason/);
   assert.match(src, /Never turn it into a zero/);
 });
+
+/* Draft #6, 2026-10-01: every surface withheld, and the brief said "citation
+ * rates held steady" and "no surface moved as much as 2 points". Gemini's raw
+ * rate went 22.5% to 27.7% that week. The block had read an empty
+ * movedSurfaces, which only ever holds STATED movements, as "nothing moved". */
+import { weekOverWeekBlock, publicEventLine } from "../src/weekly-brief-generator";
+
+function allWithheld() {
+  const events: InstrumentEvent[] = [
+    { occurred_at: 1, kind: "question_set_changed", scope: "client", client_slug: "p",
+      detail: "A paying client lost 12 of 30 measured questions. restored by migration 0122" },
+  ];
+  return {
+    comparison: computeComparison({
+      sharedKeywords: 67,
+      perSurface: [
+        { engine: "gemini", prevRuns: 448, prevHits: 101, curRuns: 433, curHits: 120 },
+        { engine: "openai", prevRuns: 472, prevHits: 75, curRuns: 433, curHits: 50 },
+        { engine: "anthropic", prevRuns: 448, prevHits: 82, curRuns: 433, curHits: 83 },
+        { engine: "bing", prevRuns: 472, prevHits: 1, curRuns: 416, curHits: 1 },
+      ],
+      prevWindow: { start: 0, end: 1 },
+      curWindow: { start: 1, end: 2 },
+      events,
+    }),
+  } as unknown as WeeklyStats;
+}
+
+test("all surfaces withheld never renders as 'no surface moved'", () => {
+  const b = weekOverWeekBlock(allWithheld());
+  assert.doesNotMatch(b, /No surface moved as much as 2 points/);
+  assert.match(b, /Movement is WITHHELD for 3 of 3 AI surfaces/);
+  assert.match(b, /held steady, stayed flat/);
+});
+
+test("the public prompt never carries an event's internal notes", () => {
+  const b = weekOverWeekBlock(allWithheld());
+  assert.doesNotMatch(b, /paying client/);
+  assert.doesNotMatch(b, /migration/);
+  assert.doesNotMatch(b, /12 of 30/);
+  assert.match(b, /question set changed for one tracked client/);
+});
+
+test("public event lines carry kind and scope only", () => {
+  assert.equal(publicEventLine({ kind: "engine_adapter_changed", scope: "engine", engine: "perplexity" }),
+    "engine adapter changed on perplexity");
+  assert.equal(publicEventLine({ kind: "backfill", scope: "global" }), "backfill across all measurement");
+});
+
+test("when every surface was compared, 'no surface moved' is still allowed", () => {
+  const stats = {
+    comparison: computeComparison({
+      sharedKeywords: 10,
+      perSurface: [{ engine: "gemini", prevRuns: 400, prevHits: 100, curRuns: 400, curHits: 101 }],
+      prevWindow: { start: 0, end: 1 },
+      curWindow: { start: 1, end: 2 },
+    }),
+  } as unknown as WeeklyStats;
+  assert.match(weekOverWeekBlock(stats), /No surface moved as much as 2 points/);
+});
