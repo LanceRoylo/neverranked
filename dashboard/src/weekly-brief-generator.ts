@@ -23,6 +23,7 @@
 import type { Env } from "./types";
 import { computeComparison, describeMovement, type ComparisonResult } from "./lib/compare-periods";
 import { addInboxItem } from "./admin-inbox";
+import { engineLayer, isControlEngine } from "./lib/engine-layer";
 
 const MODEL = "claude-sonnet-4-5";
 const ANTHROPIC_VERSION = "2023-06-01";
@@ -323,6 +324,8 @@ GROUNDING RULES (the stats block in the user message is your ONLY source):
 - Week-over-week movement is stated PER SURFACE, from the per-surface lines. The pooled rate averages surfaces that move in opposite directions and also moves when the balance of runs between them changes, so it may not be the headline. If the per-surface block says no surface moved 2 points, the week's finding is that nothing moved, and you say so.
 - Query volume is ours. We choose how many questions to ask and how often. Any change in it is a fact about our instrument, and writing it as a change in AI behaviour is the same failure as reporting a question-set change as a ranking movement.
 - When the stats block lists more than one instrument change, do not single one out as the reason the weeks are not comparable. Say the window contains that many recorded changes to our own measurement and name them briefly. The block does not say which one mattered most, so neither can you.
+- Every rate in the stats block is how often a TRACKED CLIENT was cited, named or returned. It is never how often a surface "cited sources". Use the verb each engine line gives: cited, named, or (for the control) returned.
+- The control is not an AI surface. A range, ranking, "highest" or "lowest" across AI surfaces never includes it, in the title or anywhere else.
 - WITHHELD is not flat. Where movement is withheld, never write held, steady, stable, flat, unchanged or consistent with the prior period, in the title, summary or body. Those are comparisons too.
 - A section marked NOT MEASURED is missing data. Never turn it into a zero, a "none" or a "no activity".
 - If a detail would make the brief more interesting but is not in the stats block, leave it out. A thin accurate brief is correct. An interesting invented one is a retraction.
@@ -523,6 +526,33 @@ export function redditBlock(stats: WeeklyStats): string {
   return lines.join("\n");
 }
 
+/**
+ * One engine's line, with the verb its layer is allowed.
+ *
+ * The line used to read "120 cited (28%)" for every surface, and draft #7
+ * wrote "Gemini cited sources in 28% of runs" (it cites sources in nearly
+ * every answer; 28% is how often it cited a TRACKED CLIENT), "Bing cited" (the
+ * control returns, never cites) and "Claude cited" (it answers from training
+ * and cites nothing). The data label was the source of all three, so the
+ * label now carries the verb.
+ */
+export function engineLine(e: { engine: string; runs: number; client_cited: number }, pct: string): string {
+  const name = e.engine.padEnd(19);
+  if (isControlEngine(e.engine)) {
+    return `    ${name} ${e.runs} runs, returned a tracked client's page in ${e.client_cited} (${pct}). ` +
+      `CONTROL: the verb is "returned", never "cited". Never include it in a range, ranking or count of AI surfaces.`;
+  }
+  const layer = engineLayer(e.engine);
+  if (layer === "model_knowledge") {
+    return `    ${name} ${e.runs} runs, named a tracked client in ${e.client_cited} (${pct}). ` +
+      `Answers from training: the verb is "named", never "cited".`;
+  }
+  if (layer === "citation") {
+    return `    ${name} ${e.runs} runs, cited a tracked client in ${e.client_cited} (${pct}).`;
+  }
+  return `    ${name} ${e.runs} runs, cited or named a tracked client in ${e.client_cited} (${pct}).`;
+}
+
 function buildUserMessage(stats: WeeklyStats): string {
   const fmtPct = (n: number, total: number) => total > 0 ? `${Math.round((n / total) * 100)}%` : "0%";
   const sentTotal = stats.sentimentBreakdown.positive + stats.sentimentBreakdown.neutral + stats.sentimentBreakdown.negative;
@@ -530,7 +560,10 @@ function buildUserMessage(stats: WeeklyStats): string {
   // is how a set change gets published as a market movement.
   const wow = weekOverWeekBlock(stats);
 
-  return `Week analyzed: ${new Date(stats.weekStartsAt * 1000).toISOString().slice(0,10)} to ${new Date(stats.weekEndsAt * 1000).toISOString().slice(0,10)}
+  // weekEndsAt is exclusive (next Monday 00:00). Draft #7 printed it as the
+  // last day and wrote "September 21 through September 28".
+  const lastDay = new Date((stats.weekEndsAt - 86400) * 1000).toISOString().slice(0, 10);
+  return `Week analyzed: ${new Date(stats.weekStartsAt * 1000).toISOString().slice(0,10)} through ${lastDay}, inclusive
 
 ## Tracked surface
   Active clients monitored: ${stats.trackedClients}
@@ -542,13 +575,13 @@ function buildUserMessage(stats: WeeklyStats): string {
   Never count Bing among the AI tools and never attribute answering behaviour to it.
   Together these are seven measured surfaces.
   Total runs this week:     ${stats.totalCitationRuns}
-  New client citations:     ${stats.newCitationsThisWeek}
+  Times an AI surface cited or named a tracked client, over the shared questions only: ${stats.newCitationsThisWeek}
 
 ## Week over week
 ${wow}
 
   Per engine:
-${stats.perEngine.map(e => `    ${e.engine.padEnd(12)} ${e.runs} runs, ${e.client_cited} cited (${fmtPct(e.client_cited, e.runs)})`).join("\n")}
+${stats.perEngine.map(e => engineLine(e, fmtPct(e.client_cited, e.runs))).join("\n")}
 
 ## Reddit thread citations
 ${redditBlock(stats)}
@@ -560,6 +593,8 @@ ${botBlock(stats)}
   Positive: ${stats.sentimentBreakdown.positive} (${fmtPct(stats.sentimentBreakdown.positive, sentTotal)})
   Neutral:  ${stats.sentimentBreakdown.neutral}  (${fmtPct(stats.sentimentBreakdown.neutral, sentTotal)})
   Negative: ${stats.sentimentBreakdown.negative} (${fmtPct(stats.sentimentBreakdown.negative, sentTotal)})
+  Total labelled mentions: ${sentTotal}. This is a DIFFERENT count from the citation total above: it
+  covers every question and surface this week. Never present these as shares of that total.
 
 ## Real human visits from AI engines (referral traffic)
 ${referralBlock(stats)}

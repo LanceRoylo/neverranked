@@ -156,3 +156,28 @@ test("when every surface was compared, 'no surface moved' is still allowed", () 
   } as unknown as WeeklyStats;
   assert.match(weekOverWeekBlock(stats), /No surface moved as much as 2 points/);
 });
+
+/* Draft #7, 2026-10-01: "Citation Rates Span 28% to 0% Across Six AI
+ * Surfaces" (the 0% was the control), "Gemini cited sources in 28%", "Bing
+ * cited", "Claude cited", "444 citations: 385 positive, 60 neutral" (445),
+ * and "September 21 through September 28". */
+import { engineLine } from "../src/weekly-brief-generator";
+
+test("each engine line carries its layer's verb", () => {
+  assert.match(engineLine({ engine: "gemini", runs: 433, client_cited: 120 }, "28%"), /cited a tracked client in 120/);
+  const claude = engineLine({ engine: "anthropic", runs: 433, client_cited: 83 }, "19%");
+  assert.match(claude, /named a tracked client in 83/);
+  assert.match(claude, /never "cited"/);
+  const bing = engineLine({ engine: "bing", runs: 416, client_cited: 1 }, "0%");
+  assert.match(bing, /returned a tracked client's page in 1/);
+  assert.match(bing, /Never include it in a range/);
+  assert.doesNotMatch(bing, /\bcited \(/);
+});
+
+test("the prompt names the last day of the week, not the exclusive end", () => {
+  const src = fs.readFileSync(new URL("../src/weekly-brief-generator.ts", import.meta.url), "utf8");
+  assert.match(src, /weekEndsAt - 86400/);
+  assert.match(src, /inclusive/);
+  assert.match(src, /Never present these as shares of that total/);
+  assert.match(src, /never how often a surface "cited sources"/);
+});
