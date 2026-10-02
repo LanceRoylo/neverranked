@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-01T18:21:15.982Z",
+  "updated": "2026-10-02T17:46:36.039Z",
   "checks": {
     "citation_runs": {
       "status": "OK",
@@ -22,9 +22,9 @@
       "lastAlerted": null
     },
     "roadmap_items": {
-      "status": "STALE",
-      "since": "2026-10-01",
-      "lastAlerted": "2026-10-01"
+      "status": "OK",
+      "since": null,
+      "lastAlerted": null
     },
     "admin_alerts": {
       "status": "OK",
