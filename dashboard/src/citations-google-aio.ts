@@ -26,6 +26,7 @@
  * per-client location settings later, override at the call site.
  */
 import type { Env, CitedEntity } from "./types";
+import { isNoResults } from "./lib/dataforseo-status";
 
 const ENDPOINT = "https://api.dataforseo.com/v3/serp/google/organic/live/advanced";
 
@@ -37,6 +38,12 @@ export interface AIOResult {
   /** DataForSEO reports what each task actually cost, so these rows are
    *  recorded as `reported` rather than modelled from a rate table. */
   usage?: { inputTokens?: number; outputTokens?: number; providerCostUsd?: number };
+  /** Set ONLY when the call did not complete. Absent on a real empty answer.
+   *  Until 2026-10-01 every DataForSEO error returned a plain empty result,
+   *  which skipReason() reads as a genuine empty answer: an empty balance would
+   *  have recorded "no overview rendered" for every query and written nothing
+   *  to engine_failures. engine_failures had never held a bing or AIO row. */
+  failure?: { engine: string; status: number; detail: string };
 }
 
 interface DfsTaskResult {
@@ -103,12 +110,13 @@ export async function queryGoogleAIO(keyword: string, env: Env): Promise<AIOResu
     });
   } catch (e) {
     console.log(`[google-aio] fetch error for "${keyword}": ${e}`);
-    return { text: "", urls: [], entities: [] };
+    return { text: "", urls: [], entities: [], failure: { engine: "google_ai_overview", status: 0, detail: `DataForSEO fetch error: ${String(e).slice(0, 300)}` } };
   }
 
   if (!resp.ok) {
     console.log(`[google-aio] DataForSEO HTTP ${resp.status} for "${keyword}"`);
-    return { text: "", urls: [], entities: [] };
+    const body = await resp.text().catch(() => "");
+    return { text: "", urls: [], entities: [], failure: { engine: "google_ai_overview", status: resp.status, detail: `DataForSEO HTTP ${resp.status}: ${body.slice(0, 300)}` } };
   }
 
   let data: DfsResponse;
@@ -123,13 +131,17 @@ export async function queryGoogleAIO(keyword: string, env: Env): Promise<AIOResu
   // not HTTP). Anything else means the task failed -- log and bail.
   if (data.status_code !== 20000) {
     console.log(`[google-aio] DataForSEO status ${data.status_code} for "${keyword}": ${data.status_message}`);
-    return { text: "", urls: [], entities: [] };
+    // Top-level codes are about the REQUEST (auth, balance, limits), never
+    // about whether the query had results, so any non-20000 here is a failure.
+    return { text: "", urls: [], entities: [], failure: { engine: "google_ai_overview", status: 200, detail: `DataForSEO ${data.status_code}: ${data.status_message ?? ""}` } };
   }
 
   const task = data.tasks?.[0];
   if (!task || task.status_code !== 20000) {
     console.log(`[google-aio] task error for "${keyword}": ${task?.status_message ?? "unknown"}`);
-    return { text: "", urls: [], entities: [] };
+    // "No Search Results" is a genuine empty answer, not a failure.
+    if (task && isNoResults(task.status_code, task.status_message)) return { text: "", urls: [], entities: [] };
+    return { text: "", urls: [], entities: [], failure: { engine: "google_ai_overview", status: 200, detail: `DataForSEO ${task?.status_code ?? "no task"}: ${task?.status_message ?? "unknown"}` } };
   }
 
   const items = task.result?.[0]?.items ?? [];

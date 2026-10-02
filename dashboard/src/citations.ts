@@ -296,23 +296,23 @@ async function skipReason(
     // other path waits for the morning anomaly pass, which is correct for a
     // rate limit and eight hours too late for this. Fires on the FIRST refused
     // keyword; createAlertIfFresh dedupes so the remaining 66 stay quiet.
-    if (isTerminalQuota(r.failure.detail ?? "")) {
+    // Billing refusals from EVERY vendor, not just OpenAI's wording (widened
+    // 2026-10-01, see lib/billing-failure.ts). The alert names the vendor to
+    // pay and every surface it stops: DataForSEO is two surfaces at once.
+    const { isBillingFailure, billingAlert } = await import("./lib/billing-failure");
+    if (isBillingFailure(r.failure.status, r.failure.detail ?? "")) {
       try {
         const { createAlertIfFresh } = await import("./admin-alerts");
+        const a = billingAlert(engine, r.failure.detail ?? "");
         await createAlertIfFresh(env, {
           clientSlug: "_system",
           type: "engine_quota_exhausted",
-          title: `${engine}: out of credit, measurement stopped`,
-          detail:
-            `${engine} refused a measurement call with an exhausted balance or spend limit: ` +
-            `"${(r.failure.detail ?? "").slice(0, 200)}". This does not clear on its own and no retry will fix it. ` +
-            `Every remaining question on this surface today will be refused, so any readout covering today holds ` +
-            `no ${engine} data at all. Add credit at the provider, then confirm with the live engine probe at ` +
-            `/admin/health rather than waiting for tomorrow's 06:00 UTC sweep.`,
+          title: a.title,
+          detail: a.detail,
           windowHours: 6,
         });
       } catch (e) {
-        console.log(`[engine-skip] could not raise quota alert for ${engine}: ${e instanceof Error ? e.message : e}`);
+        console.log(`[engine-skip] could not raise billing alert for ${engine}: ${e instanceof Error ? e.message : e}`);
       }
     }
     return true;
