@@ -124,6 +124,21 @@ const CHECKS = [
     sql: `SELECT MAX(created_at) as latest FROM email_delivery_log WHERE type='digest' AND status='queued'`,
     maxAgeSec: 13 * 86400,
     cadence: 'weekly',
+    // 2026-10-04: the digest is OFF BY DECISION. Every client user was set
+    // to email_digest = 0 until the comparison primitive is wired into what
+    // the digest reports (its week-over-week delta has no basis). With
+    // nobody opted in, "no digest delivered in 13d" is the decision, not a
+    // failure, and this check re-raised it every 7 days as red. Same rule
+    // as digest-dispatch-result below: no opted-in users, nothing to watch.
+    // The moment anyone is opted back in, the check is live again.
+    // CUSTOMERS only. On 2026-10-04 the four opted-in users were Lance's two
+    // admin logins and two lance+ test accounts, whose digests the grader
+    // held every week. Counting them kept this red for a decision about
+    // customers that no customer is affected by.
+    activeSql: `SELECT COUNT(*) as n FROM users
+                 WHERE email_digest = 1 AND role <> 'admin'
+                   AND email NOT LIKE '%@neverranked.com' AND email NOT LIKE '%@hi.neverranked.com'`,
+    offNote: 'customer digest OFF by decision: no customer opted in (internal accounts only)',
   },
   {
     name: 'gsc_snapshots',
@@ -482,6 +497,18 @@ for (const check of CHECKS) {
   else if (ageSec > check.maxAgeSec) status = 'STALE';
   else status = 'OK';
 
+  // A check can declare when it applies. When the thing it watches is
+  // deliberately switched off, staleness is the decision, not a fault.
+  let note = null;
+  if (check.activeSql && status !== 'ERROR') {
+    try {
+      const [a] = runD1(check.activeSql);
+      if (Number(a?.n ?? 0) === 0) { status = 'OK'; note = check.offNote || 'not active'; }
+    } catch (e) {
+      // Cannot tell whether it applies: keep the real status.
+    }
+  }
+
   results.push({
     kind: 'staleness',
     name: check.name,
@@ -492,6 +519,7 @@ for (const check of CHECKS) {
     ageSec,
     maxAgeSec: check.maxAgeSec,
     error: err || null,
+    note,
   });
 }
 
@@ -678,6 +706,7 @@ if (args.json) {
     const flag = r.status !== 'OK' ? ' <-- ALERT' : '';
     process.stdout.write(`${tag} ${r.name.padEnd(22)} last seen ${age.padEnd(10)} (${r.cadence}, max ${max})${flag}\n`);
     if (r.error) process.stdout.write(`         error: ${r.error}\n`);
+    if (r.note) process.stdout.write(`         note: ${r.note}\n`);
   }
   if (!args.silentOnOk || failedInvariants.length > 0) {
     process.stdout.write(`\nInvariant checks:\n`);
