@@ -17,7 +17,7 @@
  * scale that's pennies per customer per month.
  */
 import type { Env, CitedEntity } from "./types";
-import { isNoResults } from "./lib/dataforseo-status";
+import { isNoResults, isTransientDfsFailure, DFS_RETRY_DELAY_MS } from "./lib/dataforseo-status";
 
 const ENDPOINT = "https://api.dataforseo.com/v3/serp/bing/organic/live/advanced";
 
@@ -61,7 +61,7 @@ interface DfsBingResponse {
 }
 
 /** Run one Bing organic (control) query through DataForSEO. */
-export async function queryBing(keyword: string, env: Env): Promise<BingResult> {
+async function queryBingOnce(keyword: string, env: Env): Promise<BingResult> {
   if (!env.DATAFORSEO_LOGIN || !env.DATAFORSEO_PASSWORD) {
     return { text: "", urls: [], entities: [] };
   }
@@ -102,7 +102,7 @@ export async function queryBing(keyword: string, env: Env): Promise<BingResult> 
     data = await resp.json() as DfsBingResponse;
   } catch (e) {
     console.log(`[bing] bad JSON for "${keyword}": ${e}`);
-    return { text: "", urls: [], entities: [] };
+    return { text: "", urls: [], entities: [], failure: { engine: "bing", status: 200, detail: `DataForSEO bad JSON: ${String(e).slice(0, 200)}` } };
   }
 
   if (data.status_code !== 20000) {
@@ -169,4 +169,24 @@ function safeHostname(url: string): string {
   } catch {
     return "";
   }
+}
+
+/**
+ * One retry for a TRANSIENT DataForSEO failure, never for billing or auth.
+ *
+ * Once failures became visible on 2026-10-01, google_ai_overview showed 16,
+ * 22 and 11 "40101 Internal SE Server Error" a night out of ~63 calls: a
+ * quarter to a third of the surface lost to an upstream hiccup that a second
+ * attempt usually clears. A retried success is a real reading of the same
+ * question on the same night, so it is recorded like any other.
+ */
+export async function queryBing(keyword: string, env: Env): Promise<BingResult> {
+  const first = await queryBingOnce(keyword, env);
+  if (!first.failure || !isTransientDfsFailure(first.failure.status, first.failure.detail)) return first;
+  await new Promise((r) => setTimeout(r, DFS_RETRY_DELAY_MS));
+  const second = await queryBingOnce(keyword, env);
+  if (second.failure) {
+    second.failure = { ...second.failure, detail: `after retry: ${second.failure.detail}` };
+  }
+  return second;
 }

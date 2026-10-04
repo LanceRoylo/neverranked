@@ -26,7 +26,7 @@
  * per-client location settings later, override at the call site.
  */
 import type { Env, CitedEntity } from "./types";
-import { isNoResults } from "./lib/dataforseo-status";
+import { isNoResults, isTransientDfsFailure, DFS_RETRY_DELAY_MS } from "./lib/dataforseo-status";
 
 const ENDPOINT = "https://api.dataforseo.com/v3/serp/google/organic/live/advanced";
 
@@ -67,7 +67,7 @@ interface DfsResponse {
 }
 
 /** Run one AI Overview query through DataForSEO. */
-export async function queryGoogleAIO(keyword: string, env: Env): Promise<AIOResult> {
+async function queryGoogleAIOOnce(keyword: string, env: Env): Promise<AIOResult> {
   if (!env.DATAFORSEO_LOGIN || !env.DATAFORSEO_PASSWORD) {
     return { text: "", urls: [], entities: [] };
   }
@@ -124,7 +124,7 @@ export async function queryGoogleAIO(keyword: string, env: Env): Promise<AIOResu
     data = await resp.json() as DfsResponse;
   } catch (e) {
     console.log(`[google-aio] bad JSON for "${keyword}": ${e}`);
-    return { text: "", urls: [], entities: [] };
+    return { text: "", urls: [], entities: [], failure: { engine: "google_ai_overview", status: 200, detail: `DataForSEO bad JSON: ${String(e).slice(0, 200)}` } };
   }
 
   // DataForSEO uses 20000 as the success status code (their convention,
@@ -179,4 +179,24 @@ export async function queryGoogleAIO(keyword: string, env: Env): Promise<AIOResu
   }
 
   return { text, urls, entities };
+}
+
+/**
+ * One retry for a TRANSIENT DataForSEO failure, never for billing or auth.
+ *
+ * Once failures became visible on 2026-10-01, google_ai_overview showed 16,
+ * 22 and 11 "40101 Internal SE Server Error" a night out of ~63 calls: a
+ * quarter to a third of the surface lost to an upstream hiccup that a second
+ * attempt usually clears. A retried success is a real reading of the same
+ * question on the same night, so it is recorded like any other.
+ */
+export async function queryGoogleAIO(keyword: string, env: Env): Promise<AIOResult> {
+  const first = await queryGoogleAIOOnce(keyword, env);
+  if (!first.failure || !isTransientDfsFailure(first.failure.status, first.failure.detail)) return first;
+  await new Promise((r) => setTimeout(r, DFS_RETRY_DELAY_MS));
+  const second = await queryGoogleAIOOnce(keyword, env);
+  if (second.failure) {
+    second.failure = { ...second.failure, detail: `after retry: ${second.failure.detail}` };
+  }
+  return second;
 }
