@@ -323,7 +323,10 @@ export async function maybeSendAutomationDigest(env: Env): Promise<void> {
 
   // --- Compose --------------------------------------------------------
   const subject = `Briefing: ${automationTotal} auto-action${automationTotal === 1 ? "" : "s"}` +
-    (unreadAlertCount > 0 ? `, ${unreadAlertCount} alert${unreadAlertCount === 1 ? "" : "s"}` : "") +
+    // The subject counts what NEEDS YOU, not every unread row. It used to
+    // say "20 alerts" when two needed a human and eighteen were notices,
+    // which is how a real one gets skimmed past.
+    (needsYouCount > 0 ? `, ${needsYouCount} need${needsYouCount === 1 ? "s" : ""} you` : "") +
     (scanFailures > 0 ? `, ${scanFailures} scan fail${scanFailures === 1 ? "" : "s"}` : "");
 
   const lines: string[] = [`NeverRanked morning briefing (last 24h).`, ``];

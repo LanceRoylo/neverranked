@@ -322,10 +322,16 @@ async function buildClientHealth(env: Env): Promise<string> {
   const citBySlug = new Map(allCitSnaps.map(c => [c.client_slug, c.citation_share]));
 
   // 4. Unread alert counts per client (one query)
-  const allAlertCounts = (await env.DB.prepare(
-    "SELECT client_slug, COUNT(*) as cnt FROM admin_alerts WHERE read_at IS NULL GROUP BY client_slug"
-  ).all<{ client_slug: string; cnt: number }>()).results;
-  const alertsBySlug = new Map(allAlertCounts.map(a => [a.client_slug, a.cnt]));
+  // Needs-you only per client, so a client tile does not read "6 alerts"
+  // for six auto-completed roadmap items.
+  const { isConcernType } = await import("../lib/alert-triage");
+  const unreadByType = (await env.DB.prepare(
+    "SELECT client_slug, type FROM admin_alerts WHERE read_at IS NULL"
+  ).all<{ client_slug: string; type: string }>()).results;
+  const alertsBySlug = new Map<string, number>();
+  for (const a of unreadByType) {
+    if (isConcernType(a.type)) alertsBySlug.set(a.client_slug, (alertsBySlug.get(a.client_slug) ?? 0) + 1);
+  }
 
   // 5. Page views this week + last activity (two queries)
   const allViewCounts = (await env.DB.prepare(

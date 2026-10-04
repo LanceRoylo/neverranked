@@ -258,7 +258,7 @@ export async function handleHub(user: User, env: Env): Promise<Response> {
         broken.push(r.client_slug);
         incidents.push({
           title: `Customer "${r.client_slug}" cockpit is broken`,
-          fix: `URGENT, customer-facing. In the NeverRanked dashboard the paying customer "${r.client_slug}" has a LEGACY-shape citation_snapshots row for the latest week (week_start ${r.week_start}). Their cockpit (/c/${r.client_slug}/), monthly memo, and Atlas render zeros. This is the snapshot split-brain (see the dashboard_snapshot_shape_split_brain note). Fix: re-run the forensic to D1 bridge for ${r.client_slug} so the latest snapshot is readout-shape, then confirm isReadoutShapeSnapshot() passes and the cockpit shows real numbers.`,
+          fix: `URGENT, customer-facing. In the NeverRanked dashboard the paying customer "${r.client_slug}" has a LEGACY-shape citation_snapshots row for the latest week (week_start ${r.week_start}). Their cockpit (/c/${r.client_slug}/), monthly memo, and Atlas render zeros. This is the snapshot split-brain (see the dashboard_snapshot_shape_split_brain note). Fix: FIRST check measurement_registry.snapshot_source for ${r.client_slug}. If it is 'sweep', NEVER run the forensic bridge (it deletes citation_runs before inserting; on 2026-09-23 it switched off 12 of a paying client's questions): rebuild the snapshot via the weekly-extras workflow (buildReadoutSnapshot) instead. Only for a bridge client, re-run the forensic to D1 bridge so the latest snapshot is readout-shape, then confirm isReadoutShapeSnapshot() passes and the cockpit shows real numbers.`,
         });
       } else if (typeof r.week_start !== "number" || (now - r.week_start) > 14 * SECONDS_PER_DAY || (r.total_queries ?? 0) === 0) {
         stale.push(r.client_slug);
@@ -279,7 +279,7 @@ export async function handleHub(user: User, env: Env): Promise<Response> {
         missingPastGrace.push(c.client_slug);
         incidents.push({
           title: `Customer "${c.client_slug}" has no snapshot`,
-          fix: `URGENT, customer-facing. Paying customer "${c.client_slug}" has NO citation_snapshots row, so their cockpit (/c/${c.client_slug}/), monthly memo, and Atlas have no data to show. They signed more than 4 days ago (past onboarding grace). Fix: run the onboarding bridge / measurement for ${c.client_slug} so a readout-shape snapshot exists.`,
+          fix: `URGENT, customer-facing. Paying customer "${c.client_slug}" has NO citation_snapshots row, so their cockpit (/c/${c.client_slug}/), monthly memo, and Atlas have no data to show. They signed more than 4 days ago (past onboarding grace). Fix: FIRST check measurement_registry.snapshot_source for ${c.client_slug}. If it is 'sweep', confirm citation_runs has rows and run the weekly-extras workflow (buildReadoutSnapshot); NEVER the bridge, which deletes citation_runs before inserting. Only for a bridge client, run the onboarding bridge / measurement so a readout-shape snapshot exists.`,
         });
       } else {
         missingInGrace.push(c.client_slug);

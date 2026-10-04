@@ -98,14 +98,15 @@ async function gatherData(env: Env): Promise<SummaryData> {
     "SELECT COUNT(*) as n FROM nvi_reports WHERE status IN ('draft','rendered')"
   ).first<{ n: number }>())?.n ?? 0;
 
-  // Unread alerts
-  const unreadRow = await env.DB.prepare(
-    "SELECT COUNT(*) as n, MIN(created_at) as oldest FROM admin_alerts WHERE read_at IS NULL"
-  ).first<{ n: number; oldest: number | null }>();
-  const unreadAlerts = unreadRow?.n ?? 0;
-  const oldestUnreadAlertHours = unreadRow?.oldest
-    ? Math.floor((now - unreadRow.oldest) / 3600)
-    : null;
+  // Unread alerts that NEED YOU. Notices (deploys, auto-completions,
+  // recoveries) are excluded: counting them made "20 unread" mean two.
+  const { isConcernType } = await import("./alert-triage");
+  const unreadRows = (await env.DB.prepare(
+    "SELECT type, created_at FROM admin_alerts WHERE read_at IS NULL"
+  ).all<{ type: string; created_at: number }>()).results.filter((r) => isConcernType(r.type));
+  const unreadAlerts = unreadRows.length;
+  const oldestUnread = unreadRows.reduce<number | null>((m, r) => (m === null || r.created_at < m ? r.created_at : m), null);
+  const oldestUnreadAlertHours = oldestUnread ? Math.floor((now - oldestUnread) / 3600) : null;
 
   // QA verdict counts last 7d
   const qa7dRows = (await env.DB.prepare(

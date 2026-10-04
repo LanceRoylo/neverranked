@@ -46,7 +46,12 @@ const CONCERN: Record<string, { severity: AlertSeverity; fix: string }> = {
   anomaly_cron_overdue: { severity: "high", fix: "A cron task is more than 2x its expected cadence overdue (trigger misconfigured or worker errored mid-run). Check the Cloudflare scheduled triggers and worker logs." },
   sweep_keywords_dark: { severity: "high", fix: "Active keywords were dispatched and wrote no row on ANY engine in 24h. This is a dispatch failure, not an engine failure: every measured surface agreeing is evidence the engines are fine. Check cron_runs and the worker logs for the 06:00 UTC dispatch, and confirm the keyword's workflows are being created. A client listed as fully dark is not being measured at all, and no number anywhere will look wrong — it will just quietly stop moving, which is how this went unnoticed for five nights before the check existed." },
   readout_snapshot_missing: { severity: "high", fix: "The month-to-date readout snapshot was refused by one of buildReadoutSnapshot's four guards, so nothing readout-shaped was written this week. Left alone, buildClientSnapshot writes a legacy-shape row with a newer week_start, report-facts prefers it, and the readout renders wrong on the 25th. The alert body names which guard fired and its fix." },
-  monthly_refresh_overdue: { severity: "high", fix: "The monthly measurement did not refresh this customer this month — the scheduled GitHub run is best-effort and likely skipped. Re-run it (`gh workflow run htc-monthly.yml` for HTC, or the customer's category runner + apply-bridge-to-d1.sh), then confirm the cockpit's measured date updated." },
+  // Remediation branches on WHO maintains the snapshot. The old text told every
+  // reader to run apply-bridge-to-d1.sh, which on a sweep-measured client
+  // deletes citation_runs before inserting: the 2026-09-23 bridge run switched
+  // off 12 of a paying client's questions and overwrote both live clients'
+  // snapshots. A fix hint that destroys measurement is worse than none.
+  monthly_refresh_overdue: { severity: "high", fix: "This customer's readout snapshot is older than its cadence allows. FIRST check measurement_registry.snapshot_source. If it is 'sweep': NEVER run the dryrun bridge (it deletes citation_runs before inserting). Check that the weekly-extras workflow ran Monday 06:00 UTC and look for a readout_snapshot_missing alert, which names the guard that refused the snapshot. Only if it is a bridge client: re-run its category runner and the bridge, then confirm the cockpit's measured date." },
   memo_generation_missed: { severity: "high", fix: "The monthly memo did not draft for this customer this month — the 24th cron may have missed the 24th specifically (adjacent days keep the heartbeat green) or generation failed. Open /admin/memos and 'Generate drafts now' for the customer; if it errors, check the generateAllMemoDrafts logs." },
 
   htc_events_stale: { severity: "medium", fix: "HTC event data is older than 36h (silent cron-failure catch). Check /health/htc-events?dryrun=1." },
@@ -63,6 +68,10 @@ const CONCERN: Record<string, { severity: AlertSeverity; fix: string }> = {
   comp_expires_7d: { severity: "medium", fix: "A complimentary subscription expires in 7 days. Reach out for the conversion conversation." },
   needs_review: { severity: "medium", fix: "A roadmap item needs manual review (auto-verify could not handle it). Verify completion and mark it done or update the title." },
   slot_drift_detected: { severity: "medium", fix: "Signal/Amplify slot counts diverged between D1 and Stripe. The reconcile auto-retries; if it persists, compare Stripe subscription_items to agency_subscription_slots." },
+  // Moved from routine 2026-10-04. A memo draft is a PAID DELIVERABLE waiting
+  // for a human read before it goes out; filed as routine, the 09-24 notice
+  // sat unread for ten days.
+  memo_drafts_ready: { severity: "medium", fix: "Monthly memo drafts are waiting for review at /admin/memos. Read each one against its facts before it is delivered. A draft flagged for figures or tone must be checked line by line." },
   query_set_changed: { severity: "high", fix: "A customer's measured question set changed mid-engagement. Aggregates before and after are computed over different question sets, so any month-over-month comparison spanning this point is not like-for-like. Check query_set_versions for the dated diff, and say so in the readout if the change lands inside a reported window. The published methodology states that a set change breaks comparability." },
 };
 
@@ -78,13 +87,17 @@ const CONCERN_PREFIXES: Array<{ prefix: string; base: string }> = [
 
 // ROUTINE prefixes that would otherwise get caught as unknown -> needs-you.
 // These are explicitly good-news / FYI even with an id suffix.
-const ACTIVITY_PREFIXES = ["comp_expires_30d", "trial_expired", "grade_reached"];
+const ACTIVITY_PREFIXES = ["comp_expires_30d", "trial_expired", "grade_reached", "phase_completed"];
 
 // Exact ROUTINE types (good news / FYI / routine ops). Everything the taxonomy
 // marked ROUTINE. Anything not here and not a concern falls to the safe default.
 const ACTIVITY_EXACT = new Set<string>([
   "deploy", "draft_ready", "cron_activated", "auto_completed", "snippet_detected",
-  "memo_drafts_ready", "trial_expired", "comp_expires_30d", "roadmap_refreshed",
+  "trial_expired",
+  // Added 2026-10-04: these fell to the needs-you safety default although
+  // nobody can act on them. "Engine recovered" is the good-news half of an
+  // alert that already reached you.
+  "engine_recovered", "comp_expires_30d", "roadmap_refreshed",
   "first_citation", "roadmap_completed", "score_change", "milestone",
   // internal routine ops that are not action items
   "cron", "audit_qa_run", "nap_audit", "agency_apply_submit", "agency_onboarding",

@@ -181,9 +181,9 @@ export async function handleAdminHealth(user: User, env: Env, url?: URL): Promis
      LIMIT 5`
   ).all<{ id: number; client_slug: string | null; type: string; title: string; detail: string; created_at: number }>()).results;
 
-  const totalUnreadAlerts = (await env.DB.prepare(
-    "SELECT COUNT(*) as n FROM admin_alerts WHERE read_at IS NULL"
-  ).first<{ n: number }>())?.n ?? 0;
+  // Needs-you only, matching the briefing. Notices are history, not unread work.
+  const { countNeedsYouAlerts } = await import("../lib/alert-triage");
+  const totalUnreadAlerts = await countNeedsYouAlerts(env);
 
   // --- Section 5: QA verdicts (last 24h) ---
   const qaCounts = await recentVerdictCounts(env, 24).catch(() => ({ green: 0, yellow: 0, red: 0 }));
@@ -285,7 +285,7 @@ export async function handleAdminHealth(user: User, env: Env, url?: URL): Promis
         ${statusDot(overallStatus)}
         <div>
           <div style="font-size:18px;font-weight:500;color:var(--text)">${esc(overallLabel)}</div>
-          <div style="font-size:12px;color:var(--text-faint);margin-top:4px">Refresh page to recompute. ${totalUnreadAlerts} unread alert${totalUnreadAlerts === 1 ? "" : "s"}.</div>
+          <div style="font-size:12px;color:var(--text-faint);margin-top:4px">Refresh page to recompute. ${totalUnreadAlerts} alert${totalUnreadAlerts === 1 ? "" : "s"} needing you.</div>
         </div>
       </div>
     </div>
@@ -383,7 +383,7 @@ export async function handleAdminHealth(user: User, env: Env, url?: URL): Promis
       <table style="width:100%;border-collapse:collapse;margin-top:10px;font-size:13px">
         <tbody>${alertsRows}</tbody>
       </table>
-      ${totalUnreadAlerts > 5 ? `<div style="margin-top:10px;font-size:12px"><a href="/admin/alerts" style="color:var(--gold)">View all ${totalUnreadAlerts} unread alerts &rarr;</a></div>` : ""}
+      ${totalUnreadAlerts > 5 ? `<div style="margin-top:10px;font-size:12px"><a href="/admin/alerts" style="color:var(--gold)">View all ${totalUnreadAlerts} alerts needing you &rarr;</a></div>` : ""}
     </div>
 
     <div style="margin-top:20px;color:var(--text-faint);font-size:11px;text-align:center">

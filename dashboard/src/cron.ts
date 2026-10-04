@@ -3024,14 +3024,20 @@ export async function runSchemaDriftSweep(env: Env): Promise<void> {
   const DAY = 86400;
   const sevenDaysAgo = now - 7 * DAY;
 
+  // Same gate as runSnippetSweep: only where injection is switched on. Hosted
+  // injection was retired 2026-07-24, so without this an agency client who
+  // removed our inert snippet would be EMAILED to reinstall a script that does
+  // nothing. No domain was exposed on 2026-10-04; the next agency client would
+  // have been.
   const candidates = (await env.DB.prepare(`
-    SELECT * FROM domains
-      WHERE agency_id IS NOT NULL
-        AND active = 1
-        AND is_competitor = 0
-        AND snippet_last_detected_at IS NOT NULL
-        AND (snippet_last_checked_at IS NULL OR snippet_last_checked_at < ?)
-      ORDER BY snippet_last_checked_at NULLS FIRST
+    SELECT d.* FROM domains d
+      JOIN injection_configs ic ON ic.client_slug = d.client_slug AND ic.enabled = 1
+      WHERE d.agency_id IS NOT NULL
+        AND d.active = 1
+        AND d.is_competitor = 0
+        AND d.snippet_last_detected_at IS NOT NULL
+        AND (d.snippet_last_checked_at IS NULL OR d.snippet_last_checked_at < ?)
+      ORDER BY d.snippet_last_checked_at NULLS FIRST
       LIMIT 100
   `).bind(sevenDaysAgo).all<Domain>()).results;
 
