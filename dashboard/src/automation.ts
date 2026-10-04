@@ -200,10 +200,13 @@ export async function maybeSendAutomationDigest(env: Env): Promise<void> {
   if (!settings.dailyDigestEnabled) return;
 
   const now = Math.floor(Date.now() / 1000);
-  // 12h, not 18h: since 2026-10-04 this sends from the 17:00 UTC run, and on
-  // the first day after the move the previous send was the 06:00 run eleven
-  // hours earlier. Once a day either way.
-  if (settings.lastDigestSentAt && now - settings.lastDigestSentAt < 12 * 3600) {
+  // 6h. Since 2026-10-04 this sends only from the 17:00 UTC run, 24h apart, so
+  // the guard exists only to stop a double send from a manual re-run. It was
+  // briefly 12h, which would have blocked the first 17:00 send (the previous
+  // one went out from the 06:00 run, 10.9h earlier), and with the inbox
+  // summary folded in that meant NO email at all: the silence this briefing
+  // exists to make meaningful.
+  if (settings.lastDigestSentAt && now - settings.lastDigestSentAt < 6 * 3600) {
     return; // already sent today
   }
 

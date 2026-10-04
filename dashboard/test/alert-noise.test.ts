@@ -89,3 +89,11 @@ test("the briefing is the one daily email, sent at 17:00 UTC, with the inbox ins
   assert.match(auto, /nothing needs you/);
   assert.doesNotMatch(auto, /if \(automationTotal === 0 && unreadAlertCount === 0 && scanFailures === 0\) \{\s*return;/, "a quiet day still sends: silence must mean broken");
 });
+
+test("the first 17:00 send after the move is not blocked by the 06:03 one", () => {
+  // Last send 2026-10-04 06:03:36 UTC, next 17:00 UTC: 10.9h apart.
+  const src = read("../src/automation.ts");
+  const m = src.match(/now - settings\.lastDigestSentAt < (\d+) \* 3600/);
+  assert.ok(m, "guard missing");
+  assert.ok(Number(m[1]) < 10.9, `a ${m[1]}h guard blocks the first 17:00 briefing`);
+});
