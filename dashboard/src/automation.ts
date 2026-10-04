@@ -200,7 +200,10 @@ export async function maybeSendAutomationDigest(env: Env): Promise<void> {
   if (!settings.dailyDigestEnabled) return;
 
   const now = Math.floor(Date.now() / 1000);
-  if (settings.lastDigestSentAt && now - settings.lastDigestSentAt < 18 * 3600) {
+  // 12h, not 18h: since 2026-10-04 this sends from the 17:00 UTC run, and on
+  // the first day after the move the previous send was the 06:00 run eleven
+  // hours earlier. Once a day either way.
+  if (settings.lastDigestSentAt && now - settings.lastDigestSentAt < 12 * 3600) {
     return; // already sent today
   }
 
@@ -316,17 +319,24 @@ export async function maybeSendAutomationDigest(env: Env): Promise<void> {
   const payingClients = rev?.paying || 0;
   const unpaidClients = rev?.unpaid || 0;
 
-  // --- Short-circuit if truly nothing to say -------------------------
-  if (automationTotal === 0 && unreadAlertCount === 0 && scanFailures === 0) {
-    return;
-  }
+  // --- Admin inbox (pending) ----------------------------------------
+  // Folded in 2026-10-04. The inbox used to send its own morning email, so a
+  // normal day was a briefing, an "N items need your attention" email and a
+  // per-item "Action:" email. This is now the one daily email.
+  const { getPendingInbox, getInboxStats } = await import("./admin-inbox");
+  const inboxItems = await getPendingInbox(env, 10).catch(() => []);
+  const inboxPending = (await getInboxStats(env).catch(() => null))?.pending_total ?? inboxItems.length;
+  const totalNeedsYou = needsYouCount + inboxPending;
+
+  // No short-circuit any more. As the only daily email it is also the
+  // heartbeat: a quiet day says "nothing needs you", and silence means the
+  // system is broken, not that it is fine.
 
   // --- Compose --------------------------------------------------------
-  const subject = `Briefing: ${automationTotal} auto-action${automationTotal === 1 ? "" : "s"}` +
-    // The subject counts what NEEDS YOU, not every unread row. It used to
-    // say "20 alerts" when two needed a human and eighteen were notices,
-    // which is how a real one gets skimmed past.
-    (needsYouCount > 0 ? `, ${needsYouCount} need${needsYouCount === 1 ? "s" : ""} you` : "") +
+  // The subject counts what NEEDS YOU (alerts plus inbox), not every unread
+  // row. It used to say "20 alerts" when two needed a human and eighteen were
+  // notices, which is how a real one gets skimmed past.
+  const subject = `Briefing: ${totalNeedsYou === 0 ? "nothing needs you" : `${totalNeedsYou} need${totalNeedsYou === 1 ? "s" : ""} you`}` +
     (scanFailures > 0 ? `, ${scanFailures} scan fail${scanFailures === 1 ? "" : "s"}` : "");
 
   const lines: string[] = [`NeverRanked morning briefing (last 24h).`, ``];
@@ -414,6 +424,15 @@ export async function maybeSendAutomationDigest(env: Env): Promise<void> {
   }
   lines.push(``);
 
+  lines.push(`INBOX`);
+  lines.push(`  Pending:                     ${inboxPending}`);
+  for (const it of inboxItems) {
+    const ago = Math.floor((now - it.created_at) / 86400);
+    lines.push(`    [${it.urgency === "high" ? "HIGH" : it.urgency}] ${it.title}${ago >= 1 ? `  (open ${ago}d)` : ""}`);
+  }
+  lines.push(`  https://app.neverranked.com/admin/inbox`);
+  lines.push(``);
+
   lines.push(`---`);
   lines.push(`Cockpit: https://app.neverranked.com/admin`);
   lines.push(`Toggle this briefing off at the cockpit "Digest on" button.`);
@@ -476,6 +495,16 @@ ${recentHtml}
 </div>
 
 ${alertsHtml}
+${inboxItems.length > 0
+  ? `<h3 style="font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:#555;margin:24px 0 8px">Inbox (${inboxPending} pending)</h3>
+     <div style="font-family:'SF Mono',Menlo,monospace;font-size:12px;line-height:1.6">
+       ${inboxItems.map((it) => {
+         const ago = Math.floor((now - it.created_at) / 86400);
+         return `<div style="padding:6px 0;border-bottom:1px solid #eee"><span style="color:${it.urgency === "high" ? "#dc2626" : "#999"};font-weight:600">${escapeHtml(it.urgency)}</span>${ago >= 1 ? ` <span style="color:#999;margin-left:4px">open ${ago}d</span>` : ""}<div style="color:#333;margin-top:2px">${escapeHtml(it.title)}</div></div>`;
+       }).join("")}
+     </div>
+     <p style="font-size:12px;margin:8px 0 0"><a href="https://app.neverranked.com/admin/inbox" style="color:#c8a850">Open the inbox</a></p>`
+  : `<p style="font-family:'SF Mono',Menlo,monospace;font-size:12px;color:#888;margin:24px 0 0">Inbox: nothing pending.</p>`}
 
 <p style="margin:32px 0 6px;font-size:12px;color:#888"><a href="https://app.neverranked.com/admin" style="color:#1a1a1a">Cockpit</a> &middot; toggle this briefing off at the "Digest on/off" button.</p>
 

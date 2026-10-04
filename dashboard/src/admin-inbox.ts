@@ -56,7 +56,7 @@ export async function addInboxItem(env: Env, params: AddInboxParams): Promise<nu
        -- first as the second showed a failure carrying September figures as
        -- 146 days old, and nearly got it closed as stale.
        last_seen_at = excluded.last_seen_at
-     RETURNING id`,
+     RETURNING id, created_at`,
   ).bind(
     params.kind,
     params.title,
@@ -68,11 +68,18 @@ export async function addInboxItem(env: Env, params: AddInboxParams): Promise<nu
     urgency,
     now,
     now, // last_seen_at: refreshed on every re-fire, unlike created_at
-  ).first<{ id: number }>();
+  ).first<{ id: number; created_at: number }>();
 
   const id = result?.id ?? 0;
+  // created_at is preserved on conflict, so it equals `now` only for a row
+  // this call inserted. Until 2026-10-04 every RE-FIRE of a high item sent
+  // its own email, so a watcher that re-raises daily (invoice_watch) mailed
+  // "Action: NR-PW-002 ..." every morning, and an item already RESOLVED
+  // still emailed when its producer fired again. A persistent item now
+  // emails once and lives in the daily briefing after that.
+  const isNew = result?.created_at === now;
 
-  if (urgency === "high") {
+  if (urgency === "high" && isNew) {
     // Fire immediate email; don't await -- caller shouldn't block on
     // email infrastructure. Errors logged in the sender.
     notifyInboxImmediate(env, { ...params, id, created_at: now }).catch((e) => {

@@ -24,7 +24,7 @@ import { isReadoutShapeSnapshot } from "./lib/snapshot-shape";
 import { monthlyRefreshOverdue, weeklySnapshotOverdue, WEEKLY_SNAPSHOT_MAX_AGE_DAYS } from "./lib/monthly-refresh";
 import { liveClientSlugs } from "./lib/live-clients";
 import { autoGenerateRoadmap } from "./auto-provision";
-import { runAutomation, maybeSendAutomationDigest } from "./automation";
+import { runAutomation } from "./automation";
 
 export async function runWeeklyScans(env: Env): Promise<void> {
   const domains = (await env.DB.prepare(
@@ -1808,10 +1808,10 @@ export async function runDailyMaintenance(env: Env): Promise<void> {
   // Outcome scan: sweep recently-published content for earned
   // citations. Throttled per-item to every ~6 days.
   await runContentOutcomeScan(env);
-  // Digest runs LAST so it includes anything the earlier sweeps wrote.
-  // The digest function self-guards: opt-in flag, 18h dedupe, skip if
-  // nothing to report.
-  await maybeSendAutomationDigest(env);
+  // The briefing no longer sends from here. Since 2026-10-04 it is the ONE
+  // daily email and goes out from the 17:00 UTC run (7am Honolulu), after the
+  // 06:30 post-sweep evaluation has judged the night, with the admin inbox
+  // folded in. See the 17:00 handler in index.ts.
 
   // Free-tier score-drop alert check (Phase 4 of /free).
   // Compares each free user's two most recent scans; fires an alert

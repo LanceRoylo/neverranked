@@ -4046,7 +4046,16 @@ Once verified working, the user-OAuth path becomes vestigial. The legacy code st
         // Backfill is idempotent (UNIQUE constraint) -- safe to call every morning.
         // Once existing in_review drafts are surfaced, this is a no-op.
         await backfillContentDraftsToInbox(env);
-        await sendInboxMorningSummary(env);
+        // ONE daily email (2026-10-04). The briefing now carries the inbox, so
+        // the separate inbox summary only sends if the briefing is switched
+        // off: you always get exactly one, never two, never none.
+        const { maybeSendAutomationDigest, getAutomationSettings } = await import("./automation");
+        const settings = await getAutomationSettings(env);
+        if (settings.dailyDigestEnabled) {
+          await maybeSendAutomationDigest(env);
+        } else {
+          await sendInboxMorningSummary(env);
+        }
 
         // Thursday-only: generate the Weekly AEO Brief draft for last week.
         // Lance reviews + approves via /admin/weekly-brief/<id>; on approval

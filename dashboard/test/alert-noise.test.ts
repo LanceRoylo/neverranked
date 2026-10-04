@@ -33,7 +33,7 @@ test("an unknown type still defaults to needs-you", () => {
 test("the briefing subject counts what needs you, not every unread row", () => {
   const src = read("../src/automation.ts");
   const subject = src.slice(src.indexOf("const subject = `Briefing:"), src.indexOf("const subject = `Briefing:") + 500);
-  assert.match(subject, /needsYouCount/);
+  assert.match(subject, /totalNeedsYou/);
   assert.doesNotMatch(subject, /unreadAlertCount > 0 \? `, \$\{unreadAlertCount\} alert/);
 });
 
@@ -65,4 +65,27 @@ test("the drift sweep only chases snippets that would do something", () => {
   const cron = read("../src/cron.ts");
   const fn = cron.slice(cron.indexOf("export async function runSchemaDriftSweep"));
   assert.match(fn.slice(0, 1500), /JOIN injection_configs ic ON ic\.client_slug = d\.client_slug AND ic\.enabled = 1/);
+});
+
+/* Step 3, 2026-10-04: one email a day. A normal morning was a briefing (8pm
+ * Honolulu), an "N items need your attention" email (7am) and a per-item
+ * "Action:" email for every high item, re-sent each time its producer fired. */
+test("a high inbox item emails once, when it is new, not on every re-fire", () => {
+  const src = read("../src/admin-inbox.ts");
+  assert.match(src, /RETURNING id, created_at/);
+  assert.match(src, /const isNew = result\?\.created_at === now;/);
+  assert.match(src, /if \(urgency === "high" && isNew\)/);
+});
+
+test("the briefing is the one daily email, sent at 17:00 UTC, with the inbox inside", () => {
+  const idx = read("../src/index.ts");
+  const at17 = idx.slice(idx.indexOf('cron === "0 17 * * *"'), idx.indexOf('cron === "0 17 * * *"') + 2500);
+  assert.match(at17, /maybeSendAutomationDigest\(env\)/);
+  assert.match(at17, /else \{\s*await sendInboxMorningSummary\(env\);/, "inbox summary only as the fallback");
+  const cron = read("../src/cron.ts");
+  assert.doesNotMatch(cron.replace(/\/\/.*$/gm, ""), /maybeSendAutomationDigest\(/, "no second send from the 06:00 run");
+  const auto = read("../src/automation.ts");
+  assert.match(auto, /getPendingInbox\(env, 10\)/);
+  assert.match(auto, /nothing needs you/);
+  assert.doesNotMatch(auto, /if \(automationTotal === 0 && unreadAlertCount === 0 && scanFailures === 0\) \{\s*return;/, "a quiet day still sends: silence must mean broken");
 });
