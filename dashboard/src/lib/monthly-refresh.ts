@@ -27,3 +27,20 @@ export function monthlyRefreshOverdue(
   // this month's refresh has not landed. A missing/zero timestamp is overdue.
   return (snapshotTsSecs || 0) < startOfMonthSecs;
 }
+
+/**
+ * Sweep-measured clients get a readout snapshot every MONDAY (weekly-extras,
+ * 06:00 UTC), not on the 1st, so "nothing since the 1st by day 4" is the
+ * wrong question for them. On 2026-10-04 it raised "Monthly measurement
+ * overdue" for both paying clients with a snapshot six days old, because the
+ * month's first Monday was the 5th.
+ *
+ * For them the honest question is age: has a Monday been missed? Nine days is
+ * one weekly cycle plus two days for a late or retried workflow.
+ */
+export const WEEKLY_SNAPSHOT_MAX_AGE_DAYS = 9;
+
+export function weeklySnapshotOverdue(nowSecs: number, snapshotTsSecs: number): boolean {
+  if (!snapshotTsSecs) return true;
+  return nowSecs - snapshotTsSecs > WEEKLY_SNAPSHOT_MAX_AGE_DAYS * 86400;
+}

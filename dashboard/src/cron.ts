@@ -21,7 +21,7 @@ import { sendSnippetNudgeDay7, sendSnippetNudgeDay14, sendSnippetDay21Reframe, s
 import { getAgency, resolveAgencyForEmail } from "./agency";
 import { createAlertIfFresh } from "./admin-alerts";
 import { isReadoutShapeSnapshot } from "./lib/snapshot-shape";
-import { monthlyRefreshOverdue } from "./lib/monthly-refresh";
+import { monthlyRefreshOverdue, weeklySnapshotOverdue, WEEKLY_SNAPSHOT_MAX_AGE_DAYS } from "./lib/monthly-refresh";
 import { liveClientSlugs } from "./lib/live-clients";
 import { autoGenerateRoadmap } from "./auto-provision";
 import { runAutomation, maybeSendAutomationDigest } from "./automation";
@@ -1452,13 +1452,23 @@ export async function runDailyMaintenance(env: Env): Promise<void> {
       // so isReadoutShapeSnapshot skips them — no false "overdue" for those.
       if (!isReadoutShapeSnapshot(snap.engines_breakdown, snap.top_competitors)) continue;
       const ts = snap.created_at || snap.week_start; // epoch secs; created_at = bridge write time
-      if (monthlyRefreshOverdue(now, ts)) {
+      // Sweep clients refresh weekly, bridge clients monthly. Asking a weekly
+      // client "anything since the 1st?" alarms every month whose first
+      // Monday falls after the grace day (2026-10-04, both paying clients).
+      const overdue = sweepOwned.has(client_slug)
+        ? weeklySnapshotOverdue(nowSecs, ts)
+        : monthlyRefreshOverdue(now, ts);
+      if (overdue) {
         const last = ts ? new Date(ts * 1000).toISOString().slice(0, 10) : "never";
         await createAlertIfFresh(env, {
           clientSlug: client_slug,
           type: "monthly_refresh_overdue",
-          title: `Monthly measurement overdue for ${client_slug}`,
-          detail: `This month's refresh has not landed (latest snapshot ${last}). ${remedy(client_slug)}`,
+          title: sweepOwned.has(client_slug)
+            ? `Weekly readout snapshot overdue for ${client_slug}`
+            : `Monthly measurement overdue for ${client_slug}`,
+          detail: sweepOwned.has(client_slug)
+            ? `No readout snapshot in over ${WEEKLY_SNAPSHOT_MAX_AGE_DAYS} days (latest ${last}), so at least one Monday was missed. ${remedy(client_slug)}`
+            : `This month's refresh has not landed (latest snapshot ${last}). ${remedy(client_slug)}`,
           windowHours: 24 * 25, // at most ~once per customer per month
         });
       }

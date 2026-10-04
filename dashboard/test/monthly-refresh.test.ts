@@ -72,3 +72,29 @@ test("memo: this month's draft landed on the 24th -> NOT overdue on the 27th", (
     false,
   );
 });
+
+// 2026-10-04: both paying clients alarmed "Monthly measurement overdue" with a
+// six-day-old snapshot, because sweep clients refresh every Monday and the
+// month's first Monday was the 5th.
+import { weeklySnapshotOverdue } from "../src/lib/monthly-refresh";
+import fs from "node:fs";
+
+test("a weekly client with last Monday's snapshot is not overdue on the 4th", () => {
+  const now = Math.floor(Date.parse("2026-10-04T06:02:45Z") / 1000);
+  const lastMonday = Math.floor(Date.parse("2026-09-28T06:05:00Z") / 1000);
+  assert.equal(weeklySnapshotOverdue(now, lastMonday), false);
+  // The rule it replaces for these clients said overdue.
+  assert.equal(monthlyRefreshOverdue(new Date(now * 1000), lastMonday), true);
+});
+
+test("a weekly client that missed a Monday is overdue", () => {
+  const now = Math.floor(Date.parse("2026-10-08T06:00:00Z") / 1000);
+  const twoMondaysAgo = Math.floor(Date.parse("2026-09-28T06:05:00Z") / 1000);
+  assert.equal(weeklySnapshotOverdue(now, twoMondaysAgo), true);
+  assert.equal(weeklySnapshotOverdue(now, 0), true);
+});
+
+test("the watchdog picks the rule by who maintains the snapshot", () => {
+  const src = fs.readFileSync(new URL("../src/cron.ts", import.meta.url), "utf8");
+  assert.match(src, /sweepOwned\.has\(client_slug\)\s*\?\s*weeklySnapshotOverdue\(nowSecs, ts\)\s*:\s*monthlyRefreshOverdue\(now, ts\)/);
+});
