@@ -40,6 +40,17 @@ export function monthlyRefreshOverdue(
  */
 export const WEEKLY_SNAPSHOT_MAX_AGE_DAYS = 9;
 
+/**
+ * THE rule, for both the detector (cron.ts) and the auto-closer
+ * (alert-autoclose.ts). Two copies of this choice would let an alert close on
+ * a rule its detector does not use.
+ */
+export function snapshotOverdue(sweepOwned: boolean, nowSecs: number, snapshotTsSecs: number): boolean {
+  return sweepOwned
+    ? weeklySnapshotOverdue(nowSecs, snapshotTsSecs)
+    : monthlyRefreshOverdue(new Date(nowSecs * 1000), snapshotTsSecs);
+}
+
 export function weeklySnapshotOverdue(nowSecs: number, snapshotTsSecs: number): boolean {
   if (!snapshotTsSecs) return true;
   return nowSecs - snapshotTsSecs > WEEKLY_SNAPSHOT_MAX_AGE_DAYS * 86400;

@@ -28,6 +28,8 @@ export interface InvoiceWatchResult {
   missing: string[];
   overdue: string[];
   raised: number;
+  /** Inbox items this run closed because their condition no longer holds. */
+  resolved: number;
 }
 
 interface CustomerRow { rid: number; client_slug: string; name: string; mrr_cents: number; }
@@ -50,7 +52,7 @@ export async function watchInvoices(env: Env, nowSec?: number): Promise<InvoiceW
   const now = nowSec ?? Math.floor(Date.now() / 1000);
   const d = new Date(now * 1000);
   const period = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
-  const out: InvoiceWatchResult = { missing: [], overdue: [], raised: 0 };
+  const out: InvoiceWatchResult = { missing: [], overdue: [], raised: 0, resolved: 0 };
 
   const { addInboxItem } = await import("../admin-inbox");
 
@@ -73,6 +75,14 @@ export async function watchInvoices(env: Env, nowSec?: number): Promise<InvoiceW
       if (has) continue;
 
       out.missing.push(c.client_slug);
+      // This item is keyed per CLIENT and reused month to month. Once it is
+      // resolved (below, when the invoice exists), an upsert would keep it
+      // resolved and swallow next month's reminder, so a resolved one is
+      // deleted first. That is admin-inbox's documented way to re-open, and
+      // it makes the new month's reminder a new item that emails once.
+      await env.DB.prepare(
+        "DELETE FROM admin_inbox WHERE target_type = 'invoice_missing' AND target_id = ? AND status = 'resolved'",
+      ).bind(c.rid).run().catch(() => null);
       await addInboxItem(env, {
         kind: "invoice_not_issued",
         title: `No ${period} invoice for ${c.name}`,
@@ -134,6 +144,26 @@ export async function watchInvoices(env: Env, nowSec?: number): Promise<InvoiceW
     });
     out.raised++;
   }
+
+  // Close what is no longer true. Until 2026-10-04 nothing ever did: setting
+  // paid_at left "no payment recorded" pending forever, and the daily
+  // briefing kept counting it as needing you.
+  const resolvedPaid = await env.DB.prepare(
+    `UPDATE admin_inbox SET status = 'resolved', resolved_at = ?,
+            resolution_note = 'auto: payment recorded, or the invoice was voided'
+      WHERE status = 'pending' AND target_type = 'invoice_overdue'
+        AND target_id IN (SELECT rowid FROM client_invoices WHERE paid_at IS NOT NULL OR status IN ('paid','void'))`,
+  ).bind(now).run().catch(() => null);
+  const resolvedIssued = await env.DB.prepare(
+    `UPDATE admin_inbox SET status = 'resolved', resolved_at = ?,
+            resolution_note = 'auto: this month''s invoice now exists'
+      WHERE status = 'pending' AND target_type = 'invoice_missing'
+        AND target_id IN (
+          SELECT c.rowid FROM customers c
+           WHERE EXISTS (SELECT 1 FROM client_invoices i
+                          WHERE i.client_slug = c.client_slug AND i.period = ? AND i.status <> 'void'))`,
+  ).bind(now, period).run().catch(() => null);
+  out.resolved = (resolvedPaid?.meta?.changes ?? 0) + (resolvedIssued?.meta?.changes ?? 0);
 
   return out;
 }

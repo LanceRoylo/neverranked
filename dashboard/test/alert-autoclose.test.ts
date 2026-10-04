@@ -164,7 +164,7 @@ test("REGRESSION: a refresh alert closes once a current-month snapshot lands", (
   });
   return autoCloseAlerts(env, now).then((r) => {
     assert.equal(r.closed, 1);
-    assert.match(updates[0].detail, /a-client has a current-month readout snapshot again/);
+    assert.match(updates[0].detail, /a-client has a current readout snapshot again/);
   });
 });
 

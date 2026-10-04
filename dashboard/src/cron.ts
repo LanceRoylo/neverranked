@@ -21,7 +21,7 @@ import { sendSnippetNudgeDay7, sendSnippetNudgeDay14, sendSnippetDay21Reframe, s
 import { getAgency, resolveAgencyForEmail } from "./agency";
 import { createAlertIfFresh } from "./admin-alerts";
 import { isReadoutShapeSnapshot } from "./lib/snapshot-shape";
-import { monthlyRefreshOverdue, weeklySnapshotOverdue, WEEKLY_SNAPSHOT_MAX_AGE_DAYS } from "./lib/monthly-refresh";
+import { monthlyRefreshOverdue, snapshotOverdue, WEEKLY_SNAPSHOT_MAX_AGE_DAYS } from "./lib/monthly-refresh";
 import { liveClientSlugs } from "./lib/live-clients";
 import { autoGenerateRoadmap } from "./auto-provision";
 import { runAutomation } from "./automation";
@@ -1455,9 +1455,7 @@ export async function runDailyMaintenance(env: Env): Promise<void> {
       // Sweep clients refresh weekly, bridge clients monthly. Asking a weekly
       // client "anything since the 1st?" alarms every month whose first
       // Monday falls after the grace day (2026-10-04, both paying clients).
-      const overdue = sweepOwned.has(client_slug)
-        ? weeklySnapshotOverdue(nowSecs, ts)
-        : monthlyRefreshOverdue(now, ts);
+      const overdue = snapshotOverdue(sweepOwned.has(client_slug), nowSecs, ts);
       if (overdue) {
         const last = ts ? new Date(ts * 1000).toISOString().slice(0, 10) : "never";
         await createAlertIfFresh(env, {
@@ -1634,7 +1632,7 @@ export async function runDailyMaintenance(env: Env): Promise<void> {
       "invoice_watch",
       "success",
       Date.now() - started,
-      `missing=${r.missing.length} overdue=${r.overdue.length} raised=${r.raised}`,
+      `missing=${r.missing.length} overdue=${r.overdue.length} raised=${r.raised} resolved=${r.resolved}`,
     );
     console.log(`[cron] invoice_watch: missing=${r.missing.join(",") || "none"} overdue=${r.overdue.join(",") || "none"}`);
   } catch (e) {

@@ -96,5 +96,9 @@ test("a weekly client that missed a Monday is overdue", () => {
 
 test("the watchdog picks the rule by who maintains the snapshot", () => {
   const src = fs.readFileSync(new URL("../src/cron.ts", import.meta.url), "utf8");
-  assert.match(src, /sweepOwned\.has\(client_slug\)\s*\?\s*weeklySnapshotOverdue\(nowSecs, ts\)\s*:\s*monthlyRefreshOverdue\(now, ts\)/);
+  assert.match(src, /snapshotOverdue\(sweepOwned\.has\(client_slug\), nowSecs, ts\)/);
+  // The auto-closer must ask the same rule, or an alert closes on a rule its
+  // detector does not use.
+  const closer = fs.readFileSync(new URL("../src/lib/alert-autoclose.ts", import.meta.url), "utf8");
+  assert.match(closer, /snapshotOverdue\(src\?\.snapshot_source === "sweep", now,/);
 });

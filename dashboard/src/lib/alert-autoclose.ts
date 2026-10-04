@@ -31,7 +31,7 @@ import type { Env } from "../types";
 import { CRON_EXPECTED_CADENCE } from "./anomaly-detection";
 import { assessPeerHealth } from "./engine-peer-health";
 import { engineRowDropStillTrue } from "./anomaly-detection";
-import { monthlyRefreshOverdue } from "./monthly-refresh";
+import { snapshotOverdue } from "./monthly-refresh";
 import { isReadoutShapeSnapshot } from "./snapshot-shape";
 
 const SECONDS_PER_DAY = 86400;
@@ -140,9 +140,14 @@ const CLOSERS: Record<string, Closer> = {
       // the refresh landed. Mirroring that keeps the two from disagreeing.
       if (!isReadoutShapeSnapshot(snap.engines_breakdown, snap.top_competitors)) return true;
       // The detector's own function, not a second copy of the date arithmetic.
-      return monthlyRefreshOverdue(new Date(now * 1000), snap.created_at || snap.week_start);
+      // Since 2026-10-04 that includes the detector's choice of rule: weekly
+      // age for sweep-measured clients, the 1st of the month for bridge ones.
+      const src = await env.DB.prepare(
+        "SELECT snapshot_source FROM measurement_registry WHERE client_slug = ? LIMIT 1",
+      ).bind(slug).first<{ snapshot_source: string | null }>().catch(() => null);
+      return snapshotOverdue(src?.snapshot_source === "sweep", now, snap.created_at || snap.week_start);
     },
-    describe: (slug) => `${slug} has a current-month readout snapshot again`,
+    describe: (slug) => `${slug} has a current readout snapshot again`,
   },
 
   // "engine:gemini:row_drop | gemini produced 33 rows yesterday vs 78 ..."
