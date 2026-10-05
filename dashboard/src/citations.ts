@@ -8,6 +8,7 @@
 
 import type { Env, CitationKeyword, CitedEntity, Domain, InjectionConfig } from "./types";
 import { RESPONSE_TEXT_CAP } from "./lib/answer-presence";
+import { READOUT_ENGINE_LABEL } from "./lib/readout-engine-labels";
 import { resolveGroundingUrls } from "./gemini-resolver";
 import { detectAndRecordAlerts } from "./lib/citation-alerts";
 import { isReadoutShapeSnapshot } from "./lib/snapshot-shape";
@@ -2482,15 +2483,8 @@ export interface CitationDigestData {
  *  ENGINE_LABEL exactly: report-facts matches a prior report's engines BY
  *  NAME, so a label that differs by one word silently drops the dumbbell's
  *  "from" dots instead of failing loudly. */
-const READOUT_ENGINE_LABEL: Record<string, string> = {
-  perplexity: "Perplexity",
-  openai: "ChatGPT search",
-  gemini: "Gemini grounded",
-  google_ai_overview: "Google AI Overviews",
-  bing: "Bing search (control)",
-  anthropic: "Claude",
-  gemma: "Gemma",
-};
+// Moved to lib/readout-engine-labels.ts (2026-10-05) so the memo joins on the
+// same map instead of a second copy.
 
 /** Engines that retrieve and cite. Everything else in the map is Layer 2.
  *  Imported rather than declared: Atlas needs the same answer, and a second

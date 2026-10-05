@@ -11,6 +11,7 @@
 // they do not depend on the sparse weekly snapshot table.
 
 import type { Env } from "../types";
+import { engineKeyForLabel, READOUT_ENGINE_LABEL } from "./readout-engine-labels";
 import { cohortRank } from "./cohort-rank";
 import { isReadoutShapeSnapshot } from "./snapshot-shape";
 import { computeNoiseBand, fetchDailyRates } from "./noise-floor";
@@ -72,6 +73,25 @@ export interface MemoInputs {
     // Absent on the run-based path and on snapshots written before
     // 2026-08-03, which behave exactly as they did before this existed.
     no_cohort_signal?: boolean;
+    /** WHAT current_share_pct MEASURES. Added 2026-10-05 after a delivered
+     *  memo told a paying client that Google AI Overviews "named 157 businesses
+     *  in the category and did not name" the client. AI Overviews named the client in
+     *  28 to 41% of its answers. current_share_pct on a citation-layer
+     *  snapshot row is the share of CITED LINKS that point to the client's own
+     *  website, which says nothing about whether the engine names the client.
+     *  "own_site_link_share" = that. "answers_naming_customer" = share of the
+     *  engine's answers that name the client (model-knowledge rows, and the
+     *  run-based fallback). Absent on legacy inputs. */
+    measure?: "own_site_link_share" | "answers_naming_customer";
+    /** Citation layer only: total links this engine cited, the denominator of
+     *  an own_site_link_share. NOT runs. The same memo wrote "across 3226
+     *  runs" for 3,226 links from an engine that ran 312 times. */
+    cited_links?: number;
+    /** Share of this engine's answers whose citations or named entities
+     *  include the client, from the same rows the comparison layer reads
+     *  (client_cited). This, not current_share_pct, answers "does this engine
+     *  put the client in its answers". */
+    answers_citing_customer_pct?: number;
   }>;
   /** Group totals by question category, computed rather than counted by the
    *  author. A claim about "the N questions in group X" must come from here. */
@@ -89,6 +109,30 @@ export interface MemoInputs {
      *  has twice combined a figure from here with one computed on a different
      *  denominator. */
     basis: string;
+  };
+  /** Month-over-month movement, from the shared comparison primitive on the
+   *  STABLE CORE: the questions measured on every day of both months. Decided
+   *  2026-10-01 for the first paid comparison. When present it is the ONLY
+   *  source of a month-over-month claim and like_for_like is withheld, so the
+   *  writer cannot mix the two bases. Statements are pre-rendered by
+   *  describeMovement() and event wording is public-safe (kind and scope, no
+   *  internal notes), because this object reaches the client. */
+  comparison?: {
+    basis: string;
+    questions: number;
+    questions_excluded: number;
+    per_surface: Array<{
+      engine: string;
+      layer: string;
+      stated: boolean;
+      statement: string;
+      prior_pct?: number;
+      current_pct?: number;
+      delta_pp?: number;
+    }>;
+    pooled: { citation: string; model_knowledge: string };
+    instrument_changes: string[];
+    considered_and_set_aside: string[];
   };
   /** The denominator behind any venue-share or cohort-share percentage.
    *  Present ONLY on the snapshot path, and deliberately NOT the same base as
@@ -333,6 +377,10 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
       current_runs: e.cr,
       cohort_citations: cohort,
       layer: engineLayer(engine),
+      // Run-based rows are cited runs over runs: share of answers that cite or
+      // name the client. Labelled so the writer can tell it from a snapshot
+      // row's own-site link share.
+      measure: "answers_naming_customer" as const,
       ...(dark ? { no_cohort_signal: true } : {}),
     };
   }).sort((a, b) => b.current_share_pct - a.current_share_pct);
@@ -609,8 +657,13 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
     const venueShare = haveVenueShare ? (venueShareRaw as number) : 0;
     const venueTotal = ownedCitations + comps.reduce((a, c) => a + c.mentions, 0);
 
+    // Run-based counts per engine key, kept so each snapshot row can carry its
+    // REAL run count and its answer-level rate. See `measure` on by_engine.
+    const runBased = new Map(by_engine.map((b) => [b.engine, b]));
     by_engine = Object.entries(curSnap.eb).map(([engine, e]) => {
       const ps = priSnap && priSnap.eb[engine] ? (priSnap.eb[engine].share_pct ?? 0) : null;
+      const key = engineKeyForLabel(engine);
+      const rb = key ? runBased.get(key) : undefined;
       // Only assert absence when the bridge actually measured it. An older
       // snapshot without cohort_citations stays silent rather than guessing.
       const cc = e.cohort_citations;
@@ -622,14 +675,29 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
         current_share_pct: e.share_pct ?? 0,
         prior_share_pct: ps ?? (e.share_pct ?? 0),
         delta_pp: ps === null ? 0 : +((e.share_pct ?? 0) - ps).toFixed(1),
-        // absent-is-zero: same residual risk as share_pct above. total is written unconditionally by buildReadoutSnapshot.
-        current_runs: e.total ?? 0,
+        // REAL runs, from the rows. This used to be e.total, which on a
+        // citation-layer row is cited LINKS, so the memo reported 3,226 links
+        // as "3226 runs". Model-knowledge rows: total IS runs (answers).
+        // absent-is-zero: same residual risk as share_pct above, and only reached when the run-based row is missing. total is written unconditionally by buildReadoutSnapshot.
+        current_runs: rb ? rb.current_runs : (e.total ?? 0),
         ...(typeof cc === "number" ? { cohort_citations: cc } : {}),
         layer: (() => {
           const l = (e as unknown as { layer?: string }).layer;
           return l === "citation" || l === "model_knowledge" ? l : engineLayer(engine);
         })(),
         ...(dark ? { no_cohort_signal: true } : {}),
+        ...(() => {
+          const l = (e as unknown as { layer?: string }).layer;
+          const layer = l === "citation" || l === "model_knowledge" ? l : engineLayer(engine);
+          return layer === "citation"
+            ? {
+                measure: "own_site_link_share" as const,
+                // Absent stays absent: a link count we did not record is not zero links.
+                ...(typeof e.total === "number" ? { cited_links: e.total } : {}),
+                ...(rb ? { answers_citing_customer_pct: rb.current_share_pct } : {}),
+              }
+            : { measure: "answers_naming_customer" as const };
+        })(),
       };
     }).sort((a, b) => b.current_share_pct - a.current_share_pct);
 
@@ -715,6 +783,55 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
     ],
   };
 
+  // ── Month-over-month comparison (stable core) ───────────────────────────
+  let comparison: MemoInputs["comparison"];
+  if (priorStart < curStart) {
+    try {
+      const { loadStableCoreCounts, loadInstrumentEvents } = await import("./compare-loader");
+      const { computeComparison, describeMovement, publicReason, publicEventLine } = await import("./compare-periods");
+      const prev = { start: priorStart, end: curStart };
+      const cur = { start: curStart, end: nowTs };
+      const counts = await loadStableCoreCounts(env, slug, prev, cur);
+      if (counts.keywordIds.length > 0) {
+        const events = await loadInstrumentEvents(env, prev, cur, slug);
+        const c = computeComparison({
+          basis: "stable_core",
+          sharedKeywords: counts.keywordIds.length,
+          perSurface: counts.perSurface,
+          prevWindow: prev,
+          curWindow: cur,
+          events,
+        });
+        const label = (k: string) => READOUT_ENGINE_LABEL[k] ?? k;
+        comparison = {
+          basis: `the ${counts.keywordIds.length} questions measured on every day of both months`,
+          questions: counts.keywordIds.length,
+          questions_excluded: counts.excludedKeywordIds.length,
+          per_surface: c.perSurface
+            .filter((x) => x.layer !== "control")
+            .map((x) => ({
+              engine: label(x.engine),
+              layer: x.layer,
+              stated: x.movement.kind === "stated",
+              statement: publicReason(describeMovement(x.movement, label(x.engine))),
+              ...(x.movement.kind === "stated"
+                ? { prior_pct: +x.movement.prevRate.toFixed(1), current_pct: +x.movement.curRate.toFixed(1), delta_pp: +x.movement.deltaPp.toFixed(1) }
+                : {}),
+            })),
+          pooled: {
+            citation: publicReason(describeMovement(c.pooled.citation, "Surfaces that search the web and cite sources")),
+            model_knowledge: publicReason(describeMovement(c.pooled.model_knowledge, "Surfaces that answer from training")),
+          },
+          instrument_changes: c.events.map(publicEventLine),
+          considered_and_set_aside: c.setAside.map((x) => `${publicEventLine(x.event)}: ${x.why}`),
+        };
+      }
+    } catch (e) {
+      // No comparison is honest: the prompt then forbids any movement claim.
+      console.log(`[memo-inputs] ${slug}: comparison unavailable: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
+
   return {
     destinations,
     customer: customer
@@ -741,7 +858,9 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
     by_engine,
     by_question,
     by_category,
-    ...(like_for_like ? { like_for_like } : {}),
+    // Superseded by the comparison when there is one: two bases in one memo is
+    // how a correct number lands in a false sentence.
+    ...(comparison ? { comparison } : like_for_like ? { like_for_like } : {}),
     ...(venue_share_basis ? { venue_share_basis } : {}),
     noise_floor: noiseBand && {
       band_pp: noiseBand.bandPp,

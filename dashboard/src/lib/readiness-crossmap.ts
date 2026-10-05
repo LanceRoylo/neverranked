@@ -41,7 +41,7 @@ const STATE_NOTE: Record<string, string> = {
   deployed: "Machine-readable booking or contact actions an agent can call.",
   off_baseline: "Deliberate Action markup, but not the kind this category needs.",
   boilerplate_only: "Only what the content system emits by default. An agent still cannot act.",
-  verified_zero: "Scanned cleanly. No Action markup present. This is what we check; it is not proof no agent could reach the site another way.",
+  verified_zero: "Scanned cleanly. No Action markup present. This is what we check. It is not proof that no agent could reach the site another way.",
   unverifiable: "The site refused automated inspection. We do not publish a score we could not take.",
 };
 

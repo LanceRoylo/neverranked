@@ -21,7 +21,9 @@
  */
 
 import type { Env } from "./types";
-import { computeComparison, describeMovement, type ComparisonResult } from "./lib/compare-periods";
+import { computeComparison, describeMovement, publicReason, publicEventLine, type ComparisonResult } from "./lib/compare-periods";
+// Re-exported: they moved to compare-periods so the client memo uses the same ones.
+export { publicReason, publicEventLine } from "./lib/compare-periods";
 import { addInboxItem } from "./admin-inbox";
 import { engineLayer, isControlEngine } from "./lib/engine-layer";
 
@@ -453,26 +455,6 @@ export function weekOverWeekBlock(stats: WeeklyStats): string {
   return lines.join("\n");
 }
 
-/**
- * Strip an instrument-event refusal down to what a public brief may see.
- * compare-periods puts the event's internal detail into the reason; volume,
- * mix and missing-window reasons carry no client detail and pass through.
- */
-export function publicReason(text: string): string {
-  return text.replace(
-    /an instrument change (lands inside|affects \S+ inside) the window \([^)]*(\)[^)]*)*\)/g,
-    "an instrument change of ours lands inside the window (listed below)",
-  );
-}
-
-/** An instrument event as a public brief may describe it: kind and scope, no notes. */
-export function publicEventLine(e: { kind: string; scope: string; engine?: string | null }): string {
-  const what = e.kind.replace(/_/g, " ");
-  const where = e.scope === "engine" && e.engine
-    ? ` on ${e.engine}`
-    : e.scope === "client" ? " for one tracked client" : " across all measurement";
-  return `${what}${where}`;
-}
 
 /**
  * A pipe that recorded nothing is NOT MEASURED, never zero.

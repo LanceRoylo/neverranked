@@ -436,3 +436,24 @@ export function describeMovement(m: Movement, subject: string): string {
   const size = dir === "flat" ? "" : ` ${Math.abs(m.deltaPp).toFixed(1)} percentage points`;
   return `${subject}: ${m.prevRate.toFixed(1)}% to ${m.curRate.toFixed(1)}%, ${dir}${size}.`;
 }
+
+/**
+ * Strip an instrument-event refusal down to what a client-facing document (the weekly brief, the monthly memo) may see.
+ * compare-periods puts the event's internal detail into the reason; volume,
+ * mix and missing-window reasons carry no client detail and pass through.
+ */
+export function publicReason(text: string): string {
+  return text.replace(
+    /an instrument change (lands inside|affects \S+ inside) the window \([^)]*(\)[^)]*)*\)/g,
+    "an instrument change of ours lands inside the window (listed below)",
+  );
+}
+
+/** An instrument event as a client-facing document (the weekly brief, the monthly memo) may describe it: kind and scope, no notes. */
+export function publicEventLine(e: { kind: string; scope: string; engine?: string | null }): string {
+  const what = e.kind.replace(/_/g, " ");
+  const where = e.scope === "engine" && e.engine
+    ? ` on ${e.engine}`
+    : e.scope === "client" ? " for one tracked client" : " across all measurement";
+  return `${what}${where}`;
+}
