@@ -153,9 +153,11 @@ export async function sendMagicLinkEmail(
   email: string,
   token: string,
   env: Env,
-  agency?: Agency | null
+  agency?: Agency | null,
+  next?: string | null,
 ): Promise<boolean> {
-  const loginUrl = customerAuthLink(token);
+  // `next` is already same-origin-checked by safeNextPath in routes/login.ts.
+  const loginUrl = customerAuthLink(token, next ? { next } : undefined);
   const brand = brandFor(agency);
   const headerHtml = brand.logo
     ? `<p style="margin:0 0 24px"><img src="${brand.logo}" alt="${brand.name}" style="max-height:32px;max-width:240px"></p>`
