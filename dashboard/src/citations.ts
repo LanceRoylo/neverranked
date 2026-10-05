@@ -675,6 +675,9 @@ async function queryOpenAI(
  * We extract URLs from groundingChunks the same way we extract from
  * Perplexity citations and OpenAI url_citation annotations.
  */
+/** Waits before each retry of a Gemini 503. Two, growing. See queryGemini. */
+export const GEMINI_503_RETRY_WAITS_MS: readonly number[] = [5000, 20000];
+
 async function queryGemini(
   keyword: string,
   apiKey: string,
@@ -703,27 +706,33 @@ async function queryGemini(
     },
   });
 
-  // Single retry on 503 UNAVAILABLE. gemini-2.5-flash hits transient
-  // demand spikes a few times an hour; a 5s sleep + retry usually
-  // succeeds. Without retry we'd lose 5-10% of weekly citation data.
-  let resp = await fetch(GEMINI_ENDPOINT, {
+  // Retry on 503 UNAVAILABLE ("This model is overloaded"), with a growing
+  // wait. One 5s retry used to be enough; by 2026-10-05 Google's overload
+  // outlasted it, and gemini lost 2, 6, 6 then 11 of ~63 readings a night,
+  // every one AFTER the retry. A second, longer wait recovers most of what a
+  // short spike costs. Same model, same request: this changes how often we
+  // get the answer, never what is measured. Switching to another model when
+  // this one is busy would change the instrument mid-comparison, so it is
+  // deliberately not done.
+  const send = () => fetch(GEMINI_ENDPOINT, {
     method: "POST",
     headers: { "x-goog-api-key": apiKey, "Content-Type": "application/json" },
     body: requestBody,
   });
-  if (resp.status === 503) {
-    await new Promise(r => setTimeout(r, 5000));
-    resp = await fetch(GEMINI_ENDPOINT, {
-      method: "POST",
-      headers: { "x-goog-api-key": apiKey, "Content-Type": "application/json" },
-      body: requestBody,
-    });
+  let resp = await send();
+  let retries = 0;
+  for (const waitMs of GEMINI_503_RETRY_WAITS_MS) {
+    if (resp.status !== 503) break;
+    await new Promise((r) => setTimeout(r, waitMs));
+    resp = await send();
+    retries++;
   }
 
   if (!resp.ok) {
     const err = await resp.text();
     console.log("[engine-failure] gemini " + resp.status + " for \"" + keyword + "\": " + err.slice(0, 300));
-    return { text: "", urls: [], entities: [], failure: { engine: "gemini", status: resp.status, detail: err.slice(0, 300) } };
+    const tag = retries > 0 ? `after ${retries} retr${retries === 1 ? "y" : "ies"}: ` : "";
+    return { text: "", urls: [], entities: [], failure: { engine: "gemini", status: resp.status, detail: (tag + err).slice(0, 300) } };
   }
 
   type GroundingChunk = { web?: { uri?: string; title?: string } };
