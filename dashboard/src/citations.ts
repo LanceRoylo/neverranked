@@ -12,7 +12,7 @@ import { READOUT_ENGINE_LABEL } from "./lib/readout-engine-labels";
 import { resolveGroundingUrls } from "./gemini-resolver";
 import { detectAndRecordAlerts } from "./lib/citation-alerts";
 import { isReadoutShapeSnapshot } from "./lib/snapshot-shape";
-import { classifySource, hostOf } from "./lib/classify-source";
+import { classifySource, classifyGoogleLink, hostOf } from "./lib/classify-source";
 import { keywordRunVerdict } from "./lib/keyword-run-verdict";
 import { LAYER1_ENGINE_KEYS } from "./lib/engine-layer";
 import { recordSpend } from "./lib/engine-spend";
@@ -2580,11 +2580,22 @@ export async function buildReadoutSnapshot(
   const umbrellaLabels = umbrellaLabelMap(compRows);
   const cohort = new Set<string>([ownedHost, ...competitorHosts]);
 
+  // measurement_start is a FLOOR here too. The window is a calendar month, so
+  // for a client whose engagement starts mid-month the first snapshot would
+  // otherwise include pre-engagement runs (a sales teardown, a dry run), and
+  // the monthly memo reads its per-engine and venue figures from this row.
+  // No start recorded keeps the old behaviour.
+  const reg = await env.DB.prepare(
+    "SELECT measurement_start FROM measurement_registry WHERE client_slug = ?"
+  ).bind(clientSlug).first<{ measurement_start: number | null }>().catch(() => null);
+  const regStart = Number(reg?.measurement_start);
+  const runsFrom = Number.isFinite(regStart) && regStart > 0 ? Math.max(windowStart, regStart) : windowStart;
+
   const rows = (await env.DB.prepare(
     `SELECT cr.engine, cr.client_cited, cr.cited_urls, cr.cited_entities, ck.keyword
        FROM citation_runs cr JOIN citation_keywords ck ON ck.id = cr.keyword_id
       WHERE ck.client_slug = ? AND cr.run_at >= ? AND cr.run_at < ?`
-  ).bind(clientSlug, windowStart, windowEnd).all<{
+  ).bind(clientSlug, runsFrom, windowEnd).all<{
     engine: string;
     client_cited: number;
     cited_urls: string;
@@ -2625,6 +2636,10 @@ export async function buildReadoutSnapshot(
   const venueLabels: Record<string, string> = {};
   const srcCounts: Record<string, number> = {};
   const offsiteHosts: Record<string, number> = {};
+  /** Google result-page wrapper links left out of source types and hosts.
+   *  See classifyGoogleLink. Recorded so the exclusion is visible. */
+  let googleWrappersDropped = 0;
+  let googleWrappersResolved = 0;
 
   // Layer 2 accumulators (response-based).
   const engRuns: Record<string, number> = {};
@@ -2712,10 +2727,20 @@ export async function buildReadoutSnapshot(
         }
         if (venueKey && !isControl) compCitations[venueKey] = (compCitations[venueKey] || 0) + 1;
         if (isControl) continue;
-        const st = classifySource(u, ctx);
+        // A Google viewer/redirect/search link is not a source. Resolve it to
+        // its real target when it carries one, otherwise leave it out of the
+        // source mix and the host list. Scope is deliberately ONLY these two:
+        // the engine's own link totals above still count every listed link.
+        const g = classifyGoogleLink(u);
+        if (g.kind === "wrapper") { googleWrappersDropped++; continue; }
+        const srcUrl = g.kind === "target" ? g.url : u;
+        if (g.kind === "target") googleWrappersResolved++;
+        const srcHost = g.kind === "target" ? hostOf(srcUrl) : h;
+        if (!srcHost) continue;
+        const st = classifySource(srcUrl, ctx);
         srcCounts[st] = (srcCounts[st] || 0) + 1;
         if (st === "independent_web" || st === "review_directory") {
-          offsiteHosts[h] = (offsiteHosts[h] || 0) + 1;
+          offsiteHosts[srcHost] = (offsiteHosts[srcHost] || 0) + 1;
         }
       }
       engUrlOwned[label] = (engUrlOwned[label] || 0) + ownedHere;
@@ -2854,6 +2879,9 @@ export async function buildReadoutSnapshot(
     /** Provenance marker so a later reader can tell which definition produced
      *  the venue numbers without re-deriving it from the code. */
     venue_basis: "layer1_citations",
+    /** Links left out of source_types / offsite_hosts because they were
+     *  Google result-page wrappers, not pages (from 2026-10-05). */
+    source_exclusions: { google_wrapper_links: googleWrappersDropped, google_wrapper_links_resolved: googleWrappersResolved },
   };
 
   const keywordBreakdown = {

@@ -80,22 +80,46 @@ export interface MemoInputs {
      *  snapshot row is the share of CITED LINKS that point to the client's own
      *  website, which says nothing about whether the engine names the client.
      *  "own_site_link_share" = that. "answers_naming_customer" = share of the
-     *  engine's answers that name the client (model-knowledge rows, and the
-     *  run-based fallback). Absent on legacy inputs. */
-    measure?: "own_site_link_share" | "answers_naming_customer";
+     *  engine's answers that name the client (model-knowledge rows).
+     *  "answers_with_site_in_sources" = run-based fallback rows for a search
+     *  tool or the control, whose flag means the client's domain was among the
+     *  listed sources, not that the answer named them (relabelled 2026-10-05;
+     *  these rows used to say answers_naming_customer). Absent on legacy
+     *  inputs. */
+    measure?: "own_site_link_share" | "answers_naming_customer" | "answers_with_site_in_sources";
     /** Citation layer only: total links this engine cited, the denominator of
      *  an own_site_link_share. NOT runs. The same memo wrote "across 3226
      *  runs" for 3,226 links from an engine that ran 312 times. */
     cited_links?: number;
-    /** Share of this engine's answers whose citations or named entities
-     *  include the client, from the same rows the comparison layer reads
-     *  (client_cited). This, not current_share_pct, answers "does this engine
-     *  put the client in its answers". */
+    /** Share of this engine's answers whose LISTED SOURCES included the
+     *  client's site, from the same rows the comparison layer reads
+     *  (client_cited). On a search tool that flag is set when the client's
+     *  domain is in the source list, so this is not naming and not traffic:
+     *  corrected 2026-10-05, it was described here as "does this engine put
+     *  the client in its answers". Naming is named_runs / named_pct. */
     answers_citing_customer_pct?: number;
+    /** Search tools only (not the control): answers this period whose TEXT
+     *  named the client, read with namedInAnswer. Same definitions as the
+     *  by_question fields. Absent when no usable business name is on file. */
+    named_runs?: number;
+    named_judged_runs?: number;
+    named_unknown_runs?: number;
+    named_pct?: number | null;
   }>;
   /** Group totals by question category, computed rather than counted by the
    *  author. A claim about "the N questions in group X" must come from here. */
-  by_category: Array<{ category: string; questions: number; runs: number; cited: number; share_pct: number; questions_never_cited: number; runs_on_never_cited: number }>;
+  by_category: Array<{
+    category: string; questions: number; runs: number; cited: number; share_pct: number;
+    questions_never_cited: number; runs_on_never_cited: number;
+    /** Same measure and basis as by_question (search tools only, the client's
+     *  site among the listed sources). questions_never_cited is therefore
+     *  "no page from the site was listed", NOT "never named". */
+    measure?: typeof QUESTION_MEASURE;
+    basis?: string;
+    /** Questions in the group on which no search-tool answer we could read in
+     *  full named the client. Absent when naming could not be judged. */
+    questions_never_named?: number;
+  }>;
   /** Questions measured in BOTH windows, and the count. A month-over-month
    *  number computed across a changed question set is not a measurement of
    *  movement, it is a measurement of the change in the set. */
@@ -168,7 +192,39 @@ export interface MemoInputs {
      *  until a draft told a client that twelve of their strongest questions
      *  had collapsed to zero when all twelve had simply been switched off. */
     not_asked_this_period?: boolean;
+    /** Search-tool checks on this question this period (the denominator of
+     *  current_pct). Bing control and model-knowledge runs are NOT counted. */
     current_runs: number;
+    /** WHAT current_pct / prior_pct MEASURE. Added 2026-10-05. These used to be
+     *  cited runs over ALL runs from all seven surfaces, the Bing control and
+     *  the two model-knowledge tools included, whose flag means "named", not
+     *  "listed a page". A delivered memo called one such figure "% of
+     *  citations": 80 of 157 = 51% on a question where the four search tools
+     *  listed the client's site in 79 of 81 checks, and another question's
+     *  21.8% was mostly one model-knowledge tool's flags.
+     *  "site_in_sources" = share of the four search tools' checks on this
+     *  question where the client's own website was among the sources the tool
+     *  listed. It is not traffic and not whether the answer named the client. */
+    measure?: typeof QUESTION_MEASURE;
+    basis?: string;
+    /** Numerator of current_pct: checks where the site was among the sources. */
+    site_in_sources_runs?: number;
+    /** Did the search tools' ANSWER TEXT name the client on this question, this
+     *  period, read with namedInAnswer (truncation-aware, cap of the day the
+     *  row was written, diacritics folded). A headline once called the client
+     *  "invisible" and "not named" on nine questions where the search tools
+     *  named the client in the answer on five of them while never listing a
+     *  page from the site. Not being in the sources and not being named are
+     *  different findings. All four fields are absent when no usable business
+     *  name was on file, which is not the same as zero. */
+    named_runs?: number;
+    /** Answers we hold in full, or found the name in: named_pct's denominator. */
+    named_judged_runs?: number;
+    /** Answers we hold only part of and did not find the name in. Excluded
+     *  from named_pct, so named_pct is NOT a bound (see presenceStats). */
+    named_unknown_runs?: number;
+    /** named_runs / named_judged_runs. Null when nothing could be judged. */
+    named_pct?: number | null;
   }>;
   cohort: {
     rank: number | null;
@@ -178,7 +234,19 @@ export interface MemoInputs {
   offsite: {
     source_types: Array<{ type: string; share_pct: number }>;
     hosts: Array<{ host: string; share_pct: number }>;
+    /** These are shares of EVERY listed source, the client's own site and
+     *  competitor sites included, so they are not "off-site citations" even
+     *  though the hosts list itself is third-party only. A delivered memo
+     *  called them off-site. */
+    basis?: string;
   };
+  /** Own-site links listed by the citation-layer search tools this period,
+   *  the Bing control excluded. Above zero is direct evidence the site is
+   *  reachable by those tools, so the memo may not suggest a robots.txt or
+   *  crawler-access check. A delivered memo did exactly that while the same
+   *  data showed hundreds of pulls. Absent when it could not be counted. */
+  own_site_pulls?: number;
+  own_site_pulls_basis?: string;
   /** Ready-made destinations for the punch list.
    *
    *  WHY (2026-09-17). The punch-list standard says "a clickable link beats a
@@ -208,7 +276,212 @@ export interface MemoInputs {
 function pct(cited: number, runs: number): number {
   return runs > 0 ? +(100 * cited / runs).toFixed(1) : 0;
 }
-import { engineLayer } from "./engine-layer";
+import { engineLayer, isControlEngine, LAYER1_ENGINE_KEYS } from "./engine-layer";
+import { namedInAnswer, capForRun } from "./answer-presence";
+
+/** The per-question measure. See `measure` on by_question. */
+export const QUESTION_MEASURE = "site_in_sources" as const;
+
+export const QUESTION_BASIS =
+  "the four search tools only (Perplexity, ChatGPT search, Gemini grounded, Google AI Overviews); " +
+  "not the Bing control and not the two tools that answer from training. current_pct is the share of " +
+  "their checks on this question where the client's own website was among the sources the tool listed. " +
+  "It is not traffic, not visits, and not whether the answer named the client (named_runs is that).";
+
+export const OFFSITE_BASIS =
+  "share of every page the search tools listed as a source (the Bing control excluded), " +
+  "including the client's own site and competitor sites";
+
+/** True for the engines whose runs feed by_question, by_category,
+ *  like_for_like and the run-based overall: citation layer, not the control.
+ *  A model-knowledge client_cited flag means "named"; on a search tool it
+ *  means the client's domain was among the listed sources. Pooling the two is
+ *  pooling different quantities, and the control is never pooled at all. */
+export function inQuestionBasis(engine: string): boolean {
+  return engineLayer(engine) === "citation" && !isControlEngine(engine);
+}
+
+/** Raw engine keys in the basis, for SQL. Fixed constants, never input. */
+const BASIS_ENGINE_KEYS = [...LAYER1_ENGINE_KEYS].filter(inQuestionBasis);
+
+export interface QuestionRun {
+  engine: string;
+  client_cited: number;
+  run_at: number;
+  keyword: string;
+  category: string;
+  kid: number;
+  /** Present only for current-window basis runs (see the runs query). */
+  response_text?: string | null;
+}
+
+/** Per-question, per-category and like-for-like facts, all on ONE basis:
+ *  citation-layer search tools, control excluded. Pure, so the basis can be
+ *  tested without a database. */
+export function buildQuestionFacts(
+  rows: QuestionRun[],
+  opts: { curStart: number; businessName: string | null },
+): {
+  by_question: MemoInputs["by_question"];
+  by_category: MemoInputs["by_category"];
+  like_for_like: MemoInputs["like_for_like"];
+  totals: { curRuns: number; curCited: number; priRuns: number; priCited: number };
+  questionsSeen: number;
+  /** Per raw engine key, basis engines only. Empty when names cannot be judged. */
+  namedByEngine: Map<string, { named_runs: number; named_judged_runs: number; named_unknown_runs: number; named_pct: number | null }>;
+} {
+  // A name shorter than four characters is never evidence (namedInAnswer
+  // would return false for every complete answer), so it must not produce a
+  // confident "named on 0 of N".
+  const name = opts.businessName?.trim() ?? "";
+  const canJudgeNames = name.length >= 4;
+  type Acc = {
+    keyword: string; category: string;
+    cr: number; cc: number; pr: number; pc: number;
+    named: number; judged: number; unknown: number;
+  };
+  const q = new Map<number, Acc>();
+  const totals = { curRuns: 0, curCited: 0, priRuns: 0, priCited: 0 };
+  const perEngine = new Map<string, { named: number; judged: number; unknown: number }>();
+  for (const r of rows) {
+    // Every question asked of any surface is listed, so a question that ran
+    // only on excluded surfaces reads as not asked of the search tools.
+    let a = q.get(r.kid);
+    if (!a) {
+      a = { keyword: r.keyword, category: r.category, cr: 0, cc: 0, pr: 0, pc: 0, named: 0, judged: 0, unknown: 0 };
+      q.set(r.kid, a);
+    }
+    if (!inQuestionBasis(r.engine)) continue;
+    if (r.run_at >= opts.curStart) {
+      a.cr++; totals.curRuns++;
+      if (r.client_cited) { a.cc++; totals.curCited++; }
+      if (canJudgeNames) {
+        // An answer the query did not return reads as null, not as "not named".
+        const v = namedInAnswer({ text: r.response_text, businessName: name, cap: capForRun(r.run_at) });
+        const pe = perEngine.get(r.engine) ?? { named: 0, judged: 0, unknown: 0 };
+        perEngine.set(r.engine, pe);
+        if (v === null) { a.unknown++; pe.unknown++; }
+        else { a.judged++; pe.judged++; if (v) { a.named++; pe.named++; } }
+      }
+    } else {
+      a.pr++; totals.priRuns++;
+      if (r.client_cited) { a.pc++; totals.priCited++; }
+    }
+  }
+
+  const by_question: MemoInputs["by_question"] = Array.from(q.values()).map((v) => ({
+    keyword: v.keyword,
+    category: v.category,
+    measure: QUESTION_MEASURE,
+    basis: QUESTION_BASIS,
+    current_pct: pct(v.cc, v.cr),
+    // No runs in the prior window means the question was not asked, so there
+    // is nothing to compare against and null says so. Computing pct(0, 0) as
+    // 0 and subtracting produced "rose from 0% to 60%" for six questions that
+    // had simply been added that month.
+    prior_pct: v.pr > 0 ? pct(v.pc, v.pr) : null,
+    delta_pp: v.pr > 0 ? +(pct(v.cc, v.cr) - pct(v.pc, v.pr)).toFixed(1) : null,
+    ...(v.pr > 0 ? {} : { first_reading: true }),
+    // The MIRROR of first_reading, and it was missing.
+    //
+    // No runs in the CURRENT window means the question was not asked this
+    // period, so its 0% is an absence of measurement, not an absence of
+    // citations. Without this the two are indistinguishable and a question
+    // that was switched off reads as a collapse.
+    //
+    // 2026-09-24: twelve questions "returned zero citations this month" after
+    // citing heavily the month before. All twelve were inactive. Not one had
+    // lost anything; they had stopped being asked when the set was reverted.
+    // The draft made "verify whether this is a real loss" its first
+    // punch-list item, about a loss that never happened.
+    ...(v.cr > 0 ? {} : { not_asked_this_period: true }),
+    current_runs: v.cr,
+    site_in_sources_runs: v.cc,
+    ...(canJudgeNames && v.cr > 0
+      ? {
+          named_runs: v.named,
+          named_judged_runs: v.judged,
+          named_unknown_runs: v.unknown,
+          named_pct: v.judged > 0 ? pct(v.named, v.judged) : null,
+        }
+      : {}),
+  })).sort((a, b) => a.current_pct - b.current_pct); // weakest first
+
+  // Per-category group facts, so the author never has to count.
+  //
+  // WHY THIS EXISTS. A September draft said "the gap is largest on the ten
+  // region-wide questions, where the client was cited zero times across 781
+  // runs". All three numbers were invented. There were TWELVE such questions,
+  // they ran 923 times, and the client was cited SIX times. The group is not a
+  // judgement call either: it is exactly citation_keywords.category.
+  //
+  // The author had no group totals in its payload, so it counted a rendered
+  // list and guessed a denominator. findUnverifiedNumbers flagged 781, but
+  // "ten" and "zero" both sit inside the 0-12 safe band and passed silently.
+  // Numbers that are handed over do not have to be invented. The zero split is
+  // carried too, because "ten of the twelve were never cited, across 764 runs"
+  // is the sentence the memo actually wants.
+  const catAgg = new Map<string, { questions: number; runs: number; cited: number; zeroQs: number; zeroRuns: number; neverNamed: number }>();
+  for (const v of q.values()) {
+    const key = v.category || "uncategorised";
+    const e = catAgg.get(key) ?? { questions: 0, runs: 0, cited: 0, zeroQs: 0, zeroRuns: 0, neverNamed: 0 };
+    e.questions += 1; e.runs += v.cr; e.cited += v.cc;
+    if (v.cc === 0) { e.zeroQs += 1; e.zeroRuns += v.cr; }
+    // Never named means: asked, and every answer we could read in full lacked
+    // the name, with nothing indeterminate. An unknown is not a no.
+    if (v.cr > 0 && v.named === 0 && v.unknown === 0 && v.judged > 0) e.neverNamed += 1;
+    catAgg.set(key, e);
+  }
+  const by_category: MemoInputs["by_category"] = [...catAgg.entries()]
+    .map(([category, e]) => ({
+      category,
+      measure: QUESTION_MEASURE,
+      basis: QUESTION_BASIS,
+      questions: e.questions,
+      runs: e.runs,
+      cited: e.cited,
+      share_pct: pct(e.cited, e.runs),
+      /** Questions in this category whose site was never among the sources. */
+      questions_never_cited: e.zeroQs,
+      /** Runs those never-cited questions drew. NOT the category's run total. */
+      runs_on_never_cited: e.zeroRuns,
+      ...(canJudgeNames ? { questions_never_named: e.neverNamed } : {}),
+    }))
+    .sort((a, b) => a.share_pct - b.share_pct); // weakest first, same as by_question
+
+  // The like-for-like aggregate: the same discipline the methodology already
+  // applies to an engine changing its model version. A set change is not
+  // forbidden, it is recorded and disclosed, and any comparison spanning it is
+  // computed on what both windows actually share.
+  const bothWindows = Array.from(q.values()).filter((v) => v.pr > 0 && v.cr > 0);
+  const lflCurRuns = bothWindows.reduce((n, v) => n + v.cr, 0);
+  const lflCurCited = bothWindows.reduce((n, v) => n + v.cc, 0);
+  const lflPriRuns = bothWindows.reduce((n, v) => n + v.pr, 0);
+  const lflPriCited = bothWindows.reduce((n, v) => n + v.pc, 0);
+  const like_for_like = (lflCurRuns > 0 && lflPriRuns > 0)
+    ? {
+        questions: bothWindows.length,
+        current_share_pct: pct(lflCurCited, lflCurRuns),
+        prior_share_pct: pct(lflPriCited, lflPriRuns),
+        share_delta_pp: +(pct(lflCurCited, lflCurRuns) - pct(lflPriCited, lflPriRuns)).toFixed(1),
+        questions_added_since_prior: Array.from(q.values()).filter((v) => v.pr === 0 && v.cr > 0).length,
+        basis:
+          "the questions measured in BOTH windows, four search tools only (Bing control and the two " +
+          "training-answer tools excluded); share is checks where the client's site was among the listed " +
+          "sources over all checks on those questions",
+      }
+    : undefined;
+
+  const namedByEngine = new Map(
+    [...perEngine.entries()].map(([engine, v]) => [engine, {
+      named_runs: v.named,
+      named_judged_runs: v.judged,
+      named_unknown_runs: v.unknown,
+      named_pct: v.judged > 0 ? pct(v.named, v.judged) : null,
+    }] as const),
+  );
+  return { by_question, by_category, like_for_like, totals, questionsSeen: q.size, namedByEngine };
+}
 
 function normHost(h: string): string {
   return h.toLowerCase().replace(/^www\./, "").trim();
@@ -283,7 +556,12 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
   // exactly the kind of thing that is not small in another month.
   const mStart = (await env.DB.prepare(
     `SELECT measurement_start FROM measurement_registry WHERE client_slug = ?`,
-  ).bind(slug).first<{ measurement_start: number | null }>().catch(() => null))?.measurement_start ?? null;
+  ).bind(slug).first<{ measurement_start: number | null }>().catch((e) => {
+    // Not fatal, but never silent: without the floor, pre-engagement runs can
+    // enter every figure below.
+    console.log(`[memo-inputs] ${slug}: measurement_start lookup failed, window has NO engagement floor: ${e instanceof Error ? e.message : String(e)}`);
+    return null;
+  }))?.measurement_start ?? null;
 
   const monthStart = startOfMonthUTC(now);
   const prevMonthStart = startOfMonthUTC(now, 1);
@@ -297,21 +575,44 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
     `SELECT client_slug, name, category_label, plan_markdown, primary_contact_name FROM customers WHERE client_slug = ?`
   ).bind(slug).first<{ client_slug: string; name: string; category_label: string | null; plan_markdown: string | null; primary_contact_name: string | null }>();
 
-  // All runs in the last 60 days, tagged by which window they fall in.
+  // THE PERIOD HAS AN END. This query used to have only a floor. The
+  // full-month draft runs on the 2nd with its clock set to the last second of
+  // the month before, so without an upper bound every run from the 1st and 2nd
+  // of the NEW month was counted as the old month's. The cadence query and the
+  // comparison already stopped at the clock; this one did not.
+  const periodEnd = nowTs + 1; // exclusive; the clock is the period's last second
+
+  // Who the answers are read for. Same source as the readout snapshot
+  // (injection_configs.business_name, then customers.name).
+  const injName = (await env.DB.prepare(
+    `SELECT business_name FROM injection_configs WHERE client_slug = ?`,
+  ).bind(slug).first<{ business_name: string | null }>().catch(() => null))?.business_name ?? null;
+  const businessName = injName || customer?.name || null;
+
+  // Runs in both windows, tagged by which window they fall in.
+  //
+  // response_text comes back ONLY for current-window runs on the basis search
+  // tools; every other row returns NULL for it. COST, measured 2026-10-05 on
+  // the larger client's September: about 2,900 such answers and 8 MB of text,
+  // read once per draft (twice a month). Selecting it for every row would have
+  // been about 11 MB for one month and roughly double across both windows.
+  // Scoring it in TypeScript keeps ONE implementation of the naming rule
+  // (namedInAnswer) for the memo instead of a looser SQL copy.
+  const basisIn = BASIS_ENGINE_KEYS.map((k) => `'${k}'`).join(", ");
   const runs = await env.DB.prepare(
-    `SELECT cr.engine, cr.client_cited, cr.cited_entities, cr.run_at, ck.keyword, ck.category, ck.id as kid
+    `SELECT cr.engine, cr.client_cited, cr.cited_entities, cr.run_at, ck.keyword, ck.category, ck.id as kid,
+            CASE WHEN cr.run_at >= ? AND cr.engine IN (${basisIn}) THEN cr.response_text END AS response_text
        FROM citation_runs cr
        JOIN citation_keywords ck ON ck.id = cr.keyword_id
-      WHERE ck.client_slug = ? AND cr.run_at >= ?`
-  ).bind(slug, priorStart).all<{
+      WHERE ck.client_slug = ? AND cr.run_at >= ? AND cr.run_at < ?`
+  ).bind(curStart, slug, priorStart, periodEnd).all<{
     engine: string; client_cited: number; cited_entities: string;
     run_at: number; keyword: string; category: string; kid: number;
+    response_text: string | null;
   }>();
 
-  // ── Overall + per-engine + per-question, split by window ──
-  let curRuns = 0, curCited = 0, priRuns = 0, priCited = 0;
+  // ── Per-engine, split by window (per-question facts are built below) ──
   const eng = new Map<string, { cr: number; cc: number; pr: number; pc: number }>();
-  const q = new Map<number, { keyword: string; category: string; cr: number; cc: number; pr: number; pc: number }>();
   // cohort mention counts (current window only), per competitor host
   const cohortMentions = new Map<string, number>();
   // Per-engine cohort mentions. Without this the memo can see that an engine
@@ -333,16 +634,9 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
 
   for (const r of runs.results) {
     const isCurrent = r.run_at >= curStart;
-    if (isCurrent) { curRuns++; if (r.client_cited) curCited++; }
-    else { priRuns++; if (r.client_cited) priCited++; }
-
     const e = eng.get(r.engine) ?? { cr: 0, cc: 0, pr: 0, pc: 0 };
     if (isCurrent) { e.cr++; if (r.client_cited) e.cc++; } else { e.pr++; if (r.client_cited) e.pc++; }
     eng.set(r.engine, e);
-
-    const qq = q.get(r.kid) ?? { keyword: r.keyword, category: r.category, cr: 0, cc: 0, pr: 0, pc: 0 };
-    if (isCurrent) { qq.cr++; if (r.client_cited) qq.cc++; } else { qq.pr++; if (r.client_cited) qq.pc++; }
-    q.set(r.kid, qq);
 
     // Cohort mentions: current window, dedup per run.
     if (isCurrent && r.cited_entities && r.cited_entities !== "[]") {
@@ -353,11 +647,18 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
         const key = hostFromEntity(ent);
         if (!key || !cohortHosts.has(key) || seen.has(key)) continue;
         seen.add(key);
-        cohortMentions.set(key, (cohortMentions.get(key) ?? 0) + 1);
+        // The pooled count is on the same basis as the customer's own count
+        // it is ranked against (search tools, no control). Per-engine counts
+        // keep every engine, because each is reported on its own row.
+        if (inQuestionBasis(r.engine)) cohortMentions.set(key, (cohortMentions.get(key) ?? 0) + 1);
         engCohort.set(r.engine, (engCohort.get(r.engine) ?? 0) + 1);
       }
     }
   }
+
+  // by_question, by_category and like_for_like on ONE basis. See QUESTION_BASIS.
+  const qf = buildQuestionFacts(runs.results, { curStart, businessName });
+  const { curRuns, curCited, priRuns, priCited } = qf.totals;
 
   // Legacy run-based per-engine coverage. Used ONLY as a fallback for customers
   // that have no canonical citation_snapshots row yet. For snapshot customers it
@@ -377,10 +678,15 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
       current_runs: e.cr,
       cohort_citations: cohort,
       layer: engineLayer(engine),
-      // Run-based rows are cited runs over runs: share of answers that cite or
-      // name the client. Labelled so the writer can tell it from a snapshot
-      // row's own-site link share.
-      measure: "answers_naming_customer" as const,
+      // Run-based rows are flagged runs over runs. On a model-knowledge
+      // engine the flag means the answer NAMED the client; on a search tool
+      // (and the control) it means the client's domain was among the listed
+      // sources, which is not naming. Labelled so the writer cannot read one
+      // as the other, or either as a snapshot row's own-site link share.
+      measure: engineLayer(engine) === "citation"
+        ? ("answers_with_site_in_sources" as const)
+        : ("answers_naming_customer" as const),
+      ...(qf.namedByEngine.get(engine) ?? {}),
       ...(dark ? { no_cohort_signal: true } : {}),
     };
   }).sort((a, b) => b.current_share_pct - a.current_share_pct);
@@ -391,7 +697,7 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
        FROM citation_runs cr
        JOIN citation_keywords ck ON ck.id = cr.keyword_id
       WHERE ck.client_slug = ? AND cr.run_at >= ? AND cr.run_at < ?`,
-  ).bind(slug, curStart, nowTs).first<{ days: number; runs: number }>().catch(() => null);
+  ).bind(slug, curStart, periodEnd).first<{ days: number; runs: number }>().catch(() => null);
   // ABSENT, NOT ZERO. A failed lookup used to produce measurement_days: 0,
   // and the prompt REQUIRES the memo to describe its instrument from this
   // field, so a transient query error would have written "measured across 0
@@ -399,7 +705,7 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
   // absence of one, and the two must not share a representation. Found in the
   // guard sweep on 2026-09-26, in code written the day before, which is the
   // fourth instance of this shape in three days.
-  const questionsAsked = q.size || 1;
+  const questionsAsked = qf.questionsSeen || 1;
   const cadence = cadenceRow && Number(cadenceRow.days) > 0
     ? {
         measurement_days: Number(cadenceRow.days),
@@ -409,98 +715,7 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
       }
     : undefined;
 
-  const by_question = Array.from(q.values()).map((v) => ({
-    keyword: v.keyword,
-    category: v.category,
-    current_pct: pct(v.cc, v.cr),
-    // No runs in the prior window means the question was not asked, so there
-    // is nothing to compare against and null says so. Computing pct(0, 0) as
-    // 0 and subtracting produced "rose from 0% to 60%" for six questions that
-    // had simply been added that month.
-    prior_pct: v.pr > 0 ? pct(v.pc, v.pr) : null,
-    delta_pp: v.pr > 0 ? +(pct(v.cc, v.cr) - pct(v.pc, v.pr)).toFixed(1) : null,
-    ...(v.pr > 0 ? {} : { first_reading: true }),
-    // The MIRROR of first_reading, and it was missing.
-    //
-    // No runs in the CURRENT window means the question was not asked this
-    // period, so its 0% is an absence of measurement, not an absence of
-    // citations. Without this the two are indistinguishable and a question
-    // that was switched off reads as a collapse.
-    //
-    // 2026-09-24, hawaii-theatre: twelve questions "returned zero citations
-    // this month" after citing heavily in August -- 87, 86, 86, 84 and so on.
-    // All twelve were inactive. Not one had lost anything; they had stopped
-    // being asked when the set was reverted to the core 18 on the 21st. The
-    // draft made "verify whether this is a real loss" its first punch-list
-    // item, about a loss that never happened.
-    ...(v.cr > 0 ? {} : { not_asked_this_period: true }),
-    current_runs: v.cr,
-  })).sort((a, b) => a.current_pct - b.current_pct); // weakest first
-
-  // Per-category group facts, so the author never has to count.
-  //
-  // WHY THIS EXISTS. Prince's September draft said "the gap is largest on the
-  // ten Hawaii-wide questions, where Prince was cited zero times across 781
-  // runs". All three numbers were invented. There are TWELVE such questions,
-  // they ran 923 times, and Prince was cited SIX times, on "best meeting
-  // spaces" and "best views". The group is not a judgement call either: it is
-  // exactly citation_keywords.category = 'client'.
-  //
-  // The author had no group totals in its payload, so it counted a rendered
-  // list and guessed a denominator. findUnverifiedNumbers flagged 781, but
-  // "ten" and "zero" both sit inside the 0-12 safe band and passed silently,
-  // which is how the WORST claim in the memo drew no warning at all while a
-  // lesser one did. A false absence is the failure this product exists to
-  // prevent, and it was pointed at the paying client.
-  //
-  // Numbers that are handed over do not have to be invented.
-  // The zero split is carried too, because "ten of the twelve were never cited,
-  // across 764 runs" is the sentence the memo actually wants and every part of
-  // it was being worked out by hand. The author wrote 768 against its own
-  // list's 764, and attached the group's six citations to the very questions
-  // it had just called zero. Both numbers exist here now, so neither has to be
-  // derived.
-  const catAgg = new Map<string, { questions: number; runs: number; cited: number; zeroQs: number; zeroRuns: number }>();
-  for (const v of q.values()) {
-    const key = v.category || "uncategorised";
-    const e = catAgg.get(key) ?? { questions: 0, runs: 0, cited: 0, zeroQs: 0, zeroRuns: 0 };
-    e.questions += 1; e.runs += v.cr; e.cited += v.cc;
-    if (v.cc === 0) { e.zeroQs += 1; e.zeroRuns += v.cr; }
-    catAgg.set(key, e);
-  }
-  const by_category = [...catAgg.entries()]
-    .map(([category, e]) => ({
-      category,
-      questions: e.questions,
-      runs: e.runs,
-      cited: e.cited,
-      share_pct: pct(e.cited, e.runs),
-      /** Questions in this category the customer was never cited on. */
-      questions_never_cited: e.zeroQs,
-      /** Runs those never-cited questions drew. NOT the category's run total. */
-      runs_on_never_cited: e.zeroRuns,
-    }))
-    .sort((a, b) => a.share_pct - b.share_pct); // weakest first, same as by_question
-
-  // The like-for-like aggregate: the same discipline the methodology already
-  // applies to an engine changing its model version. A set change is not
-  // forbidden, it is recorded and disclosed, and any comparison spanning it is
-  // computed on what both windows actually share.
-  const bothWindows = Array.from(q.values()).filter((v) => v.pr > 0 && v.cr > 0);
-  const lflCurRuns = bothWindows.reduce((n, v) => n + v.cr, 0);
-  const lflCurCited = bothWindows.reduce((n, v) => n + v.cc, 0);
-  const lflPriRuns = bothWindows.reduce((n, v) => n + v.pr, 0);
-  const lflPriCited = bothWindows.reduce((n, v) => n + v.pc, 0);
-  const like_for_like = (lflCurRuns > 0 && lflPriRuns > 0)
-    ? {
-        questions: bothWindows.length,
-        current_share_pct: pct(lflCurCited, lflCurRuns),
-        prior_share_pct: pct(lflPriCited, lflPriRuns),
-        share_delta_pp: +(pct(lflCurCited, lflCurRuns) - pct(lflPriCited, lflPriRuns)).toFixed(1),
-        questions_added_since_prior: Array.from(q.values()).filter((v) => v.pr === 0 && v.cr > 0).length,
-        basis: "the questions measured in BOTH windows; share is cited runs over total runs on those questions only",
-      }
-    : undefined;
+  const { by_question, by_category, like_for_like } = qf;
 
   // ── Cohort rank (legacy run-based; overridden by snapshot below) ──
   const legacyVenueTotal = Array.from(cohortMentions.values()).reduce((a, n) => a + n, 0) + curCited;
@@ -515,6 +730,9 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
   // tied group. Fixing one of the two left the other free to disagree.
   const rankLegacy = cohortRank(curCited, cohortMembersLegacy.map((m) => m.mentions));
 
+  // Run-based fallback only (overridden on the snapshot path). Same basis as
+  // by_question: search tools, control excluded. It used to pool all seven
+  // surfaces, which sums a "named" flag with a "site in sources" flag.
   let overall = {
     current: { runs: curRuns, cited: curCited, share_pct: pct(curCited, curRuns) },
     prior: { runs: priRuns, cited: priCited, share_pct: pct(priCited, priRuns) },
@@ -526,11 +744,18 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
   // rather than the report month: a band derived from the same weeks it polices
   // shrinks whenever the month was quiet, which is exactly when a small fake
   // movement is most tempting to write.
-  const noiseBand = computeNoiseBand(await fetchDailyRates(env, slug, 21));
+  // Ends at the memo's clock and never reaches back past measurement_start.
+  const noiseBand = computeNoiseBand(await fetchDailyRates(env, slug, 21, { endTs: periodEnd, floorTs: mStart }));
 
   /** Set only on the snapshot path, where a venue-share percentage exists. */
   let venue_share_basis: string | undefined;
   let offsite: MemoInputs["offsite"] = { source_types: [], hosts: [] };
+  // Run-based until the snapshot overrides it: checks where the site was among
+  // a search tool's sources. The snapshot path replaces it with LINKS.
+  let own_site_pulls: number | undefined = curRuns > 0 ? curCited : undefined;
+  let own_site_pulls_basis: string | undefined = curRuns > 0
+    ? "search-tool checks this period whose listed sources included the client's own site (Bing control excluded)"
+    : undefined;
   const ownDomain = domains.results.find((d) => d.is_competitor === 0)?.domain ?? null;
 
   // ── Canonical override: source headline + per-engine from the snapshot ──
@@ -538,7 +763,8 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
   // readout, dashboard, and Atlas all read. Sourcing the memo's numbers from
   // the same place is what keeps every surface on one metric (the divergence
   // this replaces came from computing a run-coverage rate here instead).
-  // by_question stays run-based: per-question appearance has no snapshot form.
+  // by_question stays run-based: per-question appearance has no snapshot form,
+  // and it is on its own declared basis (QUESTION_BASIS), not the venue share.
   // CURRENT AND PRIOR ARE MONTH-SCOPED, not "the two newest rows".
   //
   // Every writer keys a snapshot by the Monday it RAN while buildReadoutSnapshot
@@ -636,10 +862,20 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
     // when they were not.
     // Bridge-written snapshots carry no `layer` key and are URL-based
     // throughout, so they are unaffected.
-    const ownedCitations = Object.values(curSnap.eb)
-      .filter((e) => (e as { layer?: string }).layer !== "model_knowledge")
+    //
+    // THE CONTROL IS NOT IN THIS TOTAL EITHER. The Bing control's row carries
+    // layer "citation", so it passed the filter above, and a delivered memo
+    // reported 4,241 venue citations where the snapshot's own venue total was
+    // 4,240: the extra one was a Bing organic link to the client's site.
+    // buildReadoutSnapshot already excludes the control from every pooled
+    // figure (sumNonControl); this copy did not.
+    const ownedCitations = Object.entries(curSnap.eb)
+      .filter(([engine, e]) => (e as { layer?: string }).layer !== "model_knowledge" && !isControlEngine(engine))
       // absent-is-zero: summing. An engine entry with no citations count contributes nothing to a total, which is what zero means in a sum.
-      .reduce((a, e) => a + (e.citations ?? 0), 0);
+      .reduce((a, [, e]) => a + (e.citations ?? 0), 0);
+    own_site_pulls = ownedCitations;
+    own_site_pulls_basis =
+      "links to the client's own site among the sources the four search tools listed this period (Bing control excluded)";
     const comps = (curSnap.tc.competitors ?? [])
       // absent-is-zero: summing, as above. mentions feeds a total and a sort, never a stated per-competitor figure.
       .map((c) => ({ domain: c.domain ?? "", label: c.label ?? null, mentions: c.citations ?? 0 }))
@@ -695,6 +931,7 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
                 // Absent stays absent: a link count we did not record is not zero links.
                 ...(typeof e.total === "number" ? { cited_links: e.total } : {}),
                 ...(rb ? { answers_citing_customer_pct: rb.current_share_pct } : {}),
+                ...((key && qf.namedByEngine.get(key)) || {}),
               }
             : { measure: "answers_naming_customer" as const };
         })(),
@@ -749,6 +986,7 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
         // absent-is-zero: same residual risk. offsite_hosts entries are written with share_pct by the same writer.
         .map((h) => ({ host: h.host ?? "", share_pct: h.share_pct ?? 0 }))
         .filter((h) => h.host),
+      basis: OFFSITE_BASIS,
     };
   }
 
@@ -776,10 +1014,18 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
         checks: "whether a page's structured data is readable, and which types are present" },
       { name: "Schema Markup Validator", url: "https://validator.schema.org/",
         checks: "structured data errors on a specific URL" },
-      ...(ownHost ? [{ name: "Your robots.txt", url: `https://${ownHost}/robots.txt`,
-        checks: "whether AI crawlers are allowed to read the site at all" }] : []),
+      // Offered only when nothing shows the site is reachable. When the search
+      // tools listed the client's site at all this period, a robots.txt check
+      // is a task the data has already answered, and a delivered memo put one
+      // in the punch list anyway.
+      ...(ownHost && !(typeof own_site_pulls === "number" && own_site_pulls > 0)
+        ? [{ name: "Your robots.txt", url: `https://${ownHost}/robots.txt`,
+            checks: "whether the file blocks AI crawlers from the site" }]
+        : []),
+      // Describes what the page holds, not what any AI system reads from it:
+      // nothing here measures that.
       ...(ownHost ? [{ name: "Google Business Profile", url: "https://business.google.com/",
-        checks: "the amenity and description fields AI reads for local answers" }] : []),
+        checks: "the description and amenity fields on the business's Google listing" }] : []),
     ],
   };
 
@@ -790,7 +1036,7 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
       const { loadStableCoreCounts, loadInstrumentEvents } = await import("./compare-loader");
       const { computeComparison, describeMovement, publicReason, publicEventLine } = await import("./compare-periods");
       const prev = { start: priorStart, end: curStart };
-      const cur = { start: curStart, end: nowTs };
+      const cur = { start: curStart, end: periodEnd };
       const counts = await loadStableCoreCounts(env, slug, prev, cur);
       if (counts.keywordIds.length > 0) {
         const events = await loadInstrumentEvents(env, prev, cur, slug);
@@ -871,6 +1117,7 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
     },
     cohort,
     offsite,
+    ...(typeof own_site_pulls === "number" ? { own_site_pulls, own_site_pulls_basis } : {}),
     prior_memo: priorMemo ?? null,
     is_first_memo: !priorMemo,
   };

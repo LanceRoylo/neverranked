@@ -91,3 +91,50 @@ export function classifySource(url: string, ctx: SourceContext = {}): SourceType
   // NOT honestly separable by hostname. Labeled honestly.
   return "independent_web";
 }
+
+/**
+ * Google result-page wrappers are not sources.
+ *
+ * Google AI Overviews lists many links on google.com itself that are not pages
+ * anyone wrote: knowledge-panel viewers (/searchviewer?svid=...), opaque
+ * redirects (/goto?url=<token>), and search-result pages (/search?q=...).
+ * Counted as sources they put "google.com" in a client's source list as if it
+ * were a site AI reads: measured 2026-10-05, 2,180 of 2,181 google.com links
+ * from AI Overviews in one client's September were /searchviewer, and one was
+ * /goto. Neither carries a readable target: the svid parameter encodes a
+ * knowledge-graph entity id and the goto token is encrypted.
+ *
+ * Returns:
+ *   { kind: "page" }               not a wrapper, classify the URL as it is
+ *   { kind: "target", url }        a wrapper carrying a real target in a
+ *                                  query parameter (url=, q=, adurl=, imgurl=)
+ *   { kind: "wrapper" }            a wrapper with no readable target: drop it
+ *
+ * Google's real pages (support.google.com, developers.google.com, Maps,
+ * Travel and the rest) are untouched: only the wrapper PATHS on the bare
+ * google domain match.
+ */
+export type GoogleLink = { kind: "page" } | { kind: "target"; url: string } | { kind: "wrapper" };
+
+const GOOGLE_WRAPPER_PATH = /^\/(?:searchviewer(?:\/|$)|goto$|search$|url$|aclk$|imgres$)/;
+const GOOGLE_BARE_HOST = /^google\.(?:com|[a-z]{2}|com?\.[a-z]{2})$/;
+
+export function classifyGoogleLink(u: string): GoogleLink {
+  let parsed: URL;
+  try { parsed = new URL(u); } catch { return { kind: "page" }; }
+  const host = parsed.hostname.replace(/^www\./, "").toLowerCase();
+  if (!GOOGLE_BARE_HOST.test(host)) return { kind: "page" };
+  if (!GOOGLE_WRAPPER_PATH.test(parsed.pathname)) return { kind: "page" };
+  for (const key of ["url", "q", "adurl", "imgurl"]) {
+    const v = parsed.searchParams.get(key);
+    if (!v || !/^https?:\/\//i.test(v)) continue;
+    try {
+      const t = new URL(v);
+      const th = t.hostname.replace(/^www\./, "").toLowerCase();
+      // A wrapper pointing at another wrapper is still not a page.
+      if (GOOGLE_BARE_HOST.test(th) && GOOGLE_WRAPPER_PATH.test(t.pathname)) continue;
+      return { kind: "target", url: t.toString() };
+    } catch { /* not a URL: a search phrase, keep looking */ }
+  }
+  return { kind: "wrapper" };
+}

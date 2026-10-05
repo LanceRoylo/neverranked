@@ -59,11 +59,22 @@ export function looksTruncated(text: string, cap: number = RESPONSE_TEXT_CAP): b
 }
 
 /** Fold the shapes that differ only in typography: curly quotes, the various
- *  dashes, runs of whitespace, and case. Accents are left alone deliberately --
- *  "Ko Olina" and "Kō Olina" are different spellings a venue chooses between,
- *  and folding them silently would hide a real naming difference. */
+ *  dashes, runs of whitespace, case, AND DIACRITICS.
+ *
+ *  Diacritics used to be left alone, on the reasoning that "Ko Olina" and
+ *  "Kō Olina" are spellings a venue chooses between. That is a question about
+ *  HOW a business is spelled. This module answers WHETHER it was named, and an
+ *  answer that writes the place name with macrons where the stored name has
+ *  plain vowels has named the same business. Measured 2026-10-05 on one
+ *  client's September across the four search tools: 14 more answers matched
+ *  once macron spellings of the registered name were allowed. Folding raises
+ *  presence figures slightly for every reading made after this change. The
+ *  SQL mirror below matches the same spellings a cheaper way (see the vowel
+ *  slots in buildPresenceSql). */
 function normalize(s: string): string {
   return s
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
     .toLowerCase()
     .replace(/[\u2018\u2019\u02BB\u02BC]/g, "'")
     .replace(/[\u201C\u201D]/g, '"')
@@ -113,7 +124,44 @@ export function namedInAnswer(input: PresenceInput): boolean | null {
     if (re && re.test(hay)) return true;
   }
 
-  return looksTruncated(text, input.cap ?? RESPONSE_TEXT_CAP) ? null : false;
+  if (looksTruncated(text, input.cap ?? RESPONSE_TEXT_CAP)) return null;
+  // An answer that ENDS PART WAY THROUGH the name was cut mid-name, whatever
+  // its length says. A stored answer was found ending "...<first word>
+  // <first five letters of the second>", which is a mention we hold only the
+  // start of. Calling that "not named" would score a storage limit as an
+  // absence, so it is indeterminate.
+  for (const c of candidates) {
+    if (typeof c === "string" && endsWithNamePrefix(hay, normalize(c))) return null;
+  }
+  return false;
+}
+
+/** Shortest name prefix that counts as a cut-off mention. Two letters at the
+ *  end of an answer are too common to be evidence of anything. */
+export const MIN_TAIL_PREFIX = 3;
+
+/** Proper prefixes of a normalized name worth checking against an answer's
+ *  tail: at least MIN_TAIL_PREFIX long, shorter than the name, and not ending
+ *  in a space (the trimmed answer never does). */
+function namePrefixes(n: string): string[] {
+  const out: string[] = [];
+  if (n.length < 4) return out;
+  for (let k = MIN_TAIL_PREFIX; k < n.length; k++) {
+    const p = n.slice(0, k);
+    if (!p.endsWith(" ")) out.push(p);
+  }
+  return out;
+}
+
+/** True when the (normalized, trimmed) answer ends with a proper prefix of
+ *  the name that starts on a word boundary. */
+function endsWithNamePrefix(hay: string, n: string): boolean {
+  for (const p of namePrefixes(n)) {
+    if (!hay.endsWith(p)) continue;
+    const before = hay.length - p.length - 1;
+    if (before < 0 || !/[a-z0-9]/.test(hay[before])) return true;
+  }
+  return false;
 }
 
 /** Summarise a set of runs without ever counting a null as a no.
@@ -214,20 +262,50 @@ export function buildPresenceSql(opts: {
 
   // \ escapes the LIKE metacharacters, declared with ESCAPE below. A business
   // called "50% Off Cafe" would otherwise match far more than itself.
-  const pattern = (n: string) => `%${n.replace(/[\\%_]/g, "\\$&")}%`;
-  const anyMatch = names.map(() => `LOWER(cr.response_text) LIKE ? ESCAPE '\\'`).join(" OR ");
-  const noMatch = names.map(() => `LOWER(cr.response_text) NOT LIKE ? ESCAPE '\\'`).join(" AND ");
+  //
+  // DIACRITICS. normalize() folds them; SQLite cannot cheaply. A chain of
+  // REPLACE calls over a month of answer text was tried on 2026-10-05 and hit
+  // D1's CPU limit on a single client's month. So the PATTERN bends instead of
+  // the text: every vowel in the name becomes "_", which LIKE matches against
+  // any one character, so a precomposed macron or acute spelling of the name
+  // matches. This is slightly looser than the TypeScript rule (any character
+  // in a vowel slot) and is only ever built for names nameIsSqlSafe accepts,
+  // where that looseness has nothing to latch onto. Diacritics on consonants,
+  // and decomposed (two-character) accents, are folded in TypeScript only.
+  const vowelSlots = (likeBody: string) => likeBody.replace(/[aeiou]/g, "_");
+  const escape = (n: string) => n.replace(/[\\%_]/g, "\\$&");
+  const pattern = (n: string) => `%${vowelSlots(escape(n))}%`;
+  const anyMatch = names.map(() => `hay LIKE ? ESCAPE '\\'`).join(" OR ");
+  // Cut off part way through a name: indeterminate, as in namedInAnswer. Read
+  // from the answer's last 32 characters only, so it costs nothing per row.
+  // Exact prefixes, no vowel slots: a slot in a three-letter prefix would
+  // match far too many ordinary endings. A cut-off accented spelling is
+  // therefore caught in TypeScript and not here.
+  const tails: Array<{ k: number; p: string }> = [];
+  for (const n of names) for (const p of namePrefixes(n)) if (p.length < 32) tails.push({ k: p.length, p: `%${escape(p)}` });
+  const tailMatch = tails.length
+    ? tails.map(({ k }) => `(tail LIKE ? ESCAPE '\\' AND (length(tail) = ${k} OR substr(tail, -${k + 1}, 1) NOT GLOB '[a-z0-9]'))`).join(" OR ")
+    : "0";
 
+  // Empty or missing text is NOT an absence (namedInAnswer returns null for
+  // it), so it counts as unknown. Until 2026-10-05 this query scored it as a
+  // judged "not named"; no stored row was affected (none are empty).
   const sql =
-    `SELECT cr.engine AS engine,
+    `SELECT engine,
             COUNT(*) AS total,
-            SUM(CASE WHEN ${anyMatch} THEN 1 ELSE 0 END) AS named,
-            SUM(CASE WHEN ${noMatch}
-                      AND length(cr.response_text) >= (CASE WHEN cr.run_at < ? THEN ? ELSE ? END)
-                     THEN 1 ELSE 0 END) AS unknown_count
-       FROM citation_runs cr JOIN citation_keywords ck ON ck.id = cr.keyword_id
-      WHERE ck.client_slug = ? AND cr.run_at >= ? AND cr.run_at < ?
-      GROUP BY cr.engine`;
+            SUM(CASE WHEN hay IS NOT NULL AND (${anyMatch}) THEN 1 ELSE 0 END) AS named,
+            SUM(CASE WHEN hay IS NULL OR tail = '' THEN 1
+                     WHEN ${anyMatch} THEN 0
+                     WHEN len >= (CASE WHEN run_at < ? THEN ? ELSE ? END) THEN 1
+                     WHEN ${tailMatch} THEN 1
+                     ELSE 0 END) AS unknown_count
+       FROM (SELECT cr.engine AS engine, cr.run_at AS run_at,
+                    length(cr.response_text) AS len,
+                    LOWER(cr.response_text) AS hay,
+                    LOWER(substr(rtrim(cr.response_text, char(32, 9, 10, 13)), -32)) AS tail
+               FROM citation_runs cr JOIN citation_keywords ck ON ck.id = cr.keyword_id
+              WHERE ck.client_slug = ? AND cr.run_at >= ? AND cr.run_at < ?)
+      GROUP BY engine`;
 
   const binds: unknown[] = [
     ...names.map(pattern),
@@ -235,6 +313,7 @@ export function buildPresenceSql(opts: {
     RESPONSE_TEXT_CAP_RAISED_AT,
     LEGACY_RESPONSE_TEXT_CAP - 10,
     RESPONSE_TEXT_CAP - 10,
+    ...tails.map((t) => t.p),
     opts.clientSlug,
     opts.windowStart,
     opts.windowEnd,
