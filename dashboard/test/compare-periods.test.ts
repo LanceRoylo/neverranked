@@ -325,3 +325,18 @@ test("a backfill big enough to matter is still refused, by the volume check", ()
   assert.equal(c.setAside.length, 1);
   assert.match(withheld(c.pooled.citation).reason, /fewer queries/);
 });
+
+test("a stored-answer cap change is set aside for citations, with the reason", () => {
+  // 2026-09-16: cap 4,000 -> 12,000. client_cited comes from structured
+  // citations, so a citation comparison is unaffected; the named rate is not.
+  const c = computeComparison({
+    sharedKeywords: 18,
+    perSurface: [{ engine: "openai", prevRuns: 500, prevHits: 60, curRuns: 500, curHits: 61 }],
+    prevWindow: { start: 0, end: 1 },
+    curWindow: { start: 1, end: 2 },
+    events: [{ occurred_at: 1789554300, kind: "response_capture_changed", scope: "global", detail: "cap raised" }],
+  });
+  assert.equal(c.events.length, 0);
+  assert.match(c.setAside[0].why, /not citation counts/);
+  stated(c.perSurface[0].movement);
+});

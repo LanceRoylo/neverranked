@@ -124,6 +124,16 @@ export const RUN_NEUTRAL_KINDS: readonly string[] = ["snapshot_overwritten"];
 export const VOLUME_KINDS: readonly string[] = ["backfill"];
 
 /**
+ * Event kinds that change only TEXT-based measures (whether an answer names the
+ * client), not citation counts. compare-periods compares client_cited, which
+ * comes from structured citations and entities, so these are set aside here
+ * with that reason. A comparison of named-in-answer rates must NOT set them
+ * aside: on 2026-09-16 the stored-answer cap tripled and the named rate rose
+ * partly because of it.
+ */
+export const TEXT_ONLY_KINDS: readonly string[] = ["response_capture_changed"];
+
+/**
  * Questions measured on every day that anything was measured.
  *
  * `daysByKeyword` maps each question to the set of UTC days (YYYY-MM-DD) it
@@ -162,6 +172,9 @@ export interface SetAsideEvent {
 function setAsideReason(e: InstrumentEvent, basis: ComparisonBasis): string | null {
   if (RUN_NEUTRAL_KINDS.includes(e.kind)) {
     return "changed no measurement rows";
+  }
+  if (TEXT_ONLY_KINDS.includes(e.kind)) {
+    return "changed only whether we can read a name in the stored answer text, not citation counts";
   }
   if (VOLUME_KINDS.includes(e.kind)) {
     return "changed run volume only, which the volume and mix checks measure directly";
