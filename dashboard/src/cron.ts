@@ -1102,6 +1102,15 @@ export async function runMonthStartWork(env: Env, nowMs: number = Date.now()): P
   return out;
 }
 
+/** Day of the month the full-month memo draft runs, for the PREVIOUS month. */
+export const MEMO_DRAFT_DAY = 2;
+
+/** The last second of the month before `d`, in UTC. The memo generator reports
+ *  the month its clock is in, so this makes it draft last month in full. */
+export function endOfPreviousMonthUTC(d: Date): Date {
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1) - 1000);
+}
+
 export async function runDailyMaintenance(env: Env): Promise<void> {
   // Each of these does its own D1 work and some have an unguarded top-level
   // query (e.g. sendOnboardingDripEmails' initial SELECT). An unwrapped throw
@@ -1357,11 +1366,22 @@ export async function runDailyMaintenance(env: Env): Promise<void> {
     // to the customer and to Atlas, and the generator upserts on
     // (client_slug, month_key), so the 24th simply overwrites the preview with
     // fuller data. Cost is one LLM call per active customer per month.
+    // CADENCE (decided 2026-10-05): each readout covers a FULL calendar month
+    // and is drafted on the 2nd of the following month, which is what the
+    // client was told at kickoff ("your first readout comes at the start of
+    // October and covers September"). It used to draft on the 24th of the
+    // month itself, so every readout missed the last week (September's
+    // stopped at the 25th) and every comparison set a partial month against a
+    // full one. The generator takes "now" as its clock and reports the month
+    // that clock is in, so the full-month draft is given the last second of
+    // the previous month. The 15th preview still drafts the current month to
+    // date, and the 2nd's full draft overwrites it on (client_slug, month_key).
     const dayOfMonth = new Date().getUTCDate();
     const isPreview = dayOfMonth === 15;
-    if (isPreview || dayOfMonth === 24) {
+    if (isPreview || dayOfMonth === MEMO_DRAFT_DAY) {
       const { generateAllMemoDrafts } = await import("./lib/memo-generator");
-      const results = await generateAllMemoDrafts(env, new Date());
+      const clock = isPreview ? new Date() : endOfPreviousMonthUTC(new Date());
+      const results = await generateAllMemoDrafts(env, clock);
       const ok = results.filter((r) => r.ok);
       const failed = results.filter((r) => !r.ok);
       const flagged = ok.filter((r) => r.unverifiedNumbers || r.toneViolations);
@@ -1370,7 +1390,7 @@ export async function runDailyMaintenance(env: Env): Promise<void> {
         const { createAlert } = await import("./admin-alerts");
         const lines = [
           isPreview
-            ? `PREVIEW: ${ok.length} memo draft(s) at /admin/memos, generated 9 days early so the prose can be read while there is still time to fix it. These are regenerated on the 24th with the full month, so edit the DATA or the code, not the draft text.`
+            ? `PREVIEW: ${ok.length} memo draft(s) at /admin/memos for this month to date, so the prose can be read while there is still time to fix it. These are regenerated on the ${MEMO_DRAFT_DAY}nd of next month with the full month, so edit the DATA or the code, not the draft text.`
             : `${ok.length} memo draft(s) ready for review at /admin/memos.`,
           flagged.length ? `${flagged.length} have figures or tone to double-check.` : ``,
           failed.length ? `${failed.length} could not be drafted: ${failed.map((f) => `${f.slug} (${f.error})`).join(", ")}` : ``,
@@ -1509,7 +1529,9 @@ export async function runDailyMaintenance(env: Env): Promise<void> {
       // graceDay 26: memos draft on the 24th and deliver ~25th, so a missing
       // memo is genuinely overdue by the 26th. Reuses the same "latest monthly
       // outcome predates this month, past grace" logic as the measurement check.
-      if (monthlyRefreshOverdue(now, memo.written, 26)) {
+      // Drafted on the 2nd now (see MEMO_DRAFT_DAY), so a month with nothing
+      // written by the 4th has missed it. This was 26 for the old 24th draft.
+      if (monthlyRefreshOverdue(now, memo.written, MEMO_DRAFT_DAY + 2)) {
         const last = new Date(memo.written * 1000).toISOString().slice(0, 10);
         await createAlertIfFresh(env, {
           clientSlug: client_slug,
