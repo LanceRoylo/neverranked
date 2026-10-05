@@ -218,6 +218,15 @@ export async function handleMemoSave(id: number, request: Request, user: User, e
     await env.DB.prepare(
       `UPDATE monthly_memos SET title=?, body_markdown=?, delivered_at=unixepoch(), updated_at=unixepoch() WHERE id=?`
     ).bind(title, body, id).run();
+    // Releasing does not email the client (see the file header). Raise the
+    // reminder to tell them, so a released readout cannot sit unseen the way
+    // the 2026-09 one did for ten days. See lib/readout-seen-watch.ts.
+    try {
+      const { notifyOnDeliver } = await import("../lib/readout-seen-watch");
+      await notifyOnDeliver(env, id);
+    } catch (e) {
+      console.log(`[deliver] notify-client reminder failed for memo ${id}: ${e instanceof Error ? e.message : String(e)}`);
+    }
     // Graduation tracker: record the real ship decision on this memo's latest
     // verdict. ship_as_is = delivered body unchanged from what the judge saw
     // (true agreement); ship_edited = Lance rewrote before delivering.

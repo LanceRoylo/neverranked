@@ -1640,6 +1640,19 @@ export async function runDailyMaintenance(env: Env): Promise<void> {
     await logCronRun(env, "invoice_watch", "failure", 0, e instanceof Error ? e.message : String(e));
     console.log(`[cron] invoice_watch failed: ${e instanceof Error ? e.message : String(e)}`);
   }
+  // Readout-seen watch. A released readout nobody opened is not delivered:
+  // 2026-09's sat unseen for ten days. See lib/readout-seen-watch.ts.
+  try {
+    const { logCronRun } = await import("./lib/cron-log");
+    const { watchReadoutsSeen } = await import("./lib/readout-seen-watch");
+    const started = Date.now();
+    const r = await watchReadoutsSeen(env);
+    await logCronRun(env, "readout_seen_watch", "success", Date.now() - started,
+      `checked=${r.checked} seen=${r.seen} unseen=${r.unseen.length} resolved=${r.resolved}`);
+  } catch (e) {
+    console.log(`[cron] readout_seen_watch failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+
 
   // Step detector. Writes instrument_events, which is the ONLY thing
   // comparePeriods() reads when deciding whether a comparison may be stated.
