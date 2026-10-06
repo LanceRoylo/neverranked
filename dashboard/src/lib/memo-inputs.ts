@@ -529,7 +529,16 @@ function sanitizePlanForAuthoring(plan: string | null): string | null {
   return out;
 }
 
-export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promise<MemoInputs> {
+export async function gatherMemoInputs(
+  env: Env,
+  slug: string,
+  now: Date,
+  /** monthEndSnapshot: the full-month draft. The current snapshot must be the
+   *  month's month-end row (keyed at its last second, built over the whole
+   *  month), and its absence throws rather than falling back to a weekly
+   *  month-to-date row. See lib/month-end-snapshot.ts. */
+  opts: { monthEndSnapshot?: boolean } = {},
+): Promise<MemoInputs> {
   const nowTs = Math.floor(now.getTime() / 1000);
 
   // THE REPORTING PERIOD IS THE CALENDAR MONTH, and it is the same period the
@@ -783,10 +792,22 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
   const mStartTs = Math.floor(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1) / 1000);
   const mEndTs = Math.floor(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1) / 1000);
   const snapCols = "engines_breakdown, top_competitors, measured_at, week_start";
-  const curRow = await env.DB.prepare(
-    `SELECT ${snapCols} FROM citation_snapshots
-      WHERE client_slug = ? AND week_start < ? ORDER BY week_start DESC LIMIT 1`
-  ).bind(slug, mEndTs).first<{ engines_breakdown: string; top_competitors: string; measured_at: number | null; week_start: number }>();
+  // The full-month draft reads the month-end row by its key and nothing else.
+  // Its key (the month's last second) is also the greatest week_start a month
+  // can hold, so the general query below picks it too whenever it exists; the
+  // exact read is what makes its ABSENCE an error instead of a quiet fallback
+  // to the last Monday's month-to-date row.
+  const curRow = opts.monthEndSnapshot
+    ? await env.DB.prepare(
+        `SELECT ${snapCols} FROM citation_snapshots WHERE client_slug = ? AND week_start = ?`
+      ).bind(slug, mEndTs - 1).first<{ engines_breakdown: string; top_competitors: string; measured_at: number | null; week_start: number }>()
+    : await env.DB.prepare(
+        `SELECT ${snapCols} FROM citation_snapshots
+          WHERE client_slug = ? AND week_start < ? ORDER BY week_start DESC LIMIT 1`
+      ).bind(slug, mEndTs).first<{ engines_breakdown: string; top_competitors: string; measured_at: number | null; week_start: number }>();
+  if (opts.monthEndSnapshot && !curRow) {
+    throw new Error(`month-end snapshot for ${new Date(mStartTs * 1000).toISOString().slice(0, 7)} is missing; the full-month draft does not fall back to a partial month`);
+  }
   // Strictly older than the current row AND before this month began.
   //
   // The month bound alone is not enough. When this month has no snapshot yet,

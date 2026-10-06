@@ -83,6 +83,9 @@ export interface MemoDraftResult {
   taxonomyViolations?: string[];
   gate?: DeliverableVerdict;
   error?: string;
+  /** Deliberately not drafted, which is not a failure: the month is already
+   *  delivered, or the engagement had not started. Set with ok: false. */
+  skipped?: string;
 }
 
 // Build the allowed-number set from inputs for the fabrication guard.
@@ -376,9 +379,16 @@ function parseDraft(raw: string): { title: string; body_markdown: string } | nul
 
 // Generates one customer's draft memo and saves it as a draft (delivered_at
 // NULL). month_key is the YYYY-MM the memo is FOR (the current month).
-export async function generateMemoDraft(env: Env, slug: string, now: Date): Promise<MemoDraftResult> {
+// opts.monthEndSnapshot: read the month's month-end snapshot and nothing else
+// (the full-month draft; see generateFullMonthDrafts).
+export async function generateMemoDraft(
+  env: Env,
+  slug: string,
+  now: Date,
+  opts: { monthEndSnapshot?: boolean } = {},
+): Promise<MemoDraftResult> {
   try {
-    const inputs = await gatherMemoInputs(env, slug, now);
+    const inputs = await gatherMemoInputs(env, slug, now, opts);
     if (inputs.overall.current.runs === 0) {
       return { ok: false, error: "no measurement runs in the current window" };
     }
@@ -568,6 +578,65 @@ export async function generateAllMemoDrafts(env: Env, now: Date): Promise<Array<
   for (const c of customers.results) {
     const r = await generateMemoDraft(env, c.client_slug, now);
     out.push({ slug: c.client_slug, ...r });
+  }
+  return out;
+}
+
+/**
+ * The FULL-MONTH draft, for the month that contains `clock` (the 2nd-of-month
+ * cron passes the last second of the previous month).
+ *
+ * Every customer's draft reads that month's month-end snapshot and nothing
+ * else (decided 2026-10-05). The snapshot is checked to cover the whole month,
+ * built ONCE here if it is missing or short, and if it still is not usable
+ * the customer is NOT drafted and a high-urgency inbox item names the
+ * customer and the month. Drafting from a partial snapshot is the failure
+ * this exists to refuse, and refusing without saying so would be the same
+ * failure wearing a guard.
+ *
+ * Never rolls forward: a month already delivered is skipped. generateMemoDraft
+ * would otherwise label last month's data as next month's memo.
+ */
+export async function generateFullMonthDrafts(env: Env, clock: Date): Promise<Array<{ slug: string } & MemoDraftResult>> {
+  const { monthWindowOf, ensureMonthEndSnapshot, monthEndMissingInboxItem } = await import("./month-end-snapshot");
+  const w = monthWindowOf(clock);
+  const customers = await env.DB.prepare(
+    `SELECT client_slug FROM customers WHERE status IN ('active','pilot')`
+  ).all<{ client_slug: string }>();
+  const out: Array<{ slug: string } & MemoDraftResult> = [];
+  for (const { client_slug: slug } of customers.results) {
+    try {
+      const delivered = await env.DB.prepare(
+        `SELECT 1 AS d FROM monthly_memos WHERE client_slug = ? AND month_key = ? AND delivered_at IS NOT NULL`,
+      ).bind(slug, w.monthKey).first<{ d: number }>();
+      if (delivered) {
+        out.push({ slug, ok: false, skipped: `${w.monthKey} already delivered` });
+        continue;
+      }
+      const guard = await ensureMonthEndSnapshot(env, slug, w);
+      if (!guard.ok) {
+        if (guard.reason === "not_engaged") {
+          out.push({ slug, ok: false, skipped: guard.detail });
+          continue;
+        }
+        const error = `month-end snapshot for ${w.monthKey} not usable (${guard.reason}: ${guard.detail}); not drafted from a partial month`;
+        console.log(`[memo-generator] ${slug}: ${error}`);
+        try {
+          const { addInboxItem } = await import("../admin-inbox");
+          await addInboxItem(env, monthEndMissingInboxItem({ clientSlug: slug, monthKey: w.monthKey, reason: guard.reason, detail: guard.detail }));
+        } catch (e) {
+          // Loud. The draft result below still carries the refusal into the
+          // cron's summary alert, so this is never the only record.
+          console.log(`[memo-generator] CRITICAL: inbox item not recorded for ${slug} ${w.monthKey}: ${e instanceof Error ? e.message : String(e)}`);
+        }
+        out.push({ slug, ok: false, error });
+        continue;
+      }
+      const r = await generateMemoDraft(env, slug, clock, { monthEndSnapshot: true });
+      out.push({ slug, ...r });
+    } catch (e) {
+      out.push({ slug, ok: false, error: String(e).slice(0, 300) });
+    }
   }
   return out;
 }

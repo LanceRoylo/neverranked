@@ -2547,6 +2547,10 @@ export async function buildReadoutSnapshot(
   // boolean that weekly-extras discarded. A guard with no notification path
   // is indistinguishable from the thing never happening, and the cost lands
   // on the 25th, when the readout renders from whatever row survived.
+  /** keyAt: the week_start to write, instead of the Monday of the build week.
+   *  kind: recorded as top_competitors.snapshot_kind. The month-end build
+   *  passes both (see lib/month-end-snapshot.ts). */
+  opts: { keyAt?: number; kind?: "month_end" } = {},
 ): Promise<ReadoutSnapshotResult> {
   const owned = await env.DB.prepare(
     "SELECT domain FROM domains WHERE client_slug = ? AND is_competitor = 0 AND active = 1 LIMIT 1"
@@ -2882,6 +2886,11 @@ export async function buildReadoutSnapshot(
     /** Links left out of source_types / offsite_hosts because they were
      *  Google result-page wrappers, not pages (from 2026-10-05). */
     source_exclusions: { google_wrapper_links: googleWrappersDropped, google_wrapper_links_resolved: googleWrappersResolved },
+    /** The runs this row actually covers, [start, end), start floored at
+     *  measurement_start. Recorded from 2026-10-05 so a reader can prove a
+     *  row covers a whole month instead of inferring it from week_start. */
+    window: { start: runsFrom, end: windowEnd },
+    ...(opts.kind ? { snapshot_kind: opts.kind } : {}),
   };
 
   const keywordBreakdown = {
@@ -2903,7 +2912,15 @@ export async function buildReadoutSnapshot(
   monday.setUTCHours(0, 0, 0, 0);
   const dow = monday.getUTCDay();
   monday.setUTCDate(monday.getUTCDate() - (dow === 0 ? 6 : dow - 1));
-  const weekStart = Math.floor(monday.getTime() / 1000);
+  // NEVER KEYED BEFORE ITS OWN WINDOW. A month-to-date build made between the
+  // 1st and the month's first Monday (the admin rebuild button, say, on the
+  // 2nd while reading the draft) used to be keyed at the PREVIOUS month's last
+  // Monday. ON CONFLICT then overwrote that month's last weekly row with the
+  // new month's first days, and every reader selecting "the newest row before
+  // the end of September" would have read October as September. The floor
+  // keeps a row inside the month it describes. The month-end build passes its
+  // own key, the month's last second.
+  const weekStart = opts.keyAt ?? Math.max(Math.floor(monday.getTime() / 1000), windowStart);
 
   // Bind this readout to the question set behind it.
   //

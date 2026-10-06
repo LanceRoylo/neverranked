@@ -2556,12 +2556,12 @@ export default {
       const m = path.match(/^\/admin\/snapshots\/([a-z0-9-]{1,64})\/rebuild$/);
       if (m && method === "POST" && user.role === "admin") {
         const { handleRebuildSnapshot } = await import("./routes/admin-memos");
-        return handleRebuildSnapshot(user, env, m[1]);
+        return handleRebuildSnapshot(user, env, m[1], url.searchParams.get("month"));
       }
     }
     if (path === "/admin/memos/generate" && method === "POST" && user.role === "admin") {
       const { handleMemoGenerate } = await import("./routes/admin-memos");
-      return handleMemoGenerate(user, env);
+      return handleMemoGenerate(user, env, url.searchParams.get("full_month") === "1");
     }
     {
       const memoDetail = path.match(/^\/admin\/memos\/(\d+)$/);
@@ -3909,7 +3909,8 @@ Once verified working, the user-OAuth path becomes vestigial. The legacy code st
     //   "0 6 * * *"  -> heavy daily: citation sweep, QA sweeps, scans
     //   "15 6 * * *" -> delivery ONLY: digests + founder weekly summary
     //                   (separate invocation so the sweep can't starve it)
-    //   "45 6 * * *" -> month-start work: NVI reports on delivery day,
+    //   "45 6 * * *" -> month-start work: on the 1st the month-end readout
+    //                   snapshots, then NVI reports on delivery day and the
     //                   monthly + annual recaps (see runMonthStartWork)
     //   "0 17 * * *" -> 7am Pacific/Honolulu = founder inbox morning summary
     // That is five, Cloudflare's cap. There is no spare trigger.
@@ -4032,7 +4033,11 @@ Once verified working, the user-OAuth path becomes vestigial. The legacy code st
         }, (r) =>
           `nvi_due=${r.nviDue.length}${r.nviDue.length ? ` (${r.nviDue.join(",")})` : ""}` +
           ` nvi_ran=${r.nviRan.length}${r.nviPaused ? " nvi_paused" : ""}` +
-          ` recaps=${r.recapsAttempted ? "checked" : "failed"}`,
+          ` recaps=${r.recapsAttempted ? "checked" : "failed"}` +
+          (r.monthEnd
+            ? ` month_end=${r.monthEnd.month} built=${r.monthEnd.built.length}` +
+              (r.monthEnd.failed.length ? ` FAILED=${r.monthEnd.failed.map((f) => f.slug).join(",")}` : "")
+            : ""),
         ).catch((e) => {
           console.log(`[cron 06:45] month_start failed: ${e instanceof Error ? e.message : e}`);
         }),

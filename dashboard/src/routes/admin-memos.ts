@@ -8,7 +8,8 @@
  *   - read + edit a draft's body
  *   - APPROVE & DELIVER it (sets delivered_at = now, which is the moment
  *     Atlas starts referencing it)
- *   - generate drafts on demand (in addition to the 24th cron)
+ *   - generate drafts on demand (in addition to the 15th preview and the
+ *     full-month draft on the 2nd)
  *
  * Nothing here ever emails the customer. "Deliver" only means the memo
  * becomes visible in the customer's dashboard + Atlas context. The memo
@@ -41,6 +42,9 @@ export async function handleMemoInbox(user: User, env: Env): Promise<Response> {
 
   const drafts = rows.filter((r) => r.delivered_at === null);
   const delivered = rows.filter((r) => r.delivered_at !== null);
+  const { endOfPreviousMonthUTC, monthLabel, monthWindowOf } = await import("../lib/month-end-snapshot");
+  const lastMonth = monthWindowOf(endOfPreviousMonthUTC(new Date()));
+  const lastMonthLabel = monthLabel(lastMonth.monthKey);
 
   const row = (r: MemoRow & { customer_name: string | null }) => {
     const state = r.delivered_at
@@ -56,11 +60,17 @@ export async function handleMemoInbox(user: User, env: Env): Promise<Response> {
 
   const body = `
     <h1 style="font-weight:400">Monthly memos</h1>
-    <form method="POST" action="/admin/memos/generate" style="margin:16px 0 28px">
+    <form method="POST" action="/admin/memos/generate" style="margin:16px 0 8px">
       <button type="submit" style="background:var(--gold);color:#1a1500;border:none;border-radius:6px;padding:8px 16px;cursor:pointer;font-family:ui-monospace,monospace">
-        Generate drafts now (all active customers)
+        Generate drafts now (this month to date, all active customers)
       </button>
-      <span style="color:var(--dim);font-size:13px;margin-left:12px">Also runs automatically on the 24th.</span>
+      <span style="color:var(--dim);font-size:13px;margin-left:12px">Also runs automatically: a preview on the 15th, the full month on the 2nd.</span>
+    </form>
+    <form method="POST" action="/admin/memos/generate?full_month=1" style="margin:0 0 28px">
+      <button type="submit" style="background:#1d1d1d;color:var(--gold);border:1px solid #4a4a4a;border-radius:6px;padding:8px 16px;cursor:pointer;font-family:ui-monospace,monospace">
+        Draft ${esc(lastMonthLabel)} in full
+      </button>
+      <span style="color:var(--dim);font-size:13px;margin-left:12px">The 2nd-of-month path: checks each month-end snapshot, rebuilds it once if needed, and refuses rather than draft a partial month. Months already delivered are skipped.</span>
     </form>
 
     <div style="margin:0 0 28px;padding:12px 14px;border:1px solid #333;border-radius:8px">
@@ -158,11 +168,15 @@ export async function handleMemoSave(id: number, request: Request, user: User, e
     const override = String(form.get("override") || "") === "1";
     if (!override) {
       const memo = await env.DB.prepare(
-        `SELECT client_slug, facts_json, rules_hash FROM monthly_memos WHERE id=?`
-      ).bind(id).first<{ client_slug: string; facts_json: string | null; rules_hash: string | null }>();
+        `SELECT client_slug, month_key, facts_json, rules_hash FROM monthly_memos WHERE id=?`
+      ).bind(id).first<{ client_slug: string; month_key: string; facts_json: string | null; rules_hash: string | null }>();
       if (memo) {
         const { vetMemoBody, memoRulesHash } = await import("../lib/memo-generator");
-        const vet = await vetMemoBody(env, memo.client_slug, body, new Date(), memo.facts_json);
+        // The memo's own month, not the wall clock. A full-month memo is
+        // delivered after its month ends, and vetting October's figures on
+        // 3 November with new Date() read November's first days as the data.
+        const { memoClockFor } = await import("../lib/month-end-snapshot");
+        const vet = await vetMemoBody(env, memo.client_slug, body, memoClockFor(memo.month_key, new Date()), memo.facts_json);
         // Was this draft written under the rules we run today?
         //
         // The memo regenerates on the 15th and the 24th. A rule fixed on the
@@ -307,15 +321,20 @@ function renderDeliveryBlocked(
 
 // ── Generate on demand ───────────────────────────────────────────────
 
-export async function handleMemoGenerate(user: User, env: Env): Promise<Response> {
-  const { generateAllMemoDrafts } = await import("../lib/memo-generator");
-  const results = await generateAllMemoDrafts(env, new Date());
+export async function handleMemoGenerate(user: User, env: Env, fullMonth = false): Promise<Response> {
+  const { generateAllMemoDrafts, generateFullMonthDrafts } = await import("../lib/memo-generator");
+  // fullMonth: last month in full, through the same guarded path the cron
+  // runs on the 2nd (month-end snapshot checked, rebuilt once, refused loudly).
+  // This is the recovery step a month_end_snapshot_missing item points to.
+  const { endOfPreviousMonthUTC, monthLabel, monthWindowOf } = await import("../lib/month-end-snapshot");
+  const clock = fullMonth ? endOfPreviousMonthUTC(new Date()) : new Date();
+  const results = fullMonth ? await generateFullMonthDrafts(env, clock) : await generateAllMemoDrafts(env, clock);
   const ok = results.filter((r) => r.ok);
   const body = `
     <p><a href="/admin/memos" style="color:var(--dim)">&larr; All memos</a></p>
-    <h1 style="font-weight:400">Generated ${ok.length} draft(s)</h1>
+    <h1 style="font-weight:400">${fullMonth ? `${esc(monthLabel(monthWindowOf(clock).monthKey))} in full: ` : ""}generated ${ok.length} draft(s)</h1>
     <ul style="line-height:1.8">
-      ${results.map((r) => `<li>${esc(r.slug)}: ${r.ok
+      ${results.map((r) => `<li>${esc(r.slug)}: ${r.skipped ? `<span style="color:var(--dim)">skipped: ${esc(r.skipped)}</span>` : r.ok
         ? `drafted${r.unverifiedNumbers ? ` — <span style="color:#e8c767">check figures: ${esc(r.unverifiedNumbers.join(", "))}</span>` : ""}${r.toneViolations ? ` — <span style="color:#e8a0a0">tone: ${esc(r.toneViolations.join(", "))}</span>` : ""}${r.gate ? ` — <span style="color:${r.gate.would_ship ? "#7bdca0" : "#9aa0e8"}">gate: ${r.gate.would_ship ? "would ship" : "would escalate"} (judge ${esc(r.gate.judge_verdict)}${r.gate.verifier_objected ? ", verifier objected" : r.gate.judge_verdict === "ship" ? ", verifier clear" : ""})${r.gate.judge_reasons && r.gate.judge_reasons.length ? ": " + esc(r.gate.judge_reasons[0]) : ""}</span>` : ""}`
         : `<span style="color:#e8a0a0">failed: ${esc(r.error || "unknown")}</span>`}</li>`).join("")}
     </ul>
@@ -345,11 +364,33 @@ export async function handleMemoGenerate(user: User, env: Env): Promise<Response
 // instead of swallowing it. The four guards inside buildReadoutSnapshot refuse
 // to write rather than write something wrong, and a refusal used to look
 // exactly like a clean run from outside.
-export async function handleRebuildSnapshot(user: User, env: Env, slug: string): Promise<Response> {
+export async function handleRebuildSnapshot(user: User, env: Env, slug: string, month?: string | null): Promise<Response> {
   const { buildReadoutSnapshot } = await import("../citations");
   const now = new Date();
   const monthStart = Math.floor(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1) / 1000);
   const monthEnd = Math.floor(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1) / 1000);
+
+  // ?month=YYYY-MM for a month that has ENDED rebuilds that month's month-end
+  // snapshot (the row the full-month memo reads) instead of the current month
+  // to date. Anything else keeps the old behaviour.
+  if (month) {
+    const { monthWindowForKey, buildMonthEndSnapshot, loadMonthEndSnapshot, monthLabel } = await import("../lib/month-end-snapshot");
+    const w = monthWindowForKey(month);
+    if (!w || w.end > Math.floor(now.getTime() / 1000)) {
+      return html(layout("Rebuild month-end snapshot", `<p style="color:#e8a0a0">${esc(month)} is not a month that has ended. A month-end snapshot can only be built once the month is over.</p><p><a href="/admin/memos" style="color:var(--gold)">&larr; All memos</a></p>`, user));
+    }
+    let r: { ok: boolean; reason?: string };
+    try { r = await buildMonthEndSnapshot(env, slug, w); }
+    catch (e) { r = { ok: false, reason: e instanceof Error ? e.message : String(e) }; }
+    const row = await loadMonthEndSnapshot(env, slug, w).catch(() => null);
+    return html(layout(`Month-end snapshot &middot; ${esc(slug)}`, `
+      <p><a href="/admin/memos" style="color:var(--dim)">&larr; All memos</a></p>
+      <h1 style="font-weight:400">${r.ok ? "Month-end snapshot built" : "Month-end snapshot NOT built"} &middot; ${esc(slug)} &middot; ${esc(monthLabel(w.monthKey))}</h1>
+      <ul style="line-height:1.9">
+        <li>Stored row: ${row ? `measured ${esc(new Date((row.measured_at ?? 0) * 1000).toISOString().slice(0, 16).replace("T", " "))} UTC` : "<strong style=\"color:#e8a0a0\">none</strong>"}</li>
+        ${r.ok ? "" : `<li style="color:#e8a0a0">Refused: ${esc(r.reason ?? "unknown")}.</li>`}
+      </ul>`, user));
+  }
 
   const before = await env.DB.prepare(
     `SELECT datetime(measured_at,'unixepoch') AS measured, instr(engines_breakdown,'layer') AS has_layer,

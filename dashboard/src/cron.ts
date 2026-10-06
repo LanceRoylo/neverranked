@@ -23,6 +23,7 @@ import { createAlertIfFresh } from "./admin-alerts";
 import { isReadoutShapeSnapshot } from "./lib/snapshot-shape";
 import { monthlyRefreshOverdue, snapshotOverdue, WEEKLY_SNAPSHOT_MAX_AGE_DAYS } from "./lib/monthly-refresh";
 import { liveClientSlugs } from "./lib/live-clients";
+import { endOfPreviousMonthUTC, buildMonthEndSnapshots, type MonthEndBuildResult } from "./lib/month-end-snapshot";
 import { autoGenerateRoadmap } from "./auto-provision";
 import { runAutomation } from "./automation";
 
@@ -1034,6 +1035,9 @@ export interface MonthStartResult {
   nviRan: string[];
   nviPaused: boolean;
   recapsAttempted: boolean;
+  /** The 1st only: the month-end snapshots built for the month that just
+   *  ended. Null on every other day. */
+  monthEnd: MonthEndBuildResult | null;
 }
 
 /**
@@ -1058,7 +1062,24 @@ export interface MonthStartResult {
  * watch can tell a quiet day from a trigger that never fired.
  */
 export async function runMonthStartWork(env: Env, nowMs: number = Date.now()): Promise<MonthStartResult> {
-  const out: MonthStartResult = { nviDue: [], nviRan: [], nviPaused: NVI_MONTHLY_PAUSED, recapsAttempted: false };
+  const out: MonthStartResult = { nviDue: [], nviRan: [], nviPaused: NVI_MONTHLY_PAUSED, recapsAttempted: false, monthEnd: null };
+
+  // Month-end snapshots, on the 1st, FIRST. Decided 2026-10-05: the readout
+  // drafted on the 2nd covers the whole month, and its snapshot figures used to
+  // come from the last Monday's month-to-date row (October's would have stopped
+  // around the 26th). See lib/month-end-snapshot.ts for the window and the key.
+  // First because this is the paying deliverable and the recaps below fan out
+  // per user: on a shared subrequest budget the deliverable goes first. Each
+  // client is built in its own try/catch and logs its own cron_runs row.
+  if (new Date(nowMs).getUTCDate() === 1) {
+    try {
+      out.monthEnd = await buildMonthEndSnapshots(env, nowMs);
+      console.log(`[cron month_start] month-end ${out.monthEnd.month}: built ${out.monthEnd.built.length}, failed ${out.monthEnd.failed.length}` +
+        (out.monthEnd.failed.length ? ` (${out.monthEnd.failed.map((f) => `${f.slug}: ${f.reason}`).join("; ")})` : ""));
+    } catch (e) {
+      console.log(`[cron month_start] month-end snapshots: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
 
   // NVI monthly report runs. Each subscription has a delivery_day (1-28);
   // when today's UTC day matches, the runner fires for that subscription.
@@ -1105,11 +1126,9 @@ export async function runMonthStartWork(env: Env, nowMs: number = Date.now()): P
 /** Day of the month the full-month memo draft runs, for the PREVIOUS month. */
 export const MEMO_DRAFT_DAY = 2;
 
-/** The last second of the month before `d`, in UTC. The memo generator reports
- *  the month its clock is in, so this makes it draft last month in full. */
-export function endOfPreviousMonthUTC(d: Date): Date {
-  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1) - 1000);
-}
+// Lives with the month-end snapshot code since 2026-10-05 so the admin route
+// can use it without importing this file. Re-exported for existing callers.
+export { endOfPreviousMonthUTC };
 
 export async function runDailyMaintenance(env: Env): Promise<void> {
   // Each of these does its own D1 work and some have an unguarded top-level
@@ -1376,16 +1395,27 @@ export async function runDailyMaintenance(env: Env): Promise<void> {
     // that clock is in, so the full-month draft is given the last second of
     // the previous month. The 15th preview still drafts the current month to
     // date, and the 2nd's full draft overwrites it on (client_slug, month_key).
+    //
+    // THE FULL-MONTH DRAFT READS THE MONTH-END SNAPSHOT (2026-10-05). It is
+    // built on the 1st at 06:45 over exactly the month just ended. The draft
+    // checks it covers the whole month, builds it once if not, and otherwise
+    // refuses that client and raises a needs-you item naming the client and
+    // the month. It never drafts from a partial snapshot. The preview stays on
+    // the current month to date.
     const dayOfMonth = new Date().getUTCDate();
     const isPreview = dayOfMonth === 15;
     if (isPreview || dayOfMonth === MEMO_DRAFT_DAY) {
-      const { generateAllMemoDrafts } = await import("./lib/memo-generator");
+      const { generateAllMemoDrafts, generateFullMonthDrafts } = await import("./lib/memo-generator");
       const clock = isPreview ? new Date() : endOfPreviousMonthUTC(new Date());
-      const results = await generateAllMemoDrafts(env, clock);
+      const results = isPreview
+        ? await generateAllMemoDrafts(env, clock)
+        : await generateFullMonthDrafts(env, clock);
       const ok = results.filter((r) => r.ok);
-      const failed = results.filter((r) => !r.ok);
+      // A skip (month already delivered, engagement not started) is not a failure.
+      const failed = results.filter((r) => !r.ok && !r.skipped);
+      const skipped = results.filter((r) => !r.ok && r.skipped);
       const flagged = ok.filter((r) => r.unverifiedNumbers || r.toneViolations);
-      console.log(`[cron] memo-drafts${isPreview ? " (PREVIEW)" : ""}: ${ok.length} drafted, ${failed.length} failed, ${flagged.length} flagged`);
+      console.log(`[cron] memo-drafts${isPreview ? " (PREVIEW)" : ""}: ${ok.length} drafted, ${failed.length} failed, ${skipped.length} skipped, ${flagged.length} flagged`);
       if (results.length > 0) {
         const { createAlert } = await import("./admin-alerts");
         const lines = [
@@ -1394,6 +1424,7 @@ export async function runDailyMaintenance(env: Env): Promise<void> {
             : `${ok.length} memo draft(s) ready for review at /admin/memos.`,
           flagged.length ? `${flagged.length} have figures or tone to double-check.` : ``,
           failed.length ? `${failed.length} could not be drafted: ${failed.map((f) => `${f.slug} (${f.error})`).join(", ")}` : ``,
+          skipped.length ? `Skipped: ${skipped.map((f) => `${f.slug} (${f.skipped})`).join(", ")}` : ``,
         ].filter(Boolean);
         await createAlert(env, {
           clientSlug: "_all",
