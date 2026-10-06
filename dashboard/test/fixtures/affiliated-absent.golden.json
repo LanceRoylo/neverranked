@@ -539,7 +539,8 @@
     "ceilingPct": 50,
     "unknown": 0,
     "total": 24
-   }
+   },
+   "rounding": "outward"
   }
  }
 }

@@ -13,7 +13,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { buildQuestionFacts, gatherMemoInputs, namedBounds, type MemoInputs, type QuestionRun } from "../src/lib/memo-inputs";
 import { allowedNumberSet } from "../src/lib/memo-generator";
-import { toEnginePresence, RESPONSE_TEXT_CAP, RESPONSE_TEXT_CAP_RAISED_AT } from "../src/lib/answer-presence";
+import { toEnginePresence, wholePercentBounds, RESPONSE_TEXT_CAP, RESPONSE_TEXT_CAP_RAISED_AT } from "../src/lib/answer-presence";
 import { openD1, SCHEMA } from "./support/d1-sqlite";
 
 const NAME = "Harbor Lights Hotel";
@@ -34,9 +34,13 @@ test("the floor counts unread answers as not named, the ceiling as named, both o
 
 test("the bounds are the readout's bounds on the same counts", () => {
   const p = toEnginePresence({ engine: "perplexity", total: 40, named: 13, unknown_count: 6 });
+  const r = wholePercentBounds(p.named, p.unknown, p.total)!;
   const b = namedBounds(13, 6, 40);
-  assert.equal(b.named_floor_pct, +(100 * (p.rateFloor as number)).toFixed(1));
-  assert.equal(b.named_ceiling_pct, +(100 * (p.rateCeiling as number)).toFixed(1));
+  assert.equal(b.named_floor_pct, r.floorPct);
+  assert.equal(b.named_ceiling_pct, r.ceilingPct);
+  // 32.5% and 47.5% exactly: whole percents that hold, the floor rounded
+  // down and the ceiling up (2026-10-05, see test/whole-percent-bounds.test.ts).
+  assert.deepEqual([b.named_floor_pct, b.named_ceiling_pct], [32, 48]);
 });
 
 test("per question and per engine carry the floor and ceiling, and no rate that drops the unread", () => {
@@ -78,8 +82,10 @@ test("the full memo payload never carries named_pct or named_judged_runs", async
   const inp = await gatherMemoInputs(d1.env, "demo", new Date((OCT1 - 1) * 1000));
   const json = JSON.stringify(inp);
   assert.doesNotMatch(json, /named_pct|named_judged_runs/);
-  assert.equal(inp.by_question[0].named_floor_pct, 33.3);
-  assert.equal(inp.by_question[0].named_ceiling_pct, 66.7);
+  // 1 of 3 named, 1 of 3 held in part: 33.3% and 66.7%, as whole percents
+  // that hold.
+  assert.equal(inp.by_question[0].named_floor_pct, 33);
+  assert.equal(inp.by_question[0].named_ceiling_pct, 67);
 });
 
 test("the prompt states naming as the floor or the floor-to-ceiling range", () => {

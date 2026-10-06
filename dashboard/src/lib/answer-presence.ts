@@ -355,3 +355,37 @@ export function toEnginePresence(row: {
     rateCeiling: total === 0 ? null : (named + unknown) / total,
   };
 }
+
+/** The naming bounds as WHOLE percents, for anything that states the floor as
+ *  "at least X%" or the ceiling as "up to Y%": the readout's presence facts
+ *  and the memo's named_floor_pct / named_ceiling_pct both come from here.
+ *
+ *  A WHOLE-PERCENT BOUND MUST STILL HOLD, so the floor rounds DOWN and the
+ *  ceiling rounds UP. Math.round can overstate a floor and understate a
+ *  ceiling: 945 named of 2,375 answers is 39.79%, and "at least 40%" is false
+ *  (2026-10-05 audit). The memo's one decimal had the same fault (39.8), and
+ *  the number guard's rounding then let "40" verify.
+ *
+ *  Nothing unread means there is no range, only the exact share, so both ends
+ *  are its ordinary rounding. A month with no unread answer must never show
+ *  "39% to 40%" from rounding alone. With any unread answer the floor sits
+ *  strictly below the ceiling, so a range always shows.
+ *
+ *  Integer arithmetic first: (100 * named) / total is exact whenever the share
+ *  is a whole percent, where (named / total) * 100 is not (29 of 100 gives
+ *  28.999..., which would floor to 28). Null when there are no answers. */
+export function wholePercentBounds(
+  named: number,
+  unknown: number,
+  total: number,
+): { floorPct: number; ceilingPct: number } | null {
+  if (!(total > 0)) return null;
+  if (!(unknown > 0)) {
+    const exact = Math.round((100 * named) / total);
+    return { floorPct: exact, ceilingPct: exact };
+  }
+  return {
+    floorPct: Math.max(0, Math.floor((100 * named) / total)),
+    ceilingPct: Math.min(100, Math.ceil((100 * (named + unknown)) / total)),
+  };
+}

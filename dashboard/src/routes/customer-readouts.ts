@@ -204,6 +204,9 @@ interface ReportFacts {
   presence?: {
     engines: { name: string; floorPct: number; ceilingPct: number; unknown: number; total: number }[];
     overall: { floorPct: number; ceilingPct: number; unknown: number; total: number };
+    /** "outward": the floor was rounded down and the ceiling up, so both hold
+     *  as stated. Absent on facts frozen before 2026-10-05. */
+    rounding?: string;
   };
   questions?: { appeared?: Array<{ q: string; engines: string[] }>; disappeared?: Array<{ q: string; engines: string[] }> };
   // Per-engine x per-question citation grid (see report-facts.ts buildCitationGrid).
@@ -683,10 +686,14 @@ function renderSummary(f: ReportFacts): string {
   // 1. The outcome. How often an AI says their name.
   const p = f.presence;
   if (p?.overall && Number.isFinite(p.overall.floorPct) && num(p.overall.total) > 0) {
+    // "At least" only on a floor. With no unread answer the figure is the
+    // share itself, rounded (wholePercentBounds), so it can sit just above the
+    // exact share and must not be called a floor. A missing count is not 0.
+    const exact = p.overall.unknown === 0;
     tiles.push({
       big: `${num(p.overall.floorPct)}%`,
       label: "of answers from AI tools that search the web name you",
-      sub: `at least, across ${num(p.overall.total).toLocaleString("en-US")} answers from the ${countWord(Array.isArray(p.engines) ? p.engines.length : 0, "tool")} that ${Array.isArray(p.engines) && p.engines.length === 1 ? "searches" : "search"} the web`,
+      sub: `${exact ? "across" : "at least, across"} ${num(p.overall.total).toLocaleString("en-US")} answers from the ${countWord(Array.isArray(p.engines) ? p.engines.length : 0, "tool")} that ${Array.isArray(p.engines) && p.engines.length === 1 ? "searches" : "search"} the web`,
     });
   }
 
@@ -894,21 +901,33 @@ export function renderCharts(factsJson: string | null): string {
     const bars = rows.map((e, i) => {
       const label = displayEngine(ENGINE_ORDER.find((x) => x.key === e.name)?.label ?? String(e.name));
       const lo = num(e.floorPct), hi = num(e.ceilingPct);
-      // "about": frozen shares are whole percents, so a bound stated in them
-      // can sit a fraction of a point past the exact one (2026-10-05 audit:
-      // 27.88% had been shown as "at least 28%").
+      // "about": facts frozen before the bound fix rounded both ends to the
+      // nearest whole percent, so a bound in them can sit a fraction of a
+      // point past the exact one (2026-10-05 audit: 27.88% had been shown as
+      // "at least 28%"). Facts built since round the floor down and the
+      // ceiling up (wholePercentBounds), and "about" is true of both.
       const title = lo === hi
         ? `${label}: named you in about ${lo}% of its answers`
         : `${label}: named you in about ${lo}% to ${hi}% of its answers, the range allowing for ${e.unknown} answer${e.unknown === 1 ? "" : "s"} too long to store`;
       return barRow(label, lo, maxP, i, { title });
     }).join("");
+    // A floor only when something went unread. With nothing unread the figure
+    // is the share itself, rounded, so "at least" could overstate it by a
+    // fraction of a point, and there is no stored-answer caveat to make.
+    const exact = pres.overall.unknown === 0;
+    // A ceiling rounded UP is a bound, so it is stated as one ("up to").
+    // Facts frozen before that rounding keep the sentence they were shown
+    // with: their ceiling was rounded to the nearest whole percent.
+    const ceilingHolds = pres.rounding === "outward";
     const cap =
       `This is the one that matters most. When someone asks an AI about your category, ` +
       `does it say your name? Across every question and every web-searching tool this month, ` +
-      `the answer was yes on at least ${floor}% of answers. ` +
-      `"At least" is a floor: ${pres.overall.unknown.toLocaleString("en-US")} of ${pres.overall.total.toLocaleString("en-US")} answers ran longer than we keep, ` +
-      `so your name may also be in a part we did not store. Counting every one of those in your favour would put the figure at ${ceil}%. ` +
-      storageNote(f.period_label) +
+      (exact
+        ? `the answer was yes on ${floor}% of answers. We kept all ${pres.overall.total.toLocaleString("en-US")} answers in full, so this is the whole count, not a floor. `
+        : `the answer was yes on at least ${floor}% of answers. ` +
+          `"At least" is a floor: ${pres.overall.unknown.toLocaleString("en-US")} of ${pres.overall.total.toLocaleString("en-US")} answers ran longer than we keep, ` +
+          `so your name may also be in a part we did not store. Counting every one of those in your favour would ${ceilingHolds ? `take the figure up to ${ceil}%` : `put the figure at ${ceil}%`}. ` +
+          storageNote(f.period_label)) +
       `The next chart answers a different question, so do not read the two as versions of each other. ` +
       `That one is a share of SOURCES: out of every link a tool used while answering, how many went to your website. ` +
       `A tool lists several sources per answer, so that share is not a smaller version of the number here. ` +

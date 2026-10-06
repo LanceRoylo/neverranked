@@ -16,7 +16,7 @@ import { resolveEngineKey } from "./engine-order";
 import { snapshotUsableForMonth } from "./snapshot-selection";
 import { engineLayer, type EngineLayer } from "./engine-layer";
 import { resolveBusinessName, nameMatches } from "../citations";
-import { buildPresenceSql, toEnginePresence, type EnginePresence } from "./answer-presence";
+import { buildPresenceSql, toEnginePresence, wholePercentBounds, type EnginePresence } from "./answer-presence";
 import { LINK_BASIS, linkBasisOf, linkBasisNote, linkMovementWithheld, priorGoogleLinkEvidence } from "./link-basis";
 import { isControlEngine } from "./engine-layer";
 import type { InjectionConfig } from "../types";
@@ -115,10 +115,17 @@ export interface ReportFacts {
    *
    *  Two rates, never one. Every unreadable row is one where the name was not
    *  found in the part we stored, so dropping them can only push the rate up.
-   *  `namedPct` is the ceiling and `lowerPct` the floor. */
+   *  `floorPct` is the floor and `ceilingPct` the ceiling, in whole percents
+   *  that still hold: the floor rounded down, the ceiling rounded up, and both
+   *  the rounded exact share when `unknown` is 0 (wholePercentBounds). */
   presence?: {
     engines: Array<{ name: string; floorPct: number; ceilingPct: number; unknown: number; total: number }>;
     overall: { floorPct: number; ceilingPct: number; unknown: number; total: number };
+    /** "outward" on facts built since 2026-10-05: floors rounded down and
+     *  ceilings up, so both hold as stated. Absent on facts frozen before,
+     *  whose bounds were rounded to the nearest whole percent and can sit a
+     *  fraction of a point past the exact ones. */
+    rounding?: "outward";
   };
   /** Surfaces held out of this report, with the reason, so the customer sees
    *  WHY a tool is missing instead of inferring it was never measured. A
@@ -657,26 +664,27 @@ async function buildPresence(
   const unknown = per.reduce((n, p) => n + p.unknown, 0);
   const total = per.reduce((n, p) => n + p.total, 0);
 
-  const pct = (x: number) => Math.round(x * 100);
   // The FLOOR is what gets published. rateJudged is deliberately not carried
   // out of this function: it is not a bound and it reads high, so anything that
   // can reach a customer must not be able to pick it up by accident.
+  //
+  // Whole percents that still hold: the floor rounded down, the ceiling up,
+  // the exact share rounded when nothing is unread. Math.round here printed
+  // 945 of 2,375 (39.79%) as "at least 40%". See wholePercentBounds.
+  const overall = wholePercentBounds(named, unknown, total);
+  if (!overall) return undefined;
   return {
     engines: per
       .filter((p) => p.total > 0)
       .map((p) => ({
         name: p.engine,
-        floorPct: pct(p.rateFloor as number),
-        ceilingPct: pct(p.rateCeiling as number),
+        ...wholePercentBounds(p.named, p.unknown, p.total)!,
         unknown: p.unknown,
         total: p.total,
       }))
       .sort((a, b) => b.floorPct - a.floorPct),
-    overall: {
-      floorPct: pct(named / total),
-      ceilingPct: pct((named + unknown) / total),
-      unknown, total,
-    },
+    overall: { ...overall, unknown, total },
+    rounding: "outward",
   };
 }
 

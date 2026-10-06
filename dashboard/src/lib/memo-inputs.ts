@@ -239,10 +239,12 @@ export interface MemoInputs {
     named_unknown_runs?: number;
     /** Every answer on this question this period: the denominator of both. */
     named_total_runs?: number;
-    /** named_runs / named_total_runs. The cautious figure. */
+    /** named_runs / named_total_runs as a whole percent ROUNDED DOWN, so "at
+     *  least X%" holds. The cautious figure. */
     named_floor_pct?: number | null;
-    /** (named_runs + named_unknown_runs) / named_total_runs. Equals the floor
-     *  when nothing was unreadable. */
+    /** (named_runs + named_unknown_runs) / named_total_runs as a whole
+     *  percent ROUNDED UP, so "up to Y%" holds. When nothing was unreadable
+     *  both are the share rounded, one figure and never a range. */
     named_ceiling_pct?: number | null;
   }>;
   cohort: {
@@ -305,7 +307,7 @@ function pct(cited: number, runs: number): number {
   return runs > 0 ? +(100 * cited / runs).toFixed(1) : 0;
 }
 import { engineLayer, isControlEngine, LAYER1_ENGINE_KEYS } from "./engine-layer";
-import { namedInAnswer, capForRun } from "./answer-presence";
+import { namedInAnswer, capForRun, wholePercentBounds } from "./answer-presence";
 import { linkBasisOf, linkBasisNote, linkMovementWithheld, priorGoogleLinkEvidence } from "./link-basis";
 import { loadAffiliatedDomains } from "./affiliated-domains";
 import { affiliatedMatch } from "./classify-source";
@@ -363,14 +365,21 @@ export interface NamedBounds {
  *  it: a floor (every answer held only in part counted as not naming them)
  *  and a ceiling (every such answer counted as naming them), both over EVERY
  *  answer. There is deliberately no rate over the answers read in full: it
- *  is not a bound and it reads high. */
+ *  is not a bound and it reads high.
+ *
+ *  WHOLE PERCENTS THAT HOLD, from the readout's own helper: the floor rounded
+ *  down and the ceiling rounded up, so "at least X%" and "up to Y%" stay
+ *  true. The one decimal they used to carry put 945 of 2,375 (39.79%) at 39.8,
+ *  and the number guard's rounding let "at least 40%" verify. Nothing unread
+ *  gives one figure, the share rounded, never a range. */
 export function namedBounds(named: number, unknown: number, total: number): NamedBounds {
+  const b = wholePercentBounds(named, unknown, total);
   return {
     named_runs: named,
     named_unknown_runs: unknown,
     named_total_runs: total,
-    named_floor_pct: total > 0 ? pct(named, total) : null,
-    named_ceiling_pct: total > 0 ? pct(named + unknown, total) : null,
+    named_floor_pct: b ? b.floorPct : null,
+    named_ceiling_pct: b ? b.ceilingPct : null,
   };
 }
 
