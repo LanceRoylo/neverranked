@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-04T16:46:58.452Z",
+  "updated": "2026-10-06T10:32:55.962Z",
   "checks": {
     "citation_runs": {
       "status": "OK",
@@ -12,9 +12,9 @@
       "lastAlerted": null
     },
     "email_log/digest": {
-      "status": "STALE",
-      "since": "2026-09-27",
-      "lastAlerted": "2026-10-04"
+      "status": "OK",
+      "since": null,
+      "lastAlerted": null
     },
     "gsc_snapshots": {
       "status": "OK",
