@@ -188,7 +188,7 @@ test("renderCharts: citation grid renders cells, per-row count, and question leg
     },
   });
   const html = renderCharts(facts);
-  assert.match(html, /Where the six AI tools and the search control put you, question by question/);
+  assert.match(html, /Question by question: where each tool used your site, or named you/);
   assert.match(html, /class="cg-svg"/);
   // row labels present
   assert.match(html, /Perplexity/);
@@ -228,7 +228,7 @@ test("topSources renders a 4th chart with linkable domains, and refuses to link 
     ],
   });
   const html = renderCharts(facts);
-  assert.match(html, /The specific sites AI pulls from/);
+  assert.match(html, /The specific sites AI uses most/);
   assert.match(html, /<a href="https:\/\/gohawaii\.com"[^>]*>gohawaii\.com<\/a>/);
   assert.match(html, /<a href="https:\/\/broadway\.org"[^>]*>broadway\.org<\/a>/);
   assert.doesNotMatch(html, /href="https:\/\/evil/); // malformed host cannot become an href
