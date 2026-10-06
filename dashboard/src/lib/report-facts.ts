@@ -48,6 +48,8 @@ const SOURCE_LABELS: Record<string, string> = {
   independent_web: "Independent web",
   competitor: "Competitor sites",
   owned: "Your own site",
+  // A client's group's sites (migration 0130). Plain words, never "own".
+  affiliated: "Your group's other sites",
   review_directory: "Review directories",
   wikipedia: "Wikipedia",
   social: "Social",
@@ -121,6 +123,10 @@ export interface ReportFacts {
   venue: { rows: Array<{ label: string; pct: number; you?: boolean }> };
   sources: Array<{ label: string; pct: number; own?: boolean }>;
   topSources: Array<{ host: string; pct: number }>;
+  /** The client's group's other sites, listed apart from topSources (which
+   *  are the third-party places to get listed). Never counted as the client's
+   *  own site. Only present when an affiliated domain was cited. */
+  affiliatedSources?: Array<{ host: string; pct: number }>;
   /** Question-level movement: where the customer got newly cited (or stopped
    *  being cited) by a specific engine this window vs the prior one. The
    *  month-2 "wins" layer: concrete movement even when aggregates are flat. */
@@ -713,6 +719,7 @@ export async function buildReportFacts(env: Env, slug: string, monthKey: string)
     offsite_hosts?: Array<{ host?: string; share_pct?: number }>;
     link_basis?: string;
     source_exclusions?: { wrapper_links_by_engine?: Record<string, number> };
+    affiliated_hosts?: Array<{ host?: string; share_pct?: number }>;
   } = {};
   try { eb = JSON.parse(snap.engines_breakdown) || {}; } catch { return null; }
   try { tc = JSON.parse(snap.top_competitors) || {}; } catch { /* venue/sources optional */ }
@@ -830,6 +837,9 @@ export async function buildReportFacts(env: Env, slug: string, monthKey: string)
   const topSources = (tc.offsite_hosts || [])
     .filter((h) => h && typeof h.host === "string")
     .map((h) => ({ host: String(h.host), pct: n(h.share_pct) }));
+  const affiliatedSources = (tc.affiliated_hosts || [])
+    .filter((h) => h && typeof h.host === "string")
+    .map((h) => ({ host: String(h.host), pct: n(h.share_pct) }));
 
   // Fetched once and shared: both builders must apply the SAME boundary, or
   // the grid renders a month the movement section refuses to compare.
@@ -939,6 +949,7 @@ export async function buildReportFacts(env: Env, slug: string, monthKey: string)
     venue: { rows: venueRows },
     sources,
     topSources,
+    ...(affiliatedSources.length ? { affiliatedSources } : {}),
     ...(questions ? { questions } : {}),
     ...(grid ? { grid } : {}),
     ...(presence ? { presence } : {}),

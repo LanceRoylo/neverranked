@@ -269,6 +269,12 @@ export interface MemoInputs {
   /** One plain sentence, to be said once: which engines' link counts leave
    *  out Google's own viewer links this period. Absent when none did. */
   link_count_basis?: string;
+  /** The client's group's other sites (a parent group's page for the
+   *  business, say), listed apart from offsite.hosts and never counted in
+   *  any own-site figure (decided 2026-10-05). Absent when none was cited or
+   *  none is configured. The writer may name these as the client's group
+   *  page. */
+  affiliated?: { hosts: Array<{ host: string; share_pct: number }>; basis: string };
   /** Ready-made destinations for the punch list.
    *
    *  WHY (2026-09-17). The punch-list standard says "a clickable link beats a
@@ -301,6 +307,8 @@ function pct(cited: number, runs: number): number {
 import { engineLayer, isControlEngine, LAYER1_ENGINE_KEYS } from "./engine-layer";
 import { namedInAnswer, capForRun } from "./answer-presence";
 import { linkBasisOf, linkBasisNote, linkMovementWithheld, priorGoogleLinkEvidence } from "./link-basis";
+import { loadAffiliatedDomains } from "./affiliated-domains";
+import { affiliatedMatch } from "./classify-source";
 
 /** The per-question measure. See `measure` on by_question. */
 export const QUESTION_MEASURE = "site_in_sources" as const;
@@ -310,6 +318,11 @@ export const QUESTION_BASIS =
   "not the Bing control and not the two tools that answer from training. current_pct is the share of " +
   "their checks on this question where the client's own website was among the sources the tool listed. " +
   "It is not traffic, not visits, and not whether the answer named the client (named_runs is that).";
+
+export const AFFILIATED_BASIS =
+  "the client's group's other sites (for example a parent group's page for the business), as shares of " +
+  "every page the search tools listed. Never the client's own site, and not counted in own_site_pulls, " +
+  "venue share, site_in_sources or any own-site figure";
 
 export const OFFSITE_BASIS =
   "share of every page the search tools listed as a source (the Bing control excluded), " +
@@ -676,6 +689,11 @@ export async function gatherMemoInputs(
   for (const d of domains.results) {
     if (d.is_competitor === 1) cohortHosts.set(normHost(d.domain), d.competitor_label);
   }
+  // The client's group's sites (migration 0130) are never a competitor's
+  // mention, whichever list they also appear in. Empty: nothing changes.
+  const affiliated = await loadAffiliatedDomains(env, slug);
+  const isAffiliatedEntity = (ent: { name?: string; url?: string }): boolean =>
+    affiliated.length > 0 && affiliatedMatch(ent.url || (ent.name && ent.name.includes(".") ? `https://${ent.name}` : ""), affiliated);
 
   for (const r of runs.results) {
     const isCurrent = r.run_at >= curStart;
@@ -690,7 +708,7 @@ export async function gatherMemoInputs(
       const seen = new Set<string>();
       for (const ent of parsed) {
         const key = hostFromEntity(ent);
-        if (!key || !cohortHosts.has(key) || seen.has(key)) continue;
+        if (!key || !cohortHosts.has(key) || seen.has(key) || isAffiliatedEntity(ent)) continue;
         seen.add(key);
         // The pooled count is on the same basis as the customer's own count
         // it is ranked against (search tools, no control). Per-engine counts
@@ -803,6 +821,8 @@ export async function gatherMemoInputs(
     : undefined;
   /** Set on the snapshot path. See MemoInputs.link_count_basis. */
   let link_count_basis: string | undefined;
+  /** Set on the snapshot path. See MemoInputs.affiliated. */
+  let affiliatedOut: MemoInputs["affiliated"];
   const ownDomain = domains.results.find((d) => d.is_competitor === 0)?.domain ?? null;
 
   // ── Canonical override: source headline + per-engine from the snapshot ──
@@ -884,6 +904,7 @@ export async function gatherMemoInputs(
       offsite_hosts?: Array<{ host?: string; citations?: number; share_pct?: number }>;
       link_basis?: string;
       source_exclusions?: { wrapper_links_by_engine?: Record<string, number> };
+      affiliated_hosts?: Array<{ host?: string; citations?: number; share_pct?: number }>;
     } = {};
     try { eb = JSON.parse(row.engines_breakdown) ?? {}; } catch { /* keep empty */ }
     try { tc = JSON.parse(row.top_competitors) ?? {}; } catch { /* keep empty */ }
@@ -1082,6 +1103,10 @@ export async function gatherMemoInputs(
         .filter((h) => h.host),
       basis: OFFSITE_BASIS,
     };
+    const affHosts = (curSnap.tc.affiliated_hosts ?? [])
+      .filter((h) => typeof h.host === "string" && h.host && typeof h.share_pct === "number")
+      .map((h) => ({ host: h.host as string, share_pct: h.share_pct as number }));
+    if (affHosts.length) affiliatedOut = { hosts: affHosts, basis: AFFILIATED_BASIS };
   }
 
   // ── Prior memo (most recent delivered) ──
@@ -1213,6 +1238,7 @@ export async function gatherMemoInputs(
     offsite,
     ...(typeof own_site_pulls === "number" ? { own_site_pulls, own_site_pulls_basis } : {}),
     ...(link_count_basis ? { link_count_basis } : {}),
+    ...(affiliatedOut ? { affiliated: affiliatedOut } : {}),
     prior_memo: priorMemo ?? null,
     is_first_memo: !priorMemo,
   };

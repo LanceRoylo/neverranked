@@ -7,6 +7,13 @@
  * the Worker bucket the same URL differently, one of them is contradicting a
  * public page. test/classify-source.test.ts pins the shared cases.
  *
+ * ONE DELIBERATE DIVERGENCE (2026-10-05): a tenth bucket, `affiliated`, for a
+ * client's group sites (migration 0130). It only ever fires when the caller
+ * passes affiliated domains, so with none configured every URL lands exactly
+ * where classify.mjs puts it. The .mjs port and the methodology page do not
+ * know the bucket yet; both need it before a bridge-measured client is given
+ * an affiliated domain.
+ *
  * HONEST SCOPE (quoting the method page): this classifies into buckets that
  * are reliably determinable from the host alone. It deliberately does NOT try
  * to distinguish "major publication" from "random blog" by domain, because
@@ -23,6 +30,7 @@ export type SourceType =
   | "review_directory"
   | "independent_web"
   | "owned"
+  | "affiliated"
   | "competitor"
   | "invalid";
 
@@ -35,6 +43,7 @@ export const SOURCE_TYPES: SourceType[] = [
   "review_directory",
   "independent_web",
   "owned",
+  "affiliated",
   "competitor",
 ];
 
@@ -67,15 +76,54 @@ const RULES: Array<[SourceType, RegExp]> = [
   ],
 ];
 
+/** A client's affiliated site: its group's, not its own (decided 2026-10-05,
+ *  migration 0130). path_prefix '' covers the whole domain. */
+export interface AffiliatedDomain {
+  domain: string;
+  path_prefix?: string | null;
+}
+
 export interface SourceContext {
   owned?: string[];
+  /** Absent or empty: no URL is ever "affiliated" and every other bucket is
+   *  exactly what it was before the type existed. */
+  affiliated?: AffiliatedDomain[];
   competitors?: string[];
 }
 
 /**
- * Classify one cited URL. `owned` and `competitors` are checked FIRST and in
- * that order, matching the original: a competitor who happens to be hosted on
- * a review directory is still a competitor.
+ * Is this URL on one of the client's affiliated sites? Host match as for
+ * owned (the domain or a subdomain of it), then, when a path_prefix is set,
+ * the path must be the prefix or sit below it: '/hotels/example' matches
+ * '/hotels/example' and '/hotels/example/dining', never '/hotels/example-two'.
+ * Case-insensitive on both.
+ */
+export function affiliatedMatch(url: string, list: AffiliatedDomain[] | null | undefined): boolean {
+  if (!list || list.length === 0) return false;
+  let host: string;
+  let path: string;
+  try {
+    const u = new URL(url);
+    host = u.hostname.replace(/^www\./, "").toLowerCase();
+    path = u.pathname.toLowerCase();
+  } catch {
+    return false;
+  }
+  for (const a of list) {
+    const d = (a.domain || "").trim().replace(/^www\./, "").toLowerCase();
+    if (!d || !(host === d || host.endsWith("." + d))) continue;
+    const prefix = (a.path_prefix || "").trim().toLowerCase().replace(/\/+$/, "");
+    if (!prefix || path === prefix || path.startsWith(prefix + "/")) return true;
+  }
+  return false;
+}
+
+/**
+ * Classify one cited URL. `owned` is checked FIRST, then `affiliated`, then
+ * `competitors`, matching the original's order for the two it had: a
+ * competitor who happens to be hosted on a review directory is still a
+ * competitor. Affiliated sits between them (2026-10-05): a client's group
+ * page is never its own site and never a competitor.
  */
 export function classifySource(url: string, ctx: SourceContext = {}): SourceType {
   const h = hostOf(url);
@@ -85,6 +133,7 @@ export function classifySource(url: string, ctx: SourceContext = {}): SourceType
   const comp = (ctx.competitors || []).map(norm);
   const matchAny = (list: string[]) => list.some((d) => d !== "" && (h === d || h.endsWith("." + d)));
   if (matchAny(owned)) return "owned";
+  if (affiliatedMatch(url, ctx.affiliated)) return "affiliated";
   if (matchAny(comp)) return "competitor";
   for (const [type, re] of RULES) if (re.test(h)) return type;
   // Everything else: independent sites -- publications, blogs, vendor pages.

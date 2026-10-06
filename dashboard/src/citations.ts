@@ -12,7 +12,8 @@ import { READOUT_ENGINE_LABEL } from "./lib/readout-engine-labels";
 import { resolveGroundingUrls } from "./gemini-resolver";
 import { detectAndRecordAlerts } from "./lib/citation-alerts";
 import { isReadoutShapeSnapshot } from "./lib/snapshot-shape";
-import { classifySource, classifyGoogleLink, hostOf } from "./lib/classify-source";
+import { classifySource, classifyGoogleLink, hostOf, affiliatedMatch } from "./lib/classify-source";
+import { loadAffiliatedDomains } from "./lib/affiliated-domains";
 import { LINK_BASIS } from "./lib/link-basis";
 import { keywordRunVerdict } from "./lib/keyword-run-verdict";
 import { LAYER1_ENGINE_KEYS } from "./lib/engine-layer";
@@ -2615,7 +2616,16 @@ export async function buildReadoutSnapshot(
     return { ok: false, reason: "no_runs_in_window" };
   }
 
-  const ctx = { owned: [ownedHost], competitors: competitorHosts };
+  // AFFILIATED SITES (decided 2026-10-05, migration 0130): the client's group's
+  // pages, a parent hotel group's page for the hotel being the case that
+  // prompted it. Listed as their own source type and NEVER counted as the
+  // client's own site or as a competitor. A missing table (before the
+  // migration is applied) or no rows leaves `affiliated` empty, and every
+  // branch below is then exactly what it was before this existed.
+  const affiliated = await loadAffiliatedDomains(env, clientSlug);
+  const ctx = affiliated.length
+    ? { owned: [ownedHost], affiliated, competitors: competitorHosts }
+    : { owned: [ownedHost], competitors: competitorHosts };
 
   // Which region the customer competes in, read from their own domain and
   // business name. Used ONLY to drop chain properties on other islands.
@@ -2643,6 +2653,8 @@ export async function buildReadoutSnapshot(
   const venueLabels: Record<string, string> = {};
   const srcCounts: Record<string, number> = {};
   const offsiteHosts: Record<string, number> = {};
+  /** Affiliated hosts, listed separately from the third-party hosts. */
+  const affiliatedHosts: Record<string, number> = {};
   /** Google result-page wrapper links left out of source types and hosts.
    *  See classifyGoogleLink. Recorded so the exclusion is visible. */
   let googleWrappersDropped = 0;
@@ -2685,7 +2697,10 @@ export async function buildReadoutSnapshot(
         const h = hostOf(u);
         if (!h) continue;
         const inOwned = h === ownedHost || h.endsWith("." + ownedHost);
-        const compHit = competitorHosts.find((c) => h === c || h.endsWith("." + c));
+        // Owned wins, then affiliated, then competitor: a group page is never
+        // the client's own site and never a competitor's citation.
+        const inAffiliated = !inOwned && affiliated.length > 0 && affiliatedMatch(u, affiliated);
+        const compHit = inAffiliated ? undefined : competitorHosts.find((c) => h === c || h.endsWith("." + c));
         if (inOwned) ownedHere++;
 
         // Resolve the SPECIFIC property behind a chain URL. A cohort of
@@ -2758,6 +2773,8 @@ export async function buildReadoutSnapshot(
         srcCounts[st] = (srcCounts[st] || 0) + 1;
         if (st === "independent_web" || st === "review_directory") {
           offsiteHosts[srcHost] = (offsiteHosts[srcHost] || 0) + 1;
+        } else if (st === "affiliated") {
+          affiliatedHosts[srcHost] = (affiliatedHosts[srcHost] || 0) + 1;
         }
       }
       engUrlOwned[label] = (engUrlOwned[label] || 0) + ownedHere;
@@ -2788,7 +2805,8 @@ export async function buildReadoutSnapshot(
           if (e.name && nameMatches(e.name, businessName)) mentioned = true;
           const h = hostOf(e.url || "");
           if (!h) continue;
-          const compHit = competitorHosts.find((c) => h === c || h.endsWith("." + c));
+          const affHit = affiliated.length > 0 && affiliatedMatch(e.url || "", affiliated);
+          const compHit = affHit ? undefined : competitorHosts.find((c) => h === c || h.endsWith("." + c));
           if (compHit) {
             sawCohort = true;
             (venueEngines[compHit] ??= new Set()).add(label);
@@ -2888,6 +2906,14 @@ export async function buildReadoutSnapshot(
       citations,
       share_pct: srcTotal ? Math.round((100 * citations) / srcTotal) : 0,
     }));
+  // Same base as offsite_hosts (every listed source), listed apart from it.
+  const affiliatedList = Object.entries(affiliatedHosts)
+    .sort((a, b) => b[1] - a[1])
+    .map(([host, citations]) => ({
+      host,
+      citations,
+      share_pct: srcTotal ? Math.round((100 * citations) / srcTotal) : 0,
+    }));
 
   const topCompetitors = {
     htc_venue_share_pct: venueTotal ? Math.round((100 * ownedAll) / venueTotal) : 0,
@@ -2895,6 +2921,9 @@ export async function buildReadoutSnapshot(
     competitors,
     source_types: sourceTypes,
     offsite_hosts: offsite,
+    /** The client's group's other sites, never counted as its own site.
+     *  Only present when an affiliated domain was cited. */
+    ...(affiliatedList.length ? { affiliated_hosts: affiliatedList } : {}),
     /** Provenance marker so a later reader can tell which definition produced
      *  the venue numbers without re-deriving it from the code. */
     venue_basis: "layer1_citations",

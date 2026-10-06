@@ -254,9 +254,9 @@ export interface MonthEndBuildResult {
  * (task month_end_snapshot), so one refusal never stops the next client and
  * every outcome is on the record.
  *
- * COST, per client: about eleven D1 queries (the cohort, registry, name and
- * question-set lookups, one SELECT of the month's runs, one INSERT) plus one
- * cron_runs write. The runs SELECT is the weight: a full
+ * COST, per client: about eleven D1 queries (the cohort, registry, name,
+ * question-set and affiliated-domain lookups, one SELECT of the month's runs,
+ * one INSERT) plus one cron_runs write. The runs SELECT is the weight: a full
  * month of runs with their cited URLs and entities, measured 2026-10-05 at
  * about 1.7 KB a row, so about 1.7 MB for every thousand runs the month
  * holds. Builds run one after another, never in

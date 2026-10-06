@@ -185,6 +185,9 @@ interface ReportFacts {
   venue?: { rows?: ChartRow[] };
   sources?: ChartRow[];
   topSources?: { host: string; pct: number }[]; // specific third-party domains AI pulled from
+  /** The client's group's other sites (2026-10-05), listed apart from the
+   *  third-party hosts and never counted as the client's own site. */
+  affiliatedSources?: { host: string; pct: number }[];
   /** Did the answer name the business. Web-searching surfaces only; two rates
    *  because rows whose stored answer was cut off count as unread, not absent. */
   presence?: {
@@ -533,7 +536,7 @@ function renderDumbbell(engines: ChartEngine[], prior: string, note?: string, ex
 // 100% stacked bar for the source-type composition (part-to-whole). One bar
 // split into segments, "your own site" in gold, with a matched legend below.
 const STACK_COLORS = ["#9c8a4e", "#75704f", "#5b563f", "#4a4436", "#3d382c", "#332f25", "#2b271f", "#232019"];
-function renderStack(sources: ChartRow[], note?: string): string {
+function renderStack(sources: ChartRow[], note?: string, extraHtml = ""): string {
   const total = sources.reduce((s, r) => s + num(r.pct), 0) || 100;
   let ci = 0;
   const colors = sources.map((r) => (r.own ? "#d4c596" : STACK_COLORS[ci++ % STACK_COLORS.length]));
@@ -542,7 +545,7 @@ function renderStack(sources: ChartRow[], note?: string): string {
   const legend = sources.map((r, i) =>
     `<div class="leg-item${r.own ? " own" : ""}"><span class="leg-sw" style="background:${colors[i]}"></span>${esc(r.label)} <span class="leg-pct">${num(r.pct)}%</span></div>`).join("");
   const cap = `One bar, split by where the AI tools got their information. The independent web is most of it and your own site (the gold segment) is a thin sliver, which is why off-site presence matters as much as your own website.`;
-  return `<section class="nr-chart"><h3 class="nr-ctitle">Where AI's answers come from</h3><div class="stack-bar">${segs}</div><div class="stack-legend">${legend}</div>${chartText(cap, note)}</section>`;
+  return `<section class="nr-chart"><h3 class="nr-ctitle">Where AI's answers come from</h3><div class="stack-bar">${segs}</div><div class="stack-legend">${legend}</div>${chartText(cap, note)}${extraHtml}</section>`;
 }
 
 
@@ -873,7 +876,14 @@ export function renderCharts(factsJson: string | null): string {
   // 3. Where the answers come from (source types) -- a 100% stacked bar (part-to-whole).
   const sources = Array.isArray(f.sources) ? f.sources.filter((r) => r && typeof r.label === "string") : [];
   if (sources.length) {
-    blocks.push(renderStack(sources, notes.sources));
+    // The client's group's sites, named, so the reader can see which pages
+    // that segment is. Never folded into "Your own site".
+    const aff = (Array.isArray(f.affiliatedSources) ? f.affiliatedSources : [])
+      .filter((r) => r && typeof r.host === "string" && r.host);
+    const affNote = aff.length
+      ? `<p class="nr-note">Your group's other sites are their own segment here and are never counted as your own site: ${aff.map((r) => esc(String(r.host))).join(", ")}.</p>`
+      : "";
+    blocks.push(renderStack(sources, notes.sources, affNote));
   }
 
   // 4. The specific third-party sites AI pulled from (answers "which ones?" for the

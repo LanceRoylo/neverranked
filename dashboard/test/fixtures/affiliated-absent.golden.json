@@ -1,0 +1,544 @@
+{
+ "snapshots": [
+  {
+   "week_start": 1788220799,
+   "total_queries": 3,
+   "client_citations": 3,
+   "citation_share": 0.2222222222222222,
+   "top_competitors": "{\"htc_venue_share_pct\":57,\"htc_engines_count\":5,\"competitors\":[{\"domain\":\"rival-inn.test\",\"label\":\"Rival Inn\",\"citations\":9,\"venue_share_pct\":43,\"engines_count\":4}],\"source_types\":{\"owned\":{\"citations\":12,\"share_pct\":24},\"independent_web\":{\"citations\":21,\"share_pct\":41},\"review_directory\":{\"citations\":9,\"share_pct\":18},\"competitor\":{\"citations\":9,\"share_pct\":18}},\"offsite_hosts\":[{\"host\":\"examplegroup.test\",\"citations\":15,\"share_pct\":29},{\"host\":\"tripadvisor.com\",\"citations\":6,\"share_pct\":12},{\"host\":\"news.example\",\"citations\":6,\"share_pct\":12},{\"host\":\"yelp.com\",\"citations\":3,\"share_pct\":6}],\"venue_basis\":\"layer1_citations\",\"source_exclusions\":{\"google_wrapper_links\":3,\"google_wrapper_links_resolved\":0,\"wrapper_links_by_engine\":{\"Google AI Overviews\":3}},\"link_basis\":\"google_viewer_links_excluded\",\"window\":{\"start\":1785542400,\"end\":1788220800},\"snapshot_kind\":\"month_end\"}",
+   "keyword_breakdown": "{\"questions_with_owned\":3,\"total_questions\":3}",
+   "engines_breakdown": "{\"Perplexity\":{\"citations\":3,\"total\":18,\"share_pct\":17,\"cohort_citations\":6,\"layer\":\"citation\"},\"ChatGPT search\":{\"citations\":3,\"total\":12,\"share_pct\":25,\"cohort_citations\":6,\"layer\":\"citation\"},\"Gemini grounded\":{\"citations\":3,\"total\":9,\"share_pct\":33,\"cohort_citations\":3,\"layer\":\"citation\"},\"Google AI Overviews\":{\"citations\":3,\"total\":12,\"share_pct\":25,\"cohort_citations\":6,\"layer\":\"citation\"},\"Bing search (control)\":{\"citations\":3,\"total\":9,\"share_pct\":33,\"cohort_citations\":6,\"layer\":\"citation\"},\"Claude\":{\"citations\":3,\"total\":3,\"share_pct\":100,\"cohort_citations\":3,\"layer\":\"model_knowledge\"}}",
+   "query_set_hash": "e3fbb95da1c7867c5e323833f00a5b56ddd0e14c53c1cdeb33e7b084d8104d6d"
+  },
+  {
+   "week_start": 1790812799,
+   "total_queries": 3,
+   "client_citations": 3,
+   "citation_share": 0.2222222222222222,
+   "top_competitors": "{\"htc_venue_share_pct\":57,\"htc_engines_count\":5,\"competitors\":[{\"domain\":\"rival-inn.test\",\"label\":\"Rival Inn\",\"citations\":9,\"venue_share_pct\":43,\"engines_count\":4}],\"source_types\":{\"owned\":{\"citations\":12,\"share_pct\":24},\"independent_web\":{\"citations\":21,\"share_pct\":41},\"review_directory\":{\"citations\":9,\"share_pct\":18},\"competitor\":{\"citations\":9,\"share_pct\":18}},\"offsite_hosts\":[{\"host\":\"examplegroup.test\",\"citations\":15,\"share_pct\":29},{\"host\":\"tripadvisor.com\",\"citations\":6,\"share_pct\":12},{\"host\":\"news.example\",\"citations\":6,\"share_pct\":12},{\"host\":\"yelp.com\",\"citations\":3,\"share_pct\":6}],\"venue_basis\":\"layer1_citations\",\"source_exclusions\":{\"google_wrapper_links\":3,\"google_wrapper_links_resolved\":0,\"wrapper_links_by_engine\":{\"Google AI Overviews\":3}},\"link_basis\":\"google_viewer_links_excluded\",\"window\":{\"start\":1788220800,\"end\":1790812800},\"snapshot_kind\":\"month_end\"}",
+   "keyword_breakdown": "{\"questions_with_owned\":3,\"total_questions\":3}",
+   "engines_breakdown": "{\"Perplexity\":{\"citations\":3,\"total\":18,\"share_pct\":17,\"cohort_citations\":6,\"layer\":\"citation\"},\"ChatGPT search\":{\"citations\":3,\"total\":12,\"share_pct\":25,\"cohort_citations\":6,\"layer\":\"citation\"},\"Gemini grounded\":{\"citations\":3,\"total\":9,\"share_pct\":33,\"cohort_citations\":3,\"layer\":\"citation\"},\"Google AI Overviews\":{\"citations\":3,\"total\":12,\"share_pct\":25,\"cohort_citations\":6,\"layer\":\"citation\"},\"Bing search (control)\":{\"citations\":3,\"total\":9,\"share_pct\":33,\"cohort_citations\":6,\"layer\":\"citation\"},\"Claude\":{\"citations\":3,\"total\":3,\"share_pct\":100,\"cohort_citations\":3,\"layer\":\"model_knowledge\"}}",
+   "query_set_hash": "e3fbb95da1c7867c5e323833f00a5b56ddd0e14c53c1cdeb33e7b084d8104d6d"
+  }
+ ],
+ "memo": {
+  "destinations": {
+   "own_site": "https://example-hotel.test",
+   "listings": [
+    {
+     "host": "examplegroup.test",
+     "share_pct": 29,
+     "open": "https://examplegroup.test",
+     "find_listing": "https://www.google.com/search?q=site%3Aexamplegroup.test%20%22Example%20Hotel%22"
+    },
+    {
+     "host": "tripadvisor.com",
+     "share_pct": 12,
+     "open": "https://tripadvisor.com",
+     "find_listing": "https://www.google.com/search?q=site%3Atripadvisor.com%20%22Example%20Hotel%22"
+    },
+    {
+     "host": "news.example",
+     "share_pct": 12,
+     "open": "https://news.example",
+     "find_listing": "https://www.google.com/search?q=site%3Anews.example%20%22Example%20Hotel%22"
+    },
+    {
+     "host": "yelp.com",
+     "share_pct": 6,
+     "open": "https://yelp.com",
+     "find_listing": "https://www.google.com/search?q=site%3Ayelp.com%20%22Example%20Hotel%22"
+    }
+   ],
+   "tools": [
+    {
+     "name": "Google Rich Results Test",
+     "url": "https://search.google.com/test/rich-results",
+     "checks": "whether a page's structured data is readable, and which types are present"
+    },
+    {
+     "name": "Schema Markup Validator",
+     "url": "https://validator.schema.org/",
+     "checks": "structured data errors on a specific URL"
+    },
+    {
+     "name": "Google Business Profile",
+     "url": "https://business.google.com/",
+     "checks": "the description and amenity fields on the business's Google listing"
+    }
+   ]
+  },
+  "customer": {
+   "client_slug": "example-hotel",
+   "name": "Example Hotel",
+   "category_label": null,
+   "primary_contact_first_name": null
+  },
+  "plan_markdown": null,
+  "cadence": {
+   "measurement_days": 25,
+   "readings_per_question_per_engine": 1.6
+  },
+  "window": {
+   "current_start": "2026-09-01",
+   "current_end": "2026-09-30",
+   "prior_start": "2026-08-01"
+  },
+  "overall": {
+   "current": {
+    "runs": 21,
+    "cited": 12,
+    "share_pct": 57
+   },
+   "prior": {
+    "runs": 0,
+    "cited": 0,
+    "share_pct": 57
+   },
+   "share_delta_pp": 0
+  },
+  "by_engine": [
+   {
+    "engine": "Claude",
+    "current_share_pct": 100,
+    "prior_share_pct": 100,
+    "delta_pp": 0,
+    "current_runs": 3,
+    "cohort_citations": 3,
+    "layer": "model_knowledge",
+    "measure": "answers_naming_customer"
+   },
+   {
+    "engine": "Gemini grounded",
+    "current_share_pct": 33,
+    "prior_share_pct": 33,
+    "delta_pp": 0,
+    "current_runs": 6,
+    "cohort_citations": 3,
+    "layer": "citation",
+    "measure": "own_site_link_share",
+    "cited_links": 9,
+    "answers_citing_customer_pct": 50,
+    "named_runs": 3,
+    "named_unknown_runs": 0,
+    "named_total_runs": 6,
+    "named_floor_pct": 50,
+    "named_ceiling_pct": 50
+   },
+   {
+    "engine": "Bing search (control)",
+    "current_share_pct": 33,
+    "prior_share_pct": 33,
+    "delta_pp": 0,
+    "current_runs": 6,
+    "cohort_citations": 6,
+    "layer": "citation",
+    "measure": "own_site_link_share",
+    "cited_links": 9,
+    "answers_citing_customer_pct": 50
+   },
+   {
+    "engine": "ChatGPT search",
+    "current_share_pct": 25,
+    "prior_share_pct": 25,
+    "delta_pp": 0,
+    "current_runs": 6,
+    "cohort_citations": 6,
+    "layer": "citation",
+    "measure": "own_site_link_share",
+    "cited_links": 12,
+    "answers_citing_customer_pct": 50,
+    "named_runs": 3,
+    "named_unknown_runs": 0,
+    "named_total_runs": 6,
+    "named_floor_pct": 50,
+    "named_ceiling_pct": 50
+   },
+   {
+    "engine": "Google AI Overviews",
+    "current_share_pct": 25,
+    "prior_share_pct": 25,
+    "delta_pp": 0,
+    "current_runs": 6,
+    "cohort_citations": 6,
+    "layer": "citation",
+    "measure": "own_site_link_share",
+    "cited_links": 12,
+    "answers_citing_customer_pct": 50,
+    "named_runs": 3,
+    "named_unknown_runs": 0,
+    "named_total_runs": 6,
+    "named_floor_pct": 50,
+    "named_ceiling_pct": 50
+   },
+   {
+    "engine": "Perplexity",
+    "current_share_pct": 17,
+    "prior_share_pct": 17,
+    "delta_pp": 0,
+    "current_runs": 6,
+    "cohort_citations": 6,
+    "layer": "citation",
+    "measure": "own_site_link_share",
+    "cited_links": 18,
+    "answers_citing_customer_pct": 50,
+    "named_runs": 3,
+    "named_unknown_runs": 0,
+    "named_total_runs": 6,
+    "named_floor_pct": 50,
+    "named_ceiling_pct": 50
+   }
+  ],
+  "by_question": [
+   {
+    "keyword": "quiet hotel near the marina",
+    "category": "client",
+    "measure": "site_in_sources",
+    "basis": "the four search tools only (Perplexity, ChatGPT search, Gemini grounded, Google AI Overviews); not the Bing control and not the two tools that answer from training. current_pct is the share of their checks on this question where the client's own website was among the sources the tool listed. It is not traffic, not visits, and not whether the answer named the client (named_runs is that).",
+    "current_pct": 50,
+    "prior_pct": 50,
+    "delta_pp": 0,
+    "current_runs": 8,
+    "site_in_sources_runs": 4,
+    "named_runs": 4,
+    "named_unknown_runs": 0,
+    "named_total_runs": 8,
+    "named_floor_pct": 50,
+    "named_ceiling_pct": 50
+   },
+   {
+    "keyword": "hotel with a spa",
+    "category": "client",
+    "measure": "site_in_sources",
+    "basis": "the four search tools only (Perplexity, ChatGPT search, Gemini grounded, Google AI Overviews); not the Bing control and not the two tools that answer from training. current_pct is the share of their checks on this question where the client's own website was among the sources the tool listed. It is not traffic, not visits, and not whether the answer named the client (named_runs is that).",
+    "current_pct": 50,
+    "prior_pct": 50,
+    "delta_pp": 0,
+    "current_runs": 8,
+    "site_in_sources_runs": 4,
+    "named_runs": 4,
+    "named_unknown_runs": 0,
+    "named_total_runs": 8,
+    "named_floor_pct": 50,
+    "named_ceiling_pct": 50
+   },
+   {
+    "keyword": "family hotel with a pool",
+    "category": "client",
+    "measure": "site_in_sources",
+    "basis": "the four search tools only (Perplexity, ChatGPT search, Gemini grounded, Google AI Overviews); not the Bing control and not the two tools that answer from training. current_pct is the share of their checks on this question where the client's own website was among the sources the tool listed. It is not traffic, not visits, and not whether the answer named the client (named_runs is that).",
+    "current_pct": 50,
+    "prior_pct": 50,
+    "delta_pp": 0,
+    "current_runs": 8,
+    "site_in_sources_runs": 4,
+    "named_runs": 4,
+    "named_unknown_runs": 0,
+    "named_total_runs": 8,
+    "named_floor_pct": 50,
+    "named_ceiling_pct": 50
+   }
+  ],
+  "by_category": [
+   {
+    "category": "client",
+    "measure": "site_in_sources",
+    "basis": "the four search tools only (Perplexity, ChatGPT search, Gemini grounded, Google AI Overviews); not the Bing control and not the two tools that answer from training. current_pct is the share of their checks on this question where the client's own website was among the sources the tool listed. It is not traffic, not visits, and not whether the answer named the client (named_runs is that).",
+    "questions": 3,
+    "runs": 24,
+    "cited": 12,
+    "share_pct": 50,
+    "questions_never_cited": 0,
+    "runs_on_never_cited": 0,
+    "questions_never_named": 0
+   }
+  ],
+  "like_for_like": {
+   "questions": 3,
+   "current_share_pct": 50,
+   "prior_share_pct": 50,
+   "share_delta_pp": 0,
+   "questions_added_since_prior": 0,
+   "basis": "the questions measured in BOTH windows, four search tools only (Bing control and the two training-answer tools excluded); share is checks where the client's site was among the listed sources over all checks on those questions"
+  },
+  "venue_share_basis": "every question measured in this window, not the like-for-like subset; share is this venue's citations as a proportion of all citations that went to venues",
+  "noise_floor": null,
+  "cohort": {
+   "rank": 1,
+   "members": [
+    {
+     "domain": "rival-inn.test",
+     "label": "Rival Inn",
+     "mentions": 9,
+     "share_pct": 42.9
+    }
+   ],
+   "customer_mentions": 12
+  },
+  "offsite": {
+   "source_types": [
+    {
+     "type": "independent_web",
+     "share_pct": 41
+    },
+    {
+     "type": "owned",
+     "share_pct": 24
+    },
+    {
+     "type": "review_directory",
+     "share_pct": 18
+    },
+    {
+     "type": "competitor",
+     "share_pct": 18
+    }
+   ],
+   "hosts": [
+    {
+     "host": "examplegroup.test",
+     "share_pct": 29
+    },
+    {
+     "host": "tripadvisor.com",
+     "share_pct": 12
+    },
+    {
+     "host": "news.example",
+     "share_pct": 12
+    },
+    {
+     "host": "yelp.com",
+     "share_pct": 6
+    }
+   ],
+   "basis": "share of every page the search tools listed as a source (the Bing control excluded), including the client's own site and competitor sites"
+  },
+  "own_site_pulls": 12,
+  "own_site_pulls_basis": "links to the client's own site among the sources the four search tools listed this period (Bing control excluded)",
+  "link_count_basis": "Google AI Overviews' link count leaves out Google's own viewer links.",
+  "prior_memo": {
+   "month_key": "2026-08",
+   "title": "t",
+   "body_markdown": "b"
+  },
+  "is_first_memo": false
+ },
+ "facts": {
+  "period_label": "Sep 2026",
+  "prior_label": "Aug 2026",
+  "engines": [
+   {
+    "name": "Perplexity",
+    "pct": 17,
+    "prev": 17
+   },
+   {
+    "name": "ChatGPT search",
+    "pct": 25,
+    "prev": 25
+   },
+   {
+    "name": "Gemini grounded",
+    "pct": 33,
+    "prev": 33
+   },
+   {
+    "name": "Google AI Overviews",
+    "pct": 25,
+    "prev": 25
+   },
+   {
+    "name": "Bing search (control)",
+    "pct": 33,
+    "prev": 33
+   },
+   {
+    "name": "Claude",
+    "pct": 100,
+    "layer": "model_knowledge",
+    "prev": 100
+   }
+  ],
+  "linkBasis": "google_viewer_links_excluded",
+  "linkBasisNote": "Google AI Overviews' link count leaves out Google's own viewer links.",
+  "venue": {
+   "rows": [
+    {
+     "label": "Example Hotel",
+     "pct": 57,
+     "you": true
+    },
+    {
+     "label": "Rival Inn",
+     "pct": 43
+    }
+   ]
+  },
+  "sources": [
+   {
+    "label": "Independent web",
+    "pct": 41,
+    "own": false
+   },
+   {
+    "label": "Your own site",
+    "pct": 24,
+    "own": true
+   },
+   {
+    "label": "Review directories",
+    "pct": 18,
+    "own": false
+   },
+   {
+    "label": "Competitor sites",
+    "pct": 18,
+    "own": false
+   }
+  ],
+  "topSources": [
+   {
+    "host": "examplegroup.test",
+    "pct": 29
+   },
+   {
+    "host": "tripadvisor.com",
+    "pct": 12
+   },
+   {
+    "host": "news.example",
+    "pct": 12
+   },
+   {
+    "host": "yelp.com",
+    "pct": 6
+   }
+  ],
+  "grid": {
+   "engines": [
+    "Perplexity",
+    "ChatGPT",
+    "Gemini",
+    "Google AIO",
+    "Claude",
+    "Bing search (control)"
+   ],
+   "layers": [
+    "citation",
+    "citation",
+    "citation",
+    "citation",
+    "model_knowledge",
+    "citation"
+   ],
+   "questions": [
+    "family hotel with a pool",
+    "hotel with a spa",
+    "quiet hotel near the marina"
+   ],
+   "cells": [
+    [
+     0.5,
+     0.5,
+     0.5
+    ],
+    [
+     0.5,
+     0.5,
+     0.5
+    ],
+    [
+     0.5,
+     0.5,
+     0.5
+    ],
+    [
+     0.5,
+     0.5,
+     0.5
+    ],
+    [
+     1,
+     1,
+     1
+    ],
+    [
+     0.5,
+     0.5,
+     0.5
+    ]
+   ],
+   "counts": [
+    [
+     2,
+     2,
+     2
+    ],
+    [
+     2,
+     2,
+     2
+    ],
+    [
+     2,
+     2,
+     2
+    ],
+    [
+     2,
+     2,
+     2
+    ],
+    [
+     1,
+     1,
+     1
+    ],
+    [
+     2,
+     2,
+     2
+    ]
+   ]
+  },
+  "presence": {
+   "engines": [
+    {
+     "name": "gemini",
+     "floorPct": 50,
+     "ceilingPct": 50,
+     "unknown": 0,
+     "total": 6
+    },
+    {
+     "name": "google_ai_overview",
+     "floorPct": 50,
+     "ceilingPct": 50,
+     "unknown": 0,
+     "total": 6
+    },
+    {
+     "name": "openai",
+     "floorPct": 50,
+     "ceilingPct": 50,
+     "unknown": 0,
+     "total": 6
+    },
+    {
+     "name": "perplexity",
+     "floorPct": 50,
+     "ceilingPct": 50,
+     "unknown": 0,
+     "total": 6
+    }
+   ],
+   "overall": {
+    "floorPct": 50,
+    "ceilingPct": 50,
+    "unknown": 0,
+    "total": 24
+   }
+  }
+ }
+}
