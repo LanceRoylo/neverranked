@@ -99,17 +99,22 @@ test("a question with no page from the site can still be NAMED, and the two are 
   assert.equal(q.site_in_sources_runs, 0);
   assert.equal(q.current_pct, 0);
   assert.equal(q.named_runs, 2, "named although no page was listed");
-  assert.equal(q.named_judged_runs, 3, "the truncated answer is excluded from the denominator");
   assert.equal(q.named_unknown_runs, 1);
-  assert.equal(q.named_pct, 66.7);
+  // Decision B (2026-10-05): a floor and a ceiling over EVERY answer, the
+  // truncated one counted as not naming in the floor and naming in the ceiling.
+  assert.equal(q.named_total_runs, 4);
+  assert.equal(q.named_floor_pct, 50);
+  assert.equal(q.named_ceiling_pct, 75);
 });
 
 test("an answer the query did not return is unknown, never a zero", () => {
   const q = buildQuestionFacts([run("perplexity", 3, CUR + 1, 0, undefined)], { curStart: CUR, businessName: NAME }).by_question[0];
   assert.equal(q.named_runs, 0);
-  assert.equal(q.named_judged_runs, 0);
   assert.equal(q.named_unknown_runs, 1);
-  assert.equal(q.named_pct, null);
+  assert.equal(q.named_total_runs, 1);
+  // Nothing readable: the honest statement is the whole range.
+  assert.equal(q.named_floor_pct, 0);
+  assert.equal(q.named_ceiling_pct, 100);
 });
 
 test("with no usable business name the naming fields are ABSENT, not zero", () => {
@@ -134,7 +139,7 @@ test("a group's never-named count needs every answer judged and none naming", ()
 
 test("per-engine naming is carried for the search tools", () => {
   const f = buildQuestionFacts([run("openai", 8, CUR + 1, 0, NAMED), run("openai", 9, CUR + 1, 0, NOT_NAMED)], { curStart: CUR, businessName: NAME });
-  assert.deepEqual(f.namedByEngine.get("openai"), { named_runs: 1, named_judged_runs: 2, named_unknown_runs: 0, named_pct: 50 });
+  assert.deepEqual(f.namedByEngine.get("openai"), { named_runs: 1, named_unknown_runs: 0, named_total_runs: 2, named_floor_pct: 50, named_ceiling_pct: 50 });
 });
 
 // ── 3a. Diacritics and cut-off names (answer-presence) ────────────────────
@@ -431,14 +436,14 @@ test("the figures the writer is now told to quote verify against the number guar
     overall: { current: { runs: 0, cited: 0, share_pct: 0 }, prior: { runs: 0, cited: 0, share_pct: 0 }, share_delta_pp: 0 },
     cohort: { rank: null, members: [], customer_mentions: 0 },
     by_engine: [{ engine: "Perplexity", current_share_pct: 1, prior_share_pct: 1, delta_pp: 0, current_runs: 2,
-      named_runs: 344, named_judged_runs: 919, named_unknown_runs: 0, named_pct: 37.4 }],
+      named_runs: 344, named_unknown_runs: 0, named_total_runs: 919, named_floor_pct: 37.4, named_ceiling_pct: 37.4 }],
     by_question: [{ keyword: "k", category: "c", current_pct: 97.5, prior_pct: null, delta_pp: null, current_runs: 81,
-      site_in_sources_runs: 79, named_runs: 57, named_judged_runs: 77, named_unknown_runs: 4, named_pct: 74 }],
+      site_in_sources_runs: 79, named_runs: 57, named_unknown_runs: 4, named_total_runs: 81, named_floor_pct: 70.4, named_ceiling_pct: 75.3 }],
     by_category: [{ category: "c", questions: 9, runs: 700, cited: 0, share_pct: 0, questions_never_cited: 9,
       runs_on_never_cited: 700, questions_never_named: 4 }],
     offsite: { source_types: [], hosts: [] },
     own_site_pulls: 431,
   } as unknown as MemoInputs;
   const allowed = allowedNumberSet(inp);
-  for (const n of ["344", "919", "37.4", "81", "79", "57", "77", "4", "74", "431"]) assert.ok(allowed.has(n), `${n} must verify`);
+  for (const n of ["344", "919", "37.4", "81", "79", "57", "4", "70.4", "75.3", "431"]) assert.ok(allowed.has(n), `${n} must verify`);
 });

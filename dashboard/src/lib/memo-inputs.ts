@@ -96,15 +96,17 @@ export interface MemoInputs {
      *  (client_cited). On a search tool that flag is set when the client's
      *  domain is in the source list, so this is not naming and not traffic:
      *  corrected 2026-10-05, it was described here as "does this engine put
-     *  the client in its answers". Naming is named_runs / named_pct. */
+     *  the client in its answers". Naming is the named_* fields below. */
     answers_citing_customer_pct?: number;
     /** Search tools only (not the control): answers this period whose TEXT
-     *  named the client, read with namedInAnswer. Same definitions as the
-     *  by_question fields. Absent when no usable business name is on file. */
+     *  named the client, read with namedInAnswer, as a floor and a ceiling.
+     *  Same definitions as the by_question fields. Absent when no usable
+     *  business name is on file. */
     named_runs?: number;
-    named_judged_runs?: number;
     named_unknown_runs?: number;
-    named_pct?: number | null;
+    named_total_runs?: number;
+    named_floor_pct?: number | null;
+    named_ceiling_pct?: number | null;
   }>;
   /** Group totals by question category, computed rather than counted by the
    *  author. A claim about "the N questions in group X" must come from here. */
@@ -215,16 +217,27 @@ export interface MemoInputs {
      *  "invisible" and "not named" on nine questions where the search tools
      *  named the client in the answer on five of them while never listing a
      *  page from the site. Not being in the sources and not being named are
-     *  different findings. All four fields are absent when no usable business
-     *  name was on file, which is not the same as zero. */
+     *  different findings. All five fields are absent when no usable business
+     *  name was on file, which is not the same as zero.
+     *
+     *  THE FLOOR AND THE CEILING, NEVER A RATE THAT DROPS THE UNREAD ANSWERS
+     *  (decided 2026-10-05). The first version of these fields carried
+     *  named / answers-read-in-full, which leaves out every answer we hold
+     *  only in part. Each of those is an answer where the name was not found
+     *  in the part we kept, so dropping them can only push the rate up. The
+     *  readout's naming figures already state a floor and a ceiling for the
+     *  same reason, and the memo now hands the writer the same two. */
     named_runs?: number;
-    /** Answers we hold in full, or found the name in: named_pct's denominator. */
-    named_judged_runs?: number;
-    /** Answers we hold only part of and did not find the name in. Excluded
-     *  from named_pct, so named_pct is NOT a bound (see presenceStats). */
+    /** Answers we hold only part of and did not find the name in. Counted as
+     *  NOT naming the client in the floor and as naming them in the ceiling. */
     named_unknown_runs?: number;
-    /** named_runs / named_judged_runs. Null when nothing could be judged. */
-    named_pct?: number | null;
+    /** Every answer on this question this period: the denominator of both. */
+    named_total_runs?: number;
+    /** named_runs / named_total_runs. The cautious figure. */
+    named_floor_pct?: number | null;
+    /** (named_runs + named_unknown_runs) / named_total_runs. Equals the floor
+     *  when nothing was unreadable. */
+    named_ceiling_pct?: number | null;
   }>;
   cohort: {
     rank: number | null;
@@ -315,6 +328,29 @@ export interface QuestionRun {
   response_text?: string | null;
 }
 
+export interface NamedBounds {
+  named_runs: number;
+  named_unknown_runs: number;
+  named_total_runs: number;
+  named_floor_pct: number | null;
+  named_ceiling_pct: number | null;
+}
+
+/** How often the answers NAMED the client, stated the way the readout states
+ *  it: a floor (every answer held only in part counted as not naming them)
+ *  and a ceiling (every such answer counted as naming them), both over EVERY
+ *  answer. There is deliberately no rate over the answers read in full: it
+ *  is not a bound and it reads high. */
+export function namedBounds(named: number, unknown: number, total: number): NamedBounds {
+  return {
+    named_runs: named,
+    named_unknown_runs: unknown,
+    named_total_runs: total,
+    named_floor_pct: total > 0 ? pct(named, total) : null,
+    named_ceiling_pct: total > 0 ? pct(named + unknown, total) : null,
+  };
+}
+
 /** Per-question, per-category and like-for-like facts, all on ONE basis:
  *  citation-layer search tools, control excluded. Pure, so the basis can be
  *  tested without a database. */
@@ -328,7 +364,7 @@ export function buildQuestionFacts(
   totals: { curRuns: number; curCited: number; priRuns: number; priCited: number };
   questionsSeen: number;
   /** Per raw engine key, basis engines only. Empty when names cannot be judged. */
-  namedByEngine: Map<string, { named_runs: number; named_judged_runs: number; named_unknown_runs: number; named_pct: number | null }>;
+  namedByEngine: Map<string, NamedBounds>;
 } {
   // A name shorter than four characters is never evidence (namedInAnswer
   // would return false for every complete answer), so it must not produce a
@@ -397,14 +433,9 @@ export function buildQuestionFacts(
     ...(v.cr > 0 ? {} : { not_asked_this_period: true }),
     current_runs: v.cr,
     site_in_sources_runs: v.cc,
-    ...(canJudgeNames && v.cr > 0
-      ? {
-          named_runs: v.named,
-          named_judged_runs: v.judged,
-          named_unknown_runs: v.unknown,
-          named_pct: v.judged > 0 ? pct(v.named, v.judged) : null,
-        }
-      : {}),
+    // Every current-window basis run is either judged or unknown, so the
+    // total is current_runs.
+    ...(canJudgeNames && v.cr > 0 ? namedBounds(v.named, v.unknown, v.judged + v.unknown) : {}),
   })).sort((a, b) => a.current_pct - b.current_pct); // weakest first
 
   // Per-category group facts, so the author never has to count.
@@ -473,12 +504,7 @@ export function buildQuestionFacts(
     : undefined;
 
   const namedByEngine = new Map(
-    [...perEngine.entries()].map(([engine, v]) => [engine, {
-      named_runs: v.named,
-      named_judged_runs: v.judged,
-      named_unknown_runs: v.unknown,
-      named_pct: v.judged > 0 ? pct(v.named, v.judged) : null,
-    }] as const),
+    [...perEngine.entries()].map(([engine, v]) => [engine, namedBounds(v.named, v.unknown, v.judged + v.unknown)] as const),
   );
   return { by_question, by_category, like_for_like, totals, questionsSeen: q.size, namedByEngine };
 }
