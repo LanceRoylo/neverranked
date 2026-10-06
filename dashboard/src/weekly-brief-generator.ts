@@ -35,7 +35,14 @@ const ANTHROPIC_VERSION = "2023-06-01";
 export interface WeeklyStats {
   weekStartsAt: number;
   weekEndsAt: number;
+  /** Every surface's runs, the Bing control INCLUDED. Internal only (the
+   *  sparse-week guard). The writer is never handed it: see runTotals. */
   totalCitationRuns: number;
+  /** Runs on the six AI surfaces, the control excluded. The only run total
+   *  the writer may attribute to "AI surfaces" or "AI tools". */
+  aiSurfaceRuns: number;
+  /** The Bing control's runs, given separately. */
+  controlRuns: number;
   perEngine: { engine: string; runs: number; clientCited: number }[];
   totalBotHits: number;
   topBots: { bot: string; hits: number }[];
@@ -254,12 +261,14 @@ export async function aggregateLastWeek(env: Env, weekStartsAt?: number): Promis
     events,
   });
 
-  const totalRuns = enginesRes.results.reduce((s, r) => s + r.runs, 0);
+  const totals = runTotals(enginesRes.results);
 
   return {
     weekStartsAt: start,
     weekEndsAt: end,
-    totalCitationRuns: totalRuns,
+    totalCitationRuns: totals.allRuns,
+    aiSurfaceRuns: totals.aiSurfaceRuns,
+    controlRuns: totals.controlRuns,
     perEngine: enginesRes.results,
     totalBotHits,
     topBots: botsRes.results,
@@ -280,6 +289,33 @@ export async function aggregateLastWeek(env: Env, weekStartsAt?: number): Promis
     sharedKeywords,
     comparison,
   };
+}
+
+/**
+ * Run totals, split at the control.
+ *
+ * The writer used to get ONE total that pooled every surface, the Bing
+ * control included. The week-of-2026-09-21 draft then wrote "across six AI
+ * surfaces and 2,807 runs": 2,807 was five surfaces at 433, AI Overviews at
+ * 226 and the control's 416. The six AI surfaces had run 2,391 times. A total
+ * is only handed over already split, labelled, with the control apart.
+ */
+export function runTotals(perEngine: Array<{ engine: string; runs: number }>): { aiSurfaceRuns: number; controlRuns: number; allRuns: number } {
+  let ai = 0;
+  let control = 0;
+  for (const e of perEngine) {
+    const n = Number(e.runs) || 0;
+    if (isControlEngine(e.engine)) control += n;
+    else ai += n;
+  }
+  return { aiSurfaceRuns: ai, controlRuns: control, allRuns: ai + control };
+}
+
+/** The run lines of the stats block. The AI-surface total is the only total. */
+export function runsBlock(stats: Pick<WeeklyStats, "aiSurfaceRuns" | "controlRuns">): string {
+  return `  Runs on the six AI surfaces this week (Bing control excluded): ${stats.aiSurfaceRuns}
+` +
+    `  Bing control runs this week, NOT an AI surface and never part of an AI-surface total: ${stats.controlRuns}`;
 }
 
 function mostRecentMondayUtc(unixTs: number): number {
@@ -328,6 +364,7 @@ GROUNDING RULES (the stats block in the user message is your ONLY source):
 - When the stats block lists more than one instrument change, do not single one out as the reason the weeks are not comparable. Say the window contains that many recorded changes to our own measurement and name them briefly. The block does not say which one mattered most, so neither can you.
 - Every rate in the stats block is how often a TRACKED CLIENT was cited, named or returned. It is never how often a surface "cited sources". Use the verb each engine line gives: cited, named, or (for the control) returned.
 - The control is not an AI surface. A range, ranking, "highest" or "lowest" across AI surfaces never includes it, in the title or anywhere else.
+- Any run total attributed to the AI surfaces, the AI tools or the six surfaces is the AI-surface run total in the stats block, which excludes the Bing control. Never add the control's runs to it, and never present a total that includes the control as a count of AI-surface runs.
 - WITHHELD is not flat. Where movement is withheld, never write held, steady, stable, flat, unchanged or consistent with the prior period, in the title, summary or body. Those are comparisons too.
 - A section marked NOT MEASURED is missing data. Never turn it into a zero, a "none" or a "no activity".
 - If a detail would make the brief more interesting but is not in the stats block, leave it out. A thin accurate brief is correct. An interesting invented one is a retraction.
@@ -535,7 +572,7 @@ export function engineLine(e: { engine: string; runs: number; client_cited: numb
   return `    ${name} ${e.runs} runs, cited or named a tracked client in ${e.client_cited} (${pct}).`;
 }
 
-function buildUserMessage(stats: WeeklyStats): string {
+export function buildUserMessage(stats: WeeklyStats): string {
   const fmtPct = (n: number, total: number) => total > 0 ? `${Math.round((n / total) * 100)}%` : "0%";
   const sentTotal = stats.sentimentBreakdown.positive + stats.sentimentBreakdown.neutral + stats.sentimentBreakdown.negative;
   // State the basis with the number, always. A delta whose basis is invisible
@@ -556,7 +593,7 @@ function buildUserMessage(stats: WeeklyStats): string {
   Bing is a classic-search control, NOT an AI tool. It returns results. It does not cite or answer.
   Never count Bing among the AI tools and never attribute answering behaviour to it.
   Together these are seven measured surfaces.
-  Total runs this week:     ${stats.totalCitationRuns}
+${runsBlock(stats)}
   Times an AI surface cited or named a tracked client, over the shared questions only: ${stats.newCitationsThisWeek}
 
 ## Week over week
@@ -783,7 +820,7 @@ ${brief.body_markdown.slice(0, 1500)}`,
   await addInboxItem(env, {
     kind: "weekly_brief_review",
     title: `Weekly Brief draft ready: ${brief.title}`,
-    body: `Generated from ${stats.totalCitationRuns} citation runs across ${stats.trackedClients} active clients.
+    body: `Generated from ${stats.aiSurfaceRuns} runs on the six AI surfaces (plus ${stats.controlRuns} Bing control runs) across ${stats.trackedClients} active clients.
 
 **Summary:**
 ${brief.summary}
