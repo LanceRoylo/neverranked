@@ -17,6 +17,8 @@ import { snapshotUsableForMonth } from "./snapshot-selection";
 import { engineLayer, type EngineLayer } from "./engine-layer";
 import { resolveBusinessName, nameMatches } from "../citations";
 import { buildPresenceSql, toEnginePresence, type EnginePresence } from "./answer-presence";
+import { linkBasisOf, linkBasisNote, linkMovementWithheld, priorGoogleLinkEvidence } from "./link-basis";
+import { isControlEngine } from "./engine-layer";
 import type { InjectionConfig } from "../types";
 
 /** Did a model-knowledge run NAME the business? Reads the entities the model
@@ -76,9 +78,21 @@ export interface ReportFacts {
     name: string;
     pct: number;
     prev?: number;
+    /** Set INSTEAD of prev when last month's figure was computed on a
+     *  different link basis (lib/link-basis.ts). The reason, in words the
+     *  reader is shown. A dumbbell must never draw a "from" dot for it. */
+    prevWithheld?: string;
     noCohortSignal?: boolean;
     layer?: "citation" | "model_knowledge";
   }>;
+  /** What the citation-layer link totals count (from 2026-10-05,
+   *  "google_viewer_links_excluded"). Absent on facts frozen before then,
+   *  whose totals counted every listed link. Next month's readout compares
+   *  its own basis with this before it draws a movement. */
+  linkBasis?: string;
+  /** One plain sentence, shown once under the own-site chart, naming the
+   *  engines whose link counts left out Google's own viewer links. */
+  linkBasisNote?: string;
   /** Did the AI NAME the business in its answer? Web-searching engines only.
    *
    *  A different question from `engines` above, which counts how often the
@@ -697,6 +711,8 @@ export async function buildReportFacts(env: Env, slug: string, monthKey: string)
     competitors?: Array<{ label?: string; domain?: string; venue_share_pct?: number }>;
     source_types?: Record<string, { share_pct?: number }>;
     offsite_hosts?: Array<{ host?: string; share_pct?: number }>;
+    link_basis?: string;
+    source_exclusions?: { wrapper_links_by_engine?: Record<string, number> };
   } = {};
   try { eb = JSON.parse(snap.engines_breakdown) || {}; } catch { return null; }
   try { tc = JSON.parse(snap.top_competitors) || {}; } catch { /* venue/sources optional */ }
@@ -712,13 +728,40 @@ export async function buildReportFacts(env: Env, slug: string, monthKey: string)
   ).bind(slug, monthKey).first<{ month_key: string; facts_json: string }>();
   const priorEngines = new Map<string, number>();
   let priorLabel: string | undefined;
+  /** The link basis last month's frozen figures were computed on. Null when
+   *  there is no prior report to compare with. */
+  let priorLinkBasis: string | null = null;
   if (prior?.facts_json) {
     try {
       const pf = JSON.parse(prior.facts_json) as ReportFacts;
       priorLabel = monthLabel(prior.month_key);
       for (const e of pf.engines || []) if (e && typeof e.name === "string") priorEngines.set(e.name, n(e.pct));
+      priorLinkBasis = linkBasisOf(pf.linkBasis);
     } catch { /* no prior */ }
   }
+
+  // LIKE FOR LIKE ACROSS THE LINK-BASIS CHANGE (decision D, 2026-10-05). From
+  // that change a citation-layer engine's link total leaves out Google's own
+  // viewer links, and last month's frozen figure may have counted them. The
+  // dumbbell's "from" dot is withheld, with the reason, for every engine the
+  // change could have touched. See lib/link-basis.ts for "could".
+  const curLinkBasis = linkBasisOf(tc.link_basis);
+  const excludedByEngine = tc.source_exclusions?.wrapper_links_by_engine ?? {};
+  let priorEvidence: Map<string, number> | null = new Map();
+  if (priorLinkBasis !== null && priorLinkBasis !== curLinkBasis && priorEngines.size > 0 && prior) {
+    const pb = monthBounds(prior.month_key);
+    priorEvidence = pb ? await priorGoogleLinkEvidence(env, slug, pb.start, pb.end) : null;
+  }
+  const prevWithheldFor = (name: string): string | null => {
+    if (priorLinkBasis === null || engineLayer(name) === "model_knowledge" || isControlEngine(name)) return null;
+    return linkMovementWithheld({
+      curBasis: curLinkBasis,
+      priorBasis: priorLinkBasis,
+      // absent-is-zero: the writer lists only engines with wrappers left out, so an absent engine had none.
+      curExcluded: excludedByEngine[name] ?? 0,
+      priorEvidence: priorEvidence === null ? null : (priorEvidence.get(name) ?? 0),
+    });
+  };
 
   // Is this client's snapshot written by the sweep? Decides whether an absent
   // layer may be resolved from the engine, or must be left as the
@@ -760,7 +803,11 @@ export async function buildReportFacts(env: Env, slug: string, monthKey: string)
       const resolved = engineLayer(name);
       if (resolved === "model_knowledge") row.layer = "model_knowledge";
     }
-    if (priorEngines.has(name)) row.prev = priorEngines.get(name);
+    if (priorEngines.has(name)) {
+      const withheld = prevWithheldFor(name);
+      if (withheld) row.prevWithheld = withheld;
+      else row.prev = priorEngines.get(name);
+    }
     // Only assert this when the bridge actually measured it. An older
     // snapshot without cohort_citations stays silent rather than guessing.
     const cc = (v as { cohort_citations?: number } | undefined)?.cohort_citations;
@@ -881,10 +928,13 @@ export async function buildReportFacts(env: Env, slug: string, monthKey: string)
     shownEngines = keep;
   }
 
+  const basisNote = linkBasisNote(excludedByEngine);
   return {
     period_label: monthLabel(monthKey),
     prior_label: priorLabel,
     engines: shownEngines,
+    ...(tc.link_basis ? { linkBasis: curLinkBasis } : {}),
+    ...(basisNote ? { linkBasisNote: basisNote } : {}),
     ...(excludedEngines.length ? { excludedEngines } : {}),
     venue: { rows: venueRows },
     sources,

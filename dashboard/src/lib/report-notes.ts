@@ -147,6 +147,13 @@ export function engineNoteClaimsOk(note: string, facts: ReportFacts): boolean {
   const MOVEMENT = /\b(rose|risen|fell|fallen|dropped|climbed|improved|declined|slipped|gained|grew|increased|decreased|up from|down from|held steady|stayed flat|unchanged|month[- ]over[- ]month|since last month)\b/;
   if (!hasPrior && MOVEMENT.test(lower)) return false;
 
+  // 5. A comparison WITHHELD for one tool (its links were counted differently
+  //    last month, 2026-10-05) is a baseline for that tool. A note that names
+  //    it alongside movement language could be describing its move, and the
+  //    number guard cannot see a move stated without digits.
+  const withheld = engines.filter((e) => typeof e.prevWithheld === "string" && e.prevWithheld);
+  if (withheld.some(named) && MOVEMENT.test(lower)) return false;
+
   return true;
 }
 
@@ -177,6 +184,7 @@ You receive the frozen chart data as JSON. Reply with STRICT JSON only, no markd
     layer "model_knowledge" (Claude, Gemma): these tools search nothing and cite nothing. pct is the share of that tool's ANSWERS that MENTION the customer by name.
   Never call a model_knowledge figure a citation share, and never say those tools "cite" the customer. Say they name or mention. Never rank, compare, or place the two layers on one scale: "Gemma at 18 beats Perplexity at 2" is a false comparison even though both numbers are real, because they have different denominators. If you discuss both, say plainly that they measure different things. Prefer naming the biggest move WITHIN a layer.
   CRITICAL, THE CONTROL. "Bing search (control)" is classic keyword search, not an AI tool. It returns results, it does not answer or cite or recommend. Never describe it as an AI engine and never attribute AI behaviour to it.
+  CRITICAL, WITHHELD COMPARISONS. An engine carrying "prevWithheld" has no comparable figure from last month, because we changed how its links are counted. Treat it exactly like a baseline: never say it rose, fell, held or moved, and never compare it with last month in any wording.
   CRITICAL, BASELINE MONTHS. When engines carry no "prev" value there is NO prior reading and therefore NO movement. Do not write that anything rose, fell, improved, held, slipped, gained, or stayed flat. There is nothing to compare against. Describe the starting position and what next month will make visible. This applies to wording with no digits in it just as much as to numbers.
   CRITICAL: an engine carrying "noCohortSignal": true returned sources this month but cited NO venue in the category at all, neither the customer nor any competitor. It is excluded from the chart. Never describe it as the customer being absent, losing ground, or scoring zero, and never attribute it to anything the customer did or failed to do. Either ignore it or state plainly that no venue in the category appeared on that tool this month.
 - venue: where the customer ranks among named competitors in their category.

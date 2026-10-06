@@ -167,12 +167,15 @@ async function loadDeliveredReports(env: Env, slug: string): Promise<ReportRow[]
 // below are read by the renderer, so anything added there and used here must
 // be added here too. Nothing typechecks this project (no typescript
 // dependency, despite a tsconfig), so the compiler will not tell you.
-interface ChartEngine { name: string; pct: number; prev?: number | null; noCohortSignal?: boolean; layer?: string; }
+interface ChartEngine { name: string; pct: number; prev?: number | null; prevWithheld?: string; noCohortSignal?: boolean; layer?: string; }
 interface ChartRow { label: string; pct: number; you?: boolean; own?: boolean; }
 interface ReportFacts {
   period_label?: string;
   prior_label?: string;
   engines?: ChartEngine[];
+  /** One sentence naming the engines whose link counts left out Google's own
+   *  viewer links (2026-10-05). Shown once, under the own-site chart. */
+  linkBasisNote?: string;
   /** Surfaces held out of this month, with the reason. Must be RENDERED, not
    *  just carried: filtering a surface out of the charts without telling the
    *  reader leaves them unable to tell a measured zero from an engine we could
@@ -443,15 +446,41 @@ function scaleNote(maxPct: number): string {
   return `<div class="nr-scale">Bars compare these to each other, not to 100%. The longest bar is ${m}%.</div>`;
 }
 
-function chartBlock(title: string, bars: string, caption: string, note?: string, maxPct?: number): string {
-  return `<section class="nr-chart"><h3 class="nr-ctitle">${esc(title)}</h3><div class="nr-bars">${bars}</div>${typeof maxPct === "number" ? scaleNote(maxPct) : ""}${chartText(caption, note)}</section>`;
+function chartBlock(title: string, bars: string, caption: string, note?: string, maxPct?: number, extraHtml = ""): string {
+  return `<section class="nr-chart"><h3 class="nr-ctitle">${esc(title)}</h3><div class="nr-bars">${bars}</div>${typeof maxPct === "number" ? scaleNote(maxPct) : ""}${chartText(caption, note)}${extraHtml}</section>`;
+}
+
+/** The own-site chart's disclosures, rendered once, under the chart: which
+ *  link counts leave out Google's viewer links, and which tools are shown
+ *  without last month's figure and why. Already-safe HTML. */
+function ownSiteNotes(f: ReportFacts, engines: ChartEngine[], prior: string): string {
+  const out: string[] = [];
+  if (typeof f.linkBasisNote === "string" && f.linkBasisNote) out.push(`<p class="nr-note">${esc(f.linkBasisNote)}</p>`);
+  const scored = engines.filter((e) => !e.noCohortSignal);
+  // Only meaningful when the chart compares at all. A baseline month draws no
+  // "from" dots for anyone and says so in its own caption.
+  if (scored.some((e) => typeof e.prev === "number") || scored.some((e) => e.prevWithheld)) {
+    const byReason = new Map<string, string[]>();
+    for (const e of scored) {
+      if (typeof e.prev === "number") continue;
+      const why = typeof e.prevWithheld === "string" && e.prevWithheld
+        ? e.prevWithheld
+        : `There is no reading from ${prior} to compare it with.`;
+      byReason.set(why, [...(byReason.get(why) ?? []), e.name]);
+    }
+    for (const [why, names] of byReason) {
+      const who = names.length === 1 ? names[0] : `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
+      out.push(`<p class="nr-note">${esc(who)} ${names.length === 1 ? "shows" : "show"} this month only. ${esc(why)}</p>`);
+    }
+  }
+  return out.join("");
 }
 
 // Dumbbell / slope chart for the per-engine month-over-month move (used only when
 // a prior value exists; a baseline report has no prev and falls back to bars).
 // Two dots per engine (prior + current) on a track, connected by a direction-
 // colored line, so the MOVEMENT is the visual, not a footnote pill.
-function renderDumbbell(engines: ChartEngine[], prior: string, note?: string): string {
+function renderDumbbell(engines: ChartEngine[], prior: string, note?: string, extraHtml = ""): string {
   // An engine where NOBODY in the cohort appeared is not a score. Pull it
   // out of the chart entirely and disclose it underneath. July 2026:
   // Bing organic (control) returned 794 citations, none to any Honolulu venue,
@@ -462,6 +491,22 @@ function renderDumbbell(engines: ChartEngine[], prior: string, note?: string): s
   const maxV = Math.max(...scored.map((e) => Math.max(num(e.pct), num(e.prev))), 1);
   const posOf = (v: number) => 4 + (num(v) / maxV) * 92; // inset [4%,96%] so dots never clip
   const rows = [...scored].sort((a, b) => num(b.pct) - num(a.pct)).map((e, i) => {
+    // NO "FROM" DOT WITHOUT A COMPARABLE READING. A tool with no prior value,
+    // or one withheld because its links were counted differently last month
+    // (2026-10-05), used to be drawn moving up from a hollow dot at zero, a
+    // rise that never happened. It gets its current dot and is named in the
+    // note under the chart.
+    if (typeof e.prev !== "number") {
+      const cur = num(e.pct);
+      const title = `${e.name}: ${cur}% this period, not compared with ${prior}`;
+      return `<div class="nr-row" style="--i:${i}" title="${esc(title)}">
+      <div class="nr-lab">${esc(e.name)}</div>
+      <div class="dumb-track">
+        <div class="dumb-dot cur" style="left:${posOf(cur)}%"></div>
+      </div>
+      <div class="dumb-vals"><span class="cur"><span class="cnt" data-v="${cur}">${cur}</span>%</span></div>
+    </div>`;
+    }
     const cur = num(e.pct), prev = num(e.prev);
     const pc = posOf(cur), pp = posOf(prev);
     const lo = Math.min(pc, pp), span = Math.abs(pc - pp);
@@ -482,7 +527,7 @@ function renderDumbbell(engines: ChartEngine[], prior: string, note?: string): s
   const excluded = names.length
     ? `<p class="nr-note">${esc(names.length === 1 ? names[0] : names.join(" and "))} ${names.length === 1 ? "is" : "are"} left out of this chart on purpose. ${names.length === 1 ? "It returned" : "They returned"} plenty of sources this month, but not one of them was any venue in your category, yours or a competitor's. That points at how ${names.length === 1 ? "that tool" : "those tools"} sourced answers this month rather than at anything on your side, so scoring it as a zero would be misleading.</p>`
     : "";
-  return `<section class="nr-chart"><h3 class="nr-ctitle">How much of what AI reads is your own site</h3><div class="nr-bars">${rows}</div>${chartText(cap, note)}${excluded}</section>`;
+  return `<section class="nr-chart"><h3 class="nr-ctitle">How much of what AI reads is your own site</h3><div class="nr-bars">${rows}</div>${chartText(cap, note)}${excluded}${extraHtml}</section>`;
 }
 
 // 100% stacked bar for the source-type composition (part-to-whole). One bar
@@ -727,8 +772,10 @@ export function renderCharts(factsJson: string | null): string {
   const namedFromMemory = allEngines.filter((e) => e.layer === "model_knowledge");
 
   if (engines.length) {
+    // The raw label: ownSiteNotes escapes what it renders, and `prior` above is already escaped.
+    const disclosures = ownSiteNotes(f, engines, f.prior_label || "last month");
     if (engines.some((e) => typeof e.prev === "number")) {
-      blocks.push(renderDumbbell(engines, prior, notes.engines));
+      blocks.push(renderDumbbell(engines, prior, notes.engines, disclosures));
     } else {
       const sorted = [...engines].sort((a, b) => num(b.pct) - num(a.pct));
       const max = Math.max(...sorted.map((e) => num(e.pct)), 1);
@@ -736,7 +783,7 @@ export function renderCharts(factsJson: string | null): string {
       const cap = `Out of every page a tool opened while answering questions in your category, this is the share that came from your own website. ` +
         `Single digits is the normal range and not a bad result: a tool reads a dozen or more sources per answer, and every hotel in the set is competing for the same slots. ` +
         `It matters because your own site is the one source here you control outright. The chart above shows whether AI says your name. This shows how much of what it reads is yours.`;
-      blocks.push(chartBlock("How much of what AI reads is your own site", bars, cap, notes.engines, max));
+      blocks.push(chartBlock("How much of what AI reads is your own site", bars, cap, notes.engines, max, disclosures));
     }
   }
 

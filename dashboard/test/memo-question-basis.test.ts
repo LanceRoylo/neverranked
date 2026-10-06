@@ -250,7 +250,11 @@ test("the readout snapshot leaves Google wrapper links out of sources and hosts"
   assert.ok(hosts.includes("yelp.com"), "a wrapper carrying a real target is credited to the target");
   const st = tc.source_types as Record<string, { citations: number }>;
   assert.equal(Object.values(st).reduce((a, b) => a + b.citations, 0), 3, "tripadvisor + yelp + own site");
-  assert.deepEqual(tc.source_exclusions, { google_wrapper_links: 3, google_wrapper_links_resolved: 1 });
+  // Decision D (2026-10-05) also records them per engine and leaves them out
+  // of that engine's link total. See test/link-basis.test.ts.
+  assert.deepEqual(tc.source_exclusions, {
+    google_wrapper_links: 3, google_wrapper_links_resolved: 1, wrapper_links_by_engine: { "Google AI Overviews": 3 },
+  });
 });
 
 // ── 2. measurement_start and the end of the period ────────────────────────

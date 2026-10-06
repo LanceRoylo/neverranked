@@ -52,8 +52,14 @@ export interface MemoInputs {
   by_engine: Array<{
     engine: string;
     current_share_pct: number;
-    prior_share_pct: number;
-    delta_pp: number;
+    /** NULL, with delta_pp, only when movement_withheld is set. */
+    prior_share_pct: number | null;
+    delta_pp: number | null;
+    /** Set when this engine's own-site link share may not be compared with
+     *  last month's: the prior figure was computed on a different link basis
+     *  (lib/link-basis.ts, decided 2026-10-05). prior_share_pct and delta_pp
+     *  are then null, not placeholders. The reason, in plain words. */
+    movement_withheld?: string;
     current_runs: number;
     /** How many cohort businesses this engine named this period, customer
      *  excluded. Above zero is positive proof the engine DOES name businesses
@@ -260,6 +266,9 @@ export interface MemoInputs {
    *  data showed hundreds of pulls. Absent when it could not be counted. */
   own_site_pulls?: number;
   own_site_pulls_basis?: string;
+  /** One plain sentence, to be said once: which engines' link counts leave
+   *  out Google's own viewer links this period. Absent when none did. */
+  link_count_basis?: string;
   /** Ready-made destinations for the punch list.
    *
    *  WHY (2026-09-17). The punch-list standard says "a clickable link beats a
@@ -291,6 +300,7 @@ function pct(cited: number, runs: number): number {
 }
 import { engineLayer, isControlEngine, LAYER1_ENGINE_KEYS } from "./engine-layer";
 import { namedInAnswer, capForRun } from "./answer-presence";
+import { linkBasisOf, linkBasisNote, linkMovementWithheld, priorGoogleLinkEvidence } from "./link-basis";
 
 /** The per-question measure. See `measure` on by_question. */
 export const QUESTION_MEASURE = "site_in_sources" as const;
@@ -791,6 +801,8 @@ export async function gatherMemoInputs(
   let own_site_pulls_basis: string | undefined = curRuns > 0
     ? "search-tool checks this period whose listed sources included the client's own site (Bing control excluded)"
     : undefined;
+  /** Set on the snapshot path. See MemoInputs.link_count_basis. */
+  let link_count_basis: string | undefined;
   const ownDomain = domains.results.find((d) => d.is_competitor === 0)?.domain ?? null;
 
   // ── Canonical override: source headline + per-engine from the snapshot ──
@@ -865,7 +877,14 @@ export async function gatherMemoInputs(
     // undefined. Guard added 2026-09-06.
     if (!isReadoutShapeSnapshot(row.engines_breakdown, row.top_competitors)) return null;
     let eb: Record<string, { citations: number; total: number; share_pct: number; cohort_citations?: number }> = {};
-    let tc: { htc_venue_share_pct?: number; competitors?: Array<{ label?: string; domain?: string; citations?: number }>; source_types?: Record<string, { citations?: number; share_pct?: number }>; offsite_hosts?: Array<{ host?: string; citations?: number; share_pct?: number }> } = {};
+    let tc: {
+      htc_venue_share_pct?: number;
+      competitors?: Array<{ label?: string; domain?: string; citations?: number }>;
+      source_types?: Record<string, { citations?: number; share_pct?: number }>;
+      offsite_hosts?: Array<{ host?: string; citations?: number; share_pct?: number }>;
+      link_basis?: string;
+      source_exclusions?: { wrapper_links_by_engine?: Record<string, number> };
+    } = {};
     try { eb = JSON.parse(row.engines_breakdown) ?? {}; } catch { /* keep empty */ }
     try { tc = JSON.parse(row.top_competitors) ?? {}; } catch { /* keep empty */ }
     return { eb, tc };
@@ -943,8 +962,33 @@ export async function gatherMemoInputs(
     // Run-based counts per engine key, kept so each snapshot row can carry its
     // REAL run count and its answer-level rate. See `measure` on by_engine.
     const runBased = new Map(by_engine.map((b) => [b.engine, b]));
+
+    // LIKE FOR LIKE ACROSS THE LINK-BASIS CHANGE (decision D, 2026-10-05).
+    // From that change a citation-layer engine's link total leaves out
+    // Google's own viewer links. A prior snapshot written before it counted
+    // them, so its own-site link share is a share of a different total and
+    // its delta is withheld, with the reason, wherever the change could have
+    // touched the engine. Run-level figures and the comparison block are
+    // unaffected: a wrapper is never the client's domain.
+    const curLinkBasis = linkBasisOf(curSnap.tc.link_basis);
+    const priLinkBasis = priSnap ? linkBasisOf(priSnap.tc.link_basis) : null;
+    const excludedByEngine = curSnap.tc.source_exclusions?.wrapper_links_by_engine ?? {};
+    const priorEvidence = priSnap && priLinkBasis !== curLinkBasis
+      ? await priorGoogleLinkEvidence(env, slug, priorStart, curStart)
+      : new Map<string, number>();
+    link_count_basis = linkBasisNote(excludedByEngine) ?? undefined;
+
     by_engine = Object.entries(curSnap.eb).map(([engine, e]) => {
       const ps = priSnap && priSnap.eb[engine] ? (priSnap.eb[engine].share_pct ?? 0) : null;
+      const withheld = ps !== null && priLinkBasis !== null && engineLayer(engine) === "citation" && !isControlEngine(engine)
+        ? linkMovementWithheld({
+            curBasis: curLinkBasis,
+            priorBasis: priLinkBasis,
+            // absent-is-zero: the writer lists only engines with wrappers left out, so an absent engine had none.
+            curExcluded: excludedByEngine[engine] ?? 0,
+            priorEvidence: priorEvidence === null ? null : (priorEvidence.get(engine) ?? 0),
+          })
+        : null;
       const key = engineKeyForLabel(engine);
       const rb = key ? runBased.get(key) : undefined;
       // Only assert absence when the bridge actually measured it. An older
@@ -956,8 +1000,11 @@ export async function gatherMemoInputs(
         engine,
         // absent-is-zero: RESIDUAL RISK, accepted. buildReadoutSnapshot writes share_pct for every engine it emits, so absence means a snapshot this Worker did not write. The bridge was exactly that, and it is now refused. If a foreign writer returns, this reports 0% for a real engine.
         current_share_pct: e.share_pct ?? 0,
-        prior_share_pct: ps ?? (e.share_pct ?? 0),
-        delta_pp: ps === null ? 0 : +((e.share_pct ?? 0) - ps).toFixed(1),
+        // absent-is-zero: same residual risk as the line above, same writer.
+        prior_share_pct: withheld ? null : ps ?? (e.share_pct ?? 0),
+        // absent-is-zero: same residual risk as the line above, same writer.
+        delta_pp: withheld ? null : ps === null ? 0 : +((e.share_pct ?? 0) - ps).toFixed(1),
+        ...(withheld ? { movement_withheld: withheld } : {}),
         // REAL runs, from the rows. This used to be e.total, which on a
         // citation-layer row is cited LINKS, so the memo reported 3,226 links
         // as "3226 runs". Model-knowledge rows: total IS runs (answers).
@@ -1165,6 +1212,7 @@ export async function gatherMemoInputs(
     cohort,
     offsite,
     ...(typeof own_site_pulls === "number" ? { own_site_pulls, own_site_pulls_basis } : {}),
+    ...(link_count_basis ? { link_count_basis } : {}),
     prior_memo: priorMemo ?? null,
     is_first_memo: !priorMemo,
   };

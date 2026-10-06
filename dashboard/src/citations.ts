@@ -13,6 +13,7 @@ import { resolveGroundingUrls } from "./gemini-resolver";
 import { detectAndRecordAlerts } from "./lib/citation-alerts";
 import { isReadoutShapeSnapshot } from "./lib/snapshot-shape";
 import { classifySource, classifyGoogleLink, hostOf } from "./lib/classify-source";
+import { LINK_BASIS } from "./lib/link-basis";
 import { keywordRunVerdict } from "./lib/keyword-run-verdict";
 import { LAYER1_ENGINE_KEYS } from "./lib/engine-layer";
 import { recordSpend } from "./lib/engine-spend";
@@ -1081,7 +1082,9 @@ export function nameMatches(entityName: string, businessName: string): boolean {
   return e.includes(b) || b.includes(e);
 }
 
-function computeProminence(
+// Exported for test/link-basis.test.ts: run-level client_cited is decided
+// here, from the client's own domain, and a Google wrapper link can never be it.
+export function computeProminence(
   entities: CitedEntity[],
   urls: string[],
   clientDomain: string,
@@ -2644,6 +2647,11 @@ export async function buildReadoutSnapshot(
    *  See classifyGoogleLink. Recorded so the exclusion is visible. */
   let googleWrappersDropped = 0;
   let googleWrappersResolved = 0;
+  /** The same wrappers, per engine label: left out of that engine's link
+   *  TOTAL as well, the denominator of its own-site link share (decided
+   *  2026-10-05, see lib/link-basis.ts). Never the client's domain, so the
+   *  owned count above them is unchanged. */
+  const engUrlWrappers: Record<string, number> = {};
 
   // Layer 2 accumulators (response-based).
   const engRuns: Record<string, number> = {};
@@ -2733,10 +2741,15 @@ export async function buildReadoutSnapshot(
         if (isControl) continue;
         // A Google viewer/redirect/search link is not a source. Resolve it to
         // its real target when it carries one, otherwise leave it out of the
-        // source mix and the host list. Scope is deliberately ONLY these two:
-        // the engine's own link totals above still count every listed link.
+        // source mix, the host list AND (since 2026-10-05) the engine's own
+        // link total. A link that resolves to a real target stays a link.
+        // The control never reaches here, so its total keeps every result.
         const g = classifyGoogleLink(u);
-        if (g.kind === "wrapper") { googleWrappersDropped++; continue; }
+        if (g.kind === "wrapper") {
+          googleWrappersDropped++;
+          engUrlWrappers[label] = (engUrlWrappers[label] || 0) + 1;
+          continue;
+        }
         const srcUrl = g.kind === "target" ? g.url : u;
         if (g.kind === "target") googleWrappersResolved++;
         const srcHost = g.kind === "target" ? hostOf(srcUrl) : h;
@@ -2798,9 +2811,11 @@ export async function buildReadoutSnapshot(
   const enginesBreakdown: Record<string, ReadoutEngineStat> = {};
   for (const [key, label] of Object.entries(READOUT_ENGINE_LABEL)) {
     if (LAYER1_ENGINES.has(key)) {
-      const t = engUrlTotal[label] || 0;
+      if (!(label in engUrlTotal)) continue; // engine never ran
+      // Google's viewer links are not pages, so they are not in the link total
+      // an own-site share is a share of. See engUrlWrappers.
+      const t = (engUrlTotal[label] || 0) - (engUrlWrappers[label] || 0);
       const o = engUrlOwned[label] || 0;
-      if (t === 0 && !(label in engUrlTotal)) continue; // engine never ran
       enginesBreakdown[label] = {
         citations: o,
         total: t,
@@ -2885,7 +2900,18 @@ export async function buildReadoutSnapshot(
     venue_basis: "layer1_citations",
     /** Links left out of source_types / offsite_hosts because they were
      *  Google result-page wrappers, not pages (from 2026-10-05). */
-    source_exclusions: { google_wrapper_links: googleWrappersDropped, google_wrapper_links_resolved: googleWrappersResolved },
+    source_exclusions: {
+      google_wrapper_links: googleWrappersDropped,
+      google_wrapper_links_resolved: googleWrappersResolved,
+      /** Per engine label, the wrapper links also left out of that engine's
+       *  link total (engines with none are not listed). The disclosure line
+       *  is built from this. */
+      wrapper_links_by_engine: Object.fromEntries(Object.entries(engUrlWrappers).filter(([, n]) => n > 0)),
+    },
+    /** What the per-engine link totals count. Absent on rows written before
+     *  2026-10-05, which counted every listed link. A link share is never
+     *  compared across two bases (lib/link-basis.ts). */
+    link_basis: LINK_BASIS,
     /** The runs this row actually covers, [start, end), start floored at
      *  measurement_start. Recorded from 2026-10-05 so a reader can prove a
      *  row covers a whole month instead of inferring it from week_start. */
@@ -2904,6 +2930,12 @@ export async function buildReadoutSnapshot(
   // quantities -- client_citations / total_queries is NOT citation_share, and
   // any reader dividing one by the other is deriving a number neither writer
   // computed. Logged as a gap rather than papered over here.
+  // DELIBERATELY still every listed link, Google's viewer links included.
+  // citation_share is the pooled scalar that the summary page, the legacy
+  // monthly report, the recap email, Atlas's weekly series and the benchmarks
+  // compare week over week and month over month. Changing its basis would put
+  // a step into each of those comparisons. Decision D (2026-10-05) moved the
+  // PER-ENGINE totals only.
   const totalUrlAll = sumNonControl(engUrlTotal);
   const citationShare = totalUrlAll ? ownedAll / totalUrlAll : 0;
 
