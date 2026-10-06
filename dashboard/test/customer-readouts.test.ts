@@ -107,8 +107,12 @@ test("renderCharts: dumbbell for engine movement, bars for venue, stacked bar fo
   assert.match(html, /dumb-dot prev/);
   assert.match(html, /dumb-dot cur/);
   assert.doesNotMatch(html, /nr-d up/); // no delta pills anymore
-  // engines sorted by cur desc: ChatGPT(10) before Copilot(1)
-  assert.ok(html.indexOf("ChatGPT search") < html.indexOf("Microsoft Copilot"));
+  // engines sorted by cur desc: ChatGPT(10) before Gemini(8)
+  assert.ok(html.indexOf("ChatGPT search") < html.indexOf("Gemini grounded"));
+  // The retired Copilot label is shown as what the channel is, the Bing
+  // search control, and the control is never drawn among the AI tools.
+  assert.doesNotMatch(html, /Copilot/);
+  assert.match(html, /Bing search \(control\) is left out of this chart/);
   // venue -> bars, "you" highlighted
   assert.match(html, /nr-fill nr-hl/);
   // sources -> stacked bar + legend, own highlighted

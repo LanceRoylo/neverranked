@@ -369,7 +369,8 @@ function renderCitationGrid(
       // Em dash replaced with a colon: house style, and this is customer copy.
       // 2026-10-05: "pulled from" read as traffic. It means the site was in the
       // tool's source list, so it says so. The control returns pages.
-      const verb = grid.layers?.[r] === "model_knowledge" ? "named you in" : isControlLabel(eng) ? "returned your page on" : "used your site as a source on";
+      const rowLayer = gridRowLayer(grid.layers, r, eng);
+      const verb = rowLayer === "model_knowledge" ? "named you in" : rowLayer === "control" ? "returned your page on" : "used your site as a source on";
       const n = countsOrdered[r]?.[c] ?? 0;
       const thin = markThin && n > 0 && n < THIN_CHECKS;
       if (thin) thinCells++;
@@ -459,9 +460,27 @@ const ENGINE_DISPLAY: Record<string, string> = {
   "ChatGPT": "ChatGPT search",
   "Gemini": "Gemini grounded",
   "Google AIO": "Google AI Overviews",
+  // Reclassified 2026-08-22: the channel is Bing organic top-5, a classic
+  // search control. There is no Copilot data, so no Copilot label is shown,
+  // including on reports frozen before the reclassification.
+  "Copilot": "Bing search (control)",
+  "Microsoft Copilot": "Bing search (control)",
 };
 function displayEngine(name: string): string {
   return ENGINE_DISPLAY[name] ?? name;
+}
+
+/** A grid row's layer. Facts frozen before 2026-09-09 carry no layers, and
+ *  reading a missing layer as "not a search tool" made a delivered readout's
+ *  summary count every question as one where the site was never a source,
+ *  beside a tile showing it had over half the links. The two model-knowledge
+ *  tools are known by name, so the layer is derived from it when absent. */
+function gridRowLayer(layers: unknown, i: number, label: string): "citation" | "model_knowledge" | "control" {
+  if (isControlLabel(label)) return "control";
+  const l = Array.isArray(layers) ? layers[i] : undefined;
+  if (l === "model_knowledge") return "model_knowledge";
+  if (typeof l === "string") return "citation";
+  return /^(Claude|Gemma)\b/i.test(label) ? "model_knowledge" : "citation";
 }
 
 /** The answer-storage cap went up on 2026-09-16. Whether a readout's "could
@@ -654,10 +673,15 @@ function renderSummary(f: ReportFacts): string {
   //    "no AI tool put you anywhere in the answer".
   const g = f.grid;
   const cells = g?.cells;
-  if (g && Array.isArray(cells) && Array.isArray(g.questions) && g.questions.length) {
-    const layer1 = (g.layers ?? []).map((l: string, i: number) => (l !== "model_knowledge" && g.engines?.[i] !== "Bing search (control)" ? i : -1)).filter((i) => i >= 0);
+  if (g && Array.isArray(cells) && Array.isArray(g.questions) && g.questions.length && Array.isArray(g.engines)) {
+    const layer1 = g.engines
+      .map((e: string, i: number) => (gridRowLayer(g.layers, i, displayEngine(String(e))) === "citation" ? i : -1))
+      .filter((i: number) => i >= 0);
+    // No search-tool row at all means nothing was measured here. Every()
+    // over an empty list is true, which is how "18 of 18" was printed.
     let blank = 0;
-    for (let q = 0; q < g.questions.length; q++) {
+    if (layer1.length === 0) blank = -1;
+    for (let q = 0; blank >= 0 && q < g.questions.length; q++) {
       if (layer1.every((e: number) => !num(cells[e]?.[q]))) blank++;
     }
     if (blank > 0) {
@@ -758,7 +782,9 @@ export function renderCharts(factsJson: string | null): string {
 
   // 1. Per-engine citation share. A dumbbell (foregrounds the movement) when a
   // prior month exists; bars for a baseline report (nothing to move from yet).
-  const allEngines = Array.isArray(f.engines) ? f.engines.filter((e) => e && typeof e.name === "string") : [];
+  const allEngines = Array.isArray(f.engines)
+    ? f.engines.filter((e) => e && typeof e.name === "string").map((e) => ({ ...e, name: displayEngine(e.name) }))
+    : [];
   // 1b. Did the AI say your name. Placed directly under the "reads you" bars
   // because the pair is the point: being read is the mechanism, being named is
   // the outcome, and on real data they are far apart (15% against 38-45% on

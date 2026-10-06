@@ -265,3 +265,48 @@ test("the sites list is what AI uses most, with google.com's destination left un
   assert.doesNotMatch(text, /point back to Google rather than/);
   assert.match(text, /whose destination we cannot see/);
 });
+
+/* A delivered readout frozen before grid layers existed printed "18 of 18
+ * questions" beside "1st, 52% of the links". Missing layers are derived from
+ * the engine's name, and the retired Copilot label shows as the control. */
+test("facts frozen without grid layers: no false 'never a source' tile, memory rows named, Copilot shown as the control", () => {
+  const old = {
+    period_label: "Aug 2026",
+    engines: [
+      { name: "Perplexity", pct: 7, prev: 12 },
+      { name: "Claude", pct: 14, prev: 15 },
+      { name: "Microsoft Copilot", pct: 0, prev: 1, noCohortSignal: true },
+    ],
+    venue: { rows: [{ label: "Example Venue", pct: 52, you: true }, { label: "Other Venue", pct: 20 }] },
+    topSources: [{ host: "example-guide.test", pct: 2 }],
+    grid: {
+      engines: ["Perplexity", "ChatGPT", "Copilot", "Claude"],
+      questions: ["q one", "q two", "q three"],
+      cells: [
+        [1, 0, 0.5],
+        [0, 0, 1],
+        [0, 0, 0],
+        [1, 1, 0],
+      ],
+    },
+  };
+  const html = renderCharts(JSON.stringify(old));
+  const t = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+  // q two: both search rows 0 -> exactly one question, not all three.
+  assert.match(t, /1 of 3 questions your website was never among the sources/);
+  assert.doesNotMatch(t, /3 of 3 questions/);
+  assert.match(html, /Claude: named you in 100% of/);
+  assert.doesNotMatch(html, /Claude: used your site/);
+  assert.doesNotMatch(t, /Copilot/);
+  assert.match(html, /Bing search \(control\): returned your page on/);
+  assert.match(t, /Bing search \(control\) is left out of this chart/);
+});
+
+test("a grid with no search-tool row prints no gap tile", () => {
+  const memoryOnly = {
+    ...FACTS,
+    grid: { engines: ["Claude", "Gemma"], questions: ["a", "b", "c"], cells: [[0, 0, 0], [0, 0, 0]] },
+  };
+  const t = renderCharts(JSON.stringify(memoryOnly)).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+  assert.doesNotMatch(t, /your website was never among the sources/);
+});
