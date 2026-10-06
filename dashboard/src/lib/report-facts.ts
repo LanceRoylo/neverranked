@@ -17,7 +17,7 @@ import { snapshotUsableForMonth } from "./snapshot-selection";
 import { engineLayer, type EngineLayer } from "./engine-layer";
 import { resolveBusinessName, nameMatches } from "../citations";
 import { buildPresenceSql, toEnginePresence, type EnginePresence } from "./answer-presence";
-import { linkBasisOf, linkBasisNote, linkMovementWithheld, priorGoogleLinkEvidence } from "./link-basis";
+import { LINK_BASIS, linkBasisOf, linkBasisNote, linkMovementWithheld, priorGoogleLinkEvidence } from "./link-basis";
 import { isControlEngine } from "./engine-layer";
 import type { InjectionConfig } from "../types";
 
@@ -95,6 +95,11 @@ export interface ReportFacts {
   /** One plain sentence, shown once under the own-site chart, naming the
    *  engines whose link counts left out Google's own viewer links. */
   linkBasisNote?: string;
+  /** How many Google viewer links were left out of sources, topSources and
+   *  the per-engine link totals, so the source-mix and host-list captions can
+   *  say so (the renderer's field, from main's 2026-10-05 chart wording).
+   *  Only on LINK_BASIS facts, where all three leave them out. */
+  googleLinksSetAside?: number;
   /** Did the AI NAME the business in its answer? Web-searching engines only.
    *
    *  A different question from `engines` above, which counts how often the
@@ -718,7 +723,7 @@ export async function buildReportFacts(env: Env, slug: string, monthKey: string)
     source_types?: Record<string, { share_pct?: number }>;
     offsite_hosts?: Array<{ host?: string; share_pct?: number }>;
     link_basis?: string;
-    source_exclusions?: { wrapper_links_by_engine?: Record<string, number> };
+    source_exclusions?: { google_wrapper_links?: number; wrapper_links_by_engine?: Record<string, number> };
     affiliated_hosts?: Array<{ host?: string; share_pct?: number }>;
   } = {};
   try { eb = JSON.parse(snap.engines_breakdown) || {}; } catch { return null; }
@@ -939,12 +944,16 @@ export async function buildReportFacts(env: Env, slug: string, monthKey: string)
   }
 
   const basisNote = linkBasisNote(excludedByEngine);
+  // Only a LINK_BASIS row leaves the wrappers out of the per-engine totals as
+  // well as the source mix and host list, which is what the field promises.
+  const wrappersSetAside = curLinkBasis === LINK_BASIS ? Number(tc.source_exclusions?.google_wrapper_links) : 0;
   return {
     period_label: monthLabel(monthKey),
     prior_label: priorLabel,
     engines: shownEngines,
     ...(tc.link_basis ? { linkBasis: curLinkBasis } : {}),
     ...(basisNote ? { linkBasisNote: basisNote } : {}),
+    ...(Number.isFinite(wrappersSetAside) && wrappersSetAside > 0 ? { googleLinksSetAside: wrappersSetAside } : {}),
     ...(excludedEngines.length ? { excludedEngines } : {}),
     venue: { rows: venueRows },
     sources,

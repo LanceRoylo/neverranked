@@ -1036,7 +1036,9 @@ export default {
       // Track page view for public pages that fall through (unauthenticated visit)
       const ip = request.headers.get("CF-Connecting-IP") || "unknown";
       ctx.waitUntil(logEvent(env, { type: "page_view", detail: { path, authed: false }, ipHash: hashIP(ip) }));
-      return redirect("/login");
+      // Remember where they were going, so a client opening their readout link
+      // signs in and lands ON the readout, not the dashboard home.
+      return redirect(method === "GET" && path !== "/" ? `/login?next=${encodeURIComponent(path)}` : "/login");
     }
 
     // 2FA gate. Two enforcement modes:

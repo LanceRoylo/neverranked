@@ -8,7 +8,24 @@ import { createMagicLink, verifyMagicLink, deleteSession, sessionCookie, clearCo
 import { sendMagicLinkEmail } from "../email";
 import { resolveAgencyForEmail } from "../agency";
 
-function loginPage(error?: string): string {
+/**
+ * Where to send someone after they sign in. Same-origin paths only, so a
+ * crafted link can never bounce a client to another site.
+ *
+ * Added 2026-10-05. A client clicking their readout link while signed out was
+ * sent to /login with no memory of where they were going, signed in, and
+ * landed on the dashboard home, so the readout they were told about needed a
+ * second trip back to the email. The first readout of the first paying client
+ * had already sat unopened for ten days.
+ */
+export function safeNextPath(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  if (!raw.startsWith("/") || raw.startsWith("//") || raw.startsWith("/\\")) return null;
+  if (raw.startsWith("/login") || raw.startsWith("/auth/") || raw.startsWith("/logout")) return null;
+  return raw.length > 300 ? null : raw;
+}
+
+function loginPage(error?: string, next?: string | null): string {
   return layout("Sign in", `
     <div style="max-width:400px;margin:80px auto;text-align:center">
       <h1 style="margin-bottom:12px"><em>Sign in</em></h1>
@@ -17,6 +34,7 @@ function loginPage(error?: string): string {
       </p>
       ${error ? `<div class="flash flash-error">${esc(error)}</div>` : ''}
       <form method="POST" action="/login">
+        ${next ? `<input type="hidden" name="next" value="${esc(next)}">` : ""}
         <div class="form-group" style="text-align:left">
           <label for="email">Email</label>
           <input type="email" id="email" name="email" required placeholder="you@company.com" autofocus>
@@ -60,16 +78,18 @@ function linkExpiredPage(): string {
   `);
 }
 
-export async function handleGetLogin(_request: Request, _env: Env): Promise<Response> {
-  return html(loginPage());
+export async function handleGetLogin(request: Request, _env: Env): Promise<Response> {
+  const next = safeNextPath(new URL(request.url).searchParams.get("next"));
+  return html(loginPage(undefined, next));
 }
 
 export async function handlePostLogin(request: Request, env: Env): Promise<Response> {
   const formData = await request.formData();
   const email = (formData.get("email") as string || "").trim().toLowerCase();
+  const next = safeNextPath(formData.get("next") as string | null);
 
   if (!email || !email.includes("@")) {
-    return html(loginPage("Please enter a valid email address."), 400);
+    return html(loginPage("Please enter a valid email address.", next), 400);
   }
 
   // Always show "check email" page (no user enumeration)
@@ -77,7 +97,7 @@ export async function handlePostLogin(request: Request, env: Env): Promise<Respo
   if (token) {
     // Resolve agency for white-label branding (returns null for direct/admin users).
     const agency = await resolveAgencyForEmail(env, { email });
-    const sent = await sendMagicLinkEmail(email, token, env, agency);
+    const sent = await sendMagicLinkEmail(email, token, env, agency, next);
     if (!sent) {
       console.log(`Magic link send returned false for ${email} (token created in DB but email did not deliver)`);
     }

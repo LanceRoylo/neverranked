@@ -107,8 +107,12 @@ test("renderCharts: dumbbell for engine movement, bars for venue, stacked bar fo
   assert.match(html, /dumb-dot prev/);
   assert.match(html, /dumb-dot cur/);
   assert.doesNotMatch(html, /nr-d up/); // no delta pills anymore
-  // engines sorted by cur desc: ChatGPT(10) before Copilot(1)
-  assert.ok(html.indexOf("ChatGPT search") < html.indexOf("Microsoft Copilot"));
+  // engines sorted by cur desc: ChatGPT(10) before Gemini(8)
+  assert.ok(html.indexOf("ChatGPT search") < html.indexOf("Gemini grounded"));
+  // The retired Copilot label is shown as what the channel is, the Bing
+  // search control, and the control is never drawn among the AI tools.
+  assert.doesNotMatch(html, /Copilot/);
+  assert.match(html, /Bing search \(control\) is left out of this chart/);
   // venue -> bars, "you" highlighted
   assert.match(html, /nr-fill nr-hl/);
   // sources -> stacked bar + legend, own highlighted
@@ -188,7 +192,7 @@ test("renderCharts: citation grid renders cells, per-row count, and question leg
     },
   });
   const html = renderCharts(facts);
-  assert.match(html, /Where the six AI tools and the search control put you, question by question/);
+  assert.match(html, /Question by question: where each tool used your site, or named you/);
   assert.match(html, /class="cg-svg"/);
   // row labels present
   assert.match(html, /Perplexity/);
@@ -228,7 +232,7 @@ test("topSources renders a 4th chart with linkable domains, and refuses to link 
     ],
   });
   const html = renderCharts(facts);
-  assert.match(html, /The specific sites AI pulls from/);
+  assert.match(html, /The specific sites AI uses most/);
   assert.match(html, /<a href="https:\/\/gohawaii\.com"[^>]*>gohawaii\.com<\/a>/);
   assert.match(html, /<a href="https:\/\/broadway\.org"[^>]*>broadway\.org<\/a>/);
   assert.doesNotMatch(html, /href="https:\/\/evil/); // malformed host cannot become an href

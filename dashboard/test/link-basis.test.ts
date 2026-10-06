@@ -206,6 +206,69 @@ test("the dumbbell draws no 'from' dot for a withheld tool and discloses the cha
   assert.match(fresh, /New tool shows this month only\. There is no reading from last month to compare it with\./);
 });
 
+/* Merged with main's chart wording (2026-10-05). main's renderer says what
+ * google.com is inside the source mix and the host list, from either a
+ * set-aside count (googleLinksSetAside) or a google.com row that still counts
+ * the viewer links. Facts on LINK_BASIS are the set-aside kind, and the
+ * own-site chart's viewer-link sentence is the branch's, said once. */
+const readerText = (html: string) => html
+  .replace(/<style[\s\S]*?<\/style>/g, " ")
+  .replace(/<[^>]+>/g, " ")
+  .replace(/&[a-z]+;|&#\d+;/g, " ")
+  .replace(/\s+/g, " ");
+
+test("facts on the new basis carry the set-aside count, and a row without the basis does not", async (t) => {
+  const d1 = await readoutDb(SEPT_FACTS());
+  if (!d1) { t.skip("node:sqlite unavailable"); return; }
+  assert.equal((await buildReportFacts(d1.env, SLUG, "2026-10"))!.googleLinksSetAside, 3);
+  // A row whose per-engine totals still counted the wrappers promises nothing.
+  d1.db.prepare("UPDATE citation_snapshots SET top_competitors = ?").run(JSON.stringify({
+    htc_venue_share_pct: 20, competitors: [], source_types: {}, offsite_hosts: [],
+    source_exclusions: { google_wrapper_links: 3 },
+  }));
+  const legacy = (await buildReportFacts(d1.env, SLUG, "2026-10"))!;
+  assert.equal(legacy.googleLinksSetAside, undefined);
+  assert.equal(legacy.linkBasis, undefined);
+});
+
+test("on the new basis the viewer links are said once on the own-site chart and never called still counted", () => {
+  const facts = {
+    prior_label: "Sep 2026",
+    engines: [
+      { name: "Perplexity", pct: 10, prev: 5, layer: "citation" },
+      { name: AIO, pct: 10, prevWithheld: LINK_MOVEMENT_WITHHELD, layer: "citation" },
+    ],
+    linkBasis: LINK_BASIS,
+    linkBasisNote: "Google AI Overviews' link count leaves out Google's own viewer links.",
+    googleLinksSetAside: 1650,
+    sources: [{ label: "Independent web", pct: 80 }, { label: "Your own site", pct: 20, own: true }],
+    topSources: [{ host: "tripadvisor.com", pct: 9 }],
+  };
+  // A caption keeps its apostrophe, a note is escaped (&#39;), so "Google.s".
+  const STILL_COUNTED = /include Google.s own viewer links|include links to google\.com itself|Almost all of its \d+% are Google.s own viewer links/;
+  const text = readerText(renderCharts(JSON.stringify(facts)));
+  assert.equal((text.match(/viewer links are set aside from its link count|link count leaves out Google.s own viewer links/g) ?? []).length, 1);
+  assert.match(text, /link count leaves out Google.s own viewer links/, "the one said is the branch's note");
+  assert.match(text, /1,650 links to google\.com itself are set aside/);
+  assert.match(text, /google\.com is not listed\. Its links are set aside/);
+  assert.doesNotMatch(text, STILL_COUNTED);
+  // No set-aside count, but a google.com row: on this basis it is google.com's
+  // real pages, so nothing calls it the viewer links.
+  const residual = readerText(renderCharts(JSON.stringify({
+    ...facts, linkBasisNote: undefined, googleLinksSetAside: undefined,
+    topSources: [{ host: "tripadvisor.com", pct: 9 }, { host: "google.com", pct: 2 }],
+  })));
+  assert.doesNotMatch(residual, STILL_COUNTED);
+  assert.doesNotMatch(residual, /set aside/);
+  // Facts that still count them keep main's wording.
+  const legacy = readerText(renderCharts(JSON.stringify({
+    ...facts, linkBasis: undefined, linkBasisNote: undefined, googleLinksSetAside: undefined,
+    topSources: [{ host: "tripadvisor.com", pct: 9 }, { host: "google.com", pct: 6 }],
+  })));
+  assert.match(legacy, /For Google AI Overviews, the links counted here include Google.s own viewer links/);
+  assert.match(legacy, /include links to google\.com itself, 6% of all links/);
+});
+
 test("an analyst note may not describe a withheld tool's move, even without digits", () => {
   const facts = {
     period_label: "Oct 2026", engines: [

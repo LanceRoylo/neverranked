@@ -22,6 +22,7 @@
 
 import type { Env } from "../types";
 import { ENGINE_ORDER } from "../lib/engine-order";
+import { LINK_BASIS } from "../lib/link-basis";
 import { getUser } from "../auth";
 import { redirect, esc } from "../render";
 
@@ -188,6 +189,16 @@ interface ReportFacts {
   /** The client's group's other sites (2026-10-05), listed apart from the
    *  third-party hosts and never counted as the client's own site. */
   affiliatedSources?: { host: string; pct: number }[];
+  /** Links to google.com itself left out of sources, topSources and the
+   *  per-engine link totals (almost all are Google's own viewer links). Set on
+   *  facts counted on that basis, so the captions can say so. Absent on facts
+   *  that still count them, where the google.com row in topSources is the
+   *  only trace and the captions disclose it from there. */
+  googleLinksSetAside?: number;
+  /** What the per-engine link totals count (lib/link-basis.ts). Facts with
+   *  LINK_BASIS left Google's viewer links out of them, so the "still
+   *  counted" captions below are never shown for them. */
+  linkBasis?: string;
   /** Did the answer name the business. Web-searching surfaces only; two rates
    *  because rows whose stored answer was cut off count as unread, not absent. */
   presence?: {
@@ -251,7 +262,7 @@ function renderCitationGrid(
   grid: NonNullable<ReportFacts["grid"]>,
   note?: string,
 ): string {
-  const engines = Array.isArray(grid.engines) ? grid.engines.filter((e) => typeof e === "string") : [];
+  const engines = Array.isArray(grid.engines) ? grid.engines.filter((e) => typeof e === "string").map(displayEngine) : [];
   const questions = Array.isArray(grid.questions) ? grid.questions.filter((q) => typeof q === "string") : [];
   const cells = Array.isArray(grid.cells) ? grid.cells : [];
   if (engines.length < 2 || questions.length < 3 || cells.length !== engines.length) return "";
@@ -367,7 +378,10 @@ function renderCitationGrid(
       // is URL-derived, so it says the engine pulled from the site. It does
       // not say the answer rested on it, because we cannot see that.
       // Em dash replaced with a colon: house style, and this is customer copy.
-      const verb = grid.layers?.[r] === "model_knowledge" ? "named you in" : "pulled from your site on";
+      // 2026-10-05: "pulled from" read as traffic. It means the site was in the
+      // tool's source list, so it says so. The control returns pages.
+      const rowLayer = gridRowLayer(grid.layers, r, eng);
+      const verb = rowLayer === "model_knowledge" ? "named you in" : rowLayer === "control" ? "returned your page on" : "used your site as a source on";
       const n = countsOrdered[r]?.[c] ?? 0;
       const thin = markThin && n > 0 && n < THIN_CHECKS;
       if (thin) thinCells++;
@@ -387,7 +401,7 @@ function renderCitationGrid(
     rows += `<text x="${cx}" y="${y + CELL / 2 + 4}" class="cg-count">${hit}<tspan class="cg-count-den">/${answered}</tspan></text>`;
   });
 
-  const svg = `<svg viewBox="0 0 ${W} ${H}" class="cg-svg" role="img" preserveAspectRatio="xMinYMin meet" aria-label="Coverage grid: each AI tool by each tracked question, gold where the tool pulled from your site (search tools) or named you (model-knowledge tools) this month.">`
+  const svg = `<svg viewBox="0 0 ${W} ${H}" class="cg-svg" role="img" preserveAspectRatio="xMinYMin meet" aria-label="Coverage grid: each AI tool by each tracked question, gold where your site was among the tool's sources (search tools) or the tool named you (model-knowledge tools) this month.">`
     + `<g class="cg-heads">${head}</g>${rows}</svg>`;
 
   // Numbered legend maps each column back to its question.
@@ -398,11 +412,12 @@ function renderCitationGrid(
   // The old caption used "named" and "won a citation" for the same square, in
   // one sentence, across rows that measure two different things. Each row now
   // states its own basis.
-  const cap = `Each row is one AI tool. Each numbered column is one question we put to it every day, listed underneath. ` +
-    `The key above says what each square means. Columns are ordered strongest on the left, so the questions nobody picks you up on gather at the right-hand edge ` +
+  const controlRow = engines.find((e) => isControlLabel(e));
+  const cap = `Each row is one AI tool${controlRow ? `, except ${esc(controlRow)}, a classic search run as a control` : ""}. Each numbered column is one question, listed underneath. ` +
+    `The key above says what each square means. Columns are ordered strongest on the left, so the questions where you appear least gather at the right-hand edge ` +
     `instead of being scattered through the grid.`;
 
-  return `<section class="nr-chart cg-card"><h3 class="nr-ctitle">Where the six AI tools and the search control put you, question by question</h3>`
+  return `<section class="nr-chart cg-card"><h3 class="nr-ctitle">Question by question: where each tool used your site, or named you</h3>`
     + `<div class="cg-scroll">${svg}</div>`
     + coverageKey(markThin)
     + `<ol class="cg-legend">${legend}</ol>`
@@ -419,8 +434,91 @@ function chartText(caption: string, note?: string): string {
 
 function num(v: unknown): number { const n = Number(v); return Number.isFinite(n) ? n : 0; }
 
+/** The classic-search control is not an AI tool, so it never sits among the AI
+ *  tools' bars. Frozen facts mark it only by its label, which is how the grid
+ *  already recognises it. */
+function isControlLabel(name: unknown): boolean {
+  return typeof name === "string" && /\(control\)/i.test(name);
+}
+
+/** google.com itself is not a site anyone can be listed on. Almost all of its
+ *  links are Google's own viewer links, whose destination we cannot see.
+ *  (2026-10-05: a delivered readout listed it at 6% under "the off-site places
+ *  to get listed".) */
+function isGoogleHost(host: unknown): boolean {
+  return typeof host === "string" && /^(www\.)?google\.com$/i.test(host.trim());
+}
+
+/** Frozen shares are whole percents, so a share that rounds to 0 may still be
+ *  a real handful of links. "0%" claims total absence. "under 1%" is true
+ *  either way. */
+const UNDER_ONE = "under 1%";
+
+function joinNames(names: string[]): string {
+  if (names.length <= 1) return names.join("");
+  return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
+}
+
+function countWord(n: number, noun: string): string {
+  const w = ["no", "one", "two", "three", "four", "five", "six", "seven"][n] ?? String(n);
+  return `${w} ${noun}${n === 1 ? "" : "s"}`;
+}
+
+/** Display names for the engines. Frozen facts carry two spellings (the grid
+ *  and the presence block use the short ones), so one page named the same
+ *  tool two ways. Display only: matching always uses the raw keys. */
+const ENGINE_DISPLAY: Record<string, string> = {
+  "ChatGPT": "ChatGPT search",
+  "Gemini": "Gemini grounded",
+  "Google AIO": "Google AI Overviews",
+  // Reclassified 2026-08-22: the channel is Bing organic top-5, a classic
+  // search control. There is no Copilot data, so no Copilot label is shown,
+  // including on reports frozen before the reclassification.
+  "Copilot": "Bing search (control)",
+  "Microsoft Copilot": "Bing search (control)",
+};
+function displayEngine(name: string): string {
+  return ENGINE_DISPLAY[name] ?? name;
+}
+
+/** A grid row's layer. Facts frozen before 2026-09-09 carry no layers, and
+ *  reading a missing layer as "not a search tool" made a delivered readout's
+ *  summary count every question as one where the site was never a source,
+ *  beside a tile showing it had over half the links. The two model-knowledge
+ *  tools are known by name, so the layer is derived from it when absent. */
+function gridRowLayer(layers: unknown, i: number, label: string): "citation" | "model_knowledge" | "control" {
+  if (isControlLabel(label)) return "control";
+  const l = Array.isArray(layers) ? layers[i] : undefined;
+  if (l === "model_knowledge") return "model_knowledge";
+  if (typeof l === "string") return "citation";
+  return /^(Claude|Gemma)\b/i.test(label) ? "model_knowledge" : "citation";
+}
+
+/** The answer-storage cap went up on 2026-09-16. Whether a readout's "could
+ *  not read in full" count is about to shrink depends on which side of that
+ *  date its month sits, so the sentence is chosen by month. The old fixed
+ *  sentence ("we have since increased...") was false on the very month the
+ *  change landed in, and will be false on every month after it. */
+function storageNote(periodLabel: unknown): string {
+  const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const m = typeof periodLabel === "string" ? /^([A-Z][a-z]{2}) (\d{4})$/.exec(periodLabel.trim()) : null;
+  if (!m || !MONTHS.includes(m[1])) return "";
+  const idx = Number(m[2]) * 12 + MONTHS.indexOf(m[1]);
+  const CAP_RAISED = 2026 * 12 + 8; // September 2026
+  if (idx < CAP_RAISED) {
+    return `One thing to expect, said now rather than after the fact: we have since increased how much of each answer we keep, ` +
+      `so later months are measured on whole answers and will probably read higher for that reason alone, not because anything changed for you. `;
+  }
+  if (idx === CAP_RAISED) {
+    return `One thing to expect, said now rather than after the fact: on September 16 we increased how much of each answer we keep, ` +
+      `so answers from before that date are the ones most likely to have been cut off. Later months are measured almost entirely on whole answers, ` +
+      `so they will probably read higher for that reason alone, not because anything changed for you. `;
+  }
+  return "";
+}
+
 /** One horizontal bar row. width is relative to the chart's max so small values stay visible. */
-function barRow(label: string, pct: number, maxPct: number, i: number, opts: { hl?: boolean; delta?: number | null; title?: string; labelHtml?: string } = {}): string {
+function barRow(label: string, pct: number, maxPct: number, i: number, opts: { hl?: boolean; delta?: number | null; title?: string; labelHtml?: string; display?: string } = {}): string {
   const w = Math.max(2, Math.min(100, Math.round((pct / Math.max(1, maxPct)) * 100)));
   let pill = "";
   if (typeof opts.delta === "number") {
@@ -435,7 +533,7 @@ function barRow(label: string, pct: number, maxPct: number, i: number, opts: { h
   return `<div class="nr-row" style="--i:${i}"${t}>
     <div class="nr-lab">${opts.labelHtml ?? esc(label)}</div>
     <div class="nr-track"><div class="nr-fill${opts.hl ? " nr-hl" : ""}" style="width:${w}%"></div></div>
-    <div class="nr-val"><span class="cnt" data-v="${num(pct)}">${num(pct)}</span>%${pill}</div>
+    <div class="nr-val">${opts.display ? `<span>${esc(opts.display)}</span>` : `<span class="cnt" data-v="${num(pct)}">${num(pct)}</span>%`}${pill}</div>
   </div>`;
 }
 
@@ -483,7 +581,9 @@ function ownSiteNotes(f: ReportFacts, engines: ChartEngine[], prior: string): st
 // a prior value exists; a baseline report has no prev and falls back to bars).
 // Two dots per engine (prior + current) on a track, connected by a direction-
 // colored line, so the MOVEMENT is the visual, not a footnote pill.
-function renderDumbbell(engines: ChartEngine[], prior: string, note?: string, extraHtml = ""): string {
+// extraCap is appended to the caption text, extraHtml (already-safe notes)
+// after it.
+function renderDumbbell(engines: ChartEngine[], prior: string, note?: string, extraCap = "", extraHtml = ""): string {
   // An engine where NOBODY in the cohort appeared is not a score. Pull it
   // out of the chart entirely and disclose it underneath. July 2026:
   // Bing organic (control) returned 794 citations, none to any Honolulu venue,
@@ -525,7 +625,7 @@ function renderDumbbell(engines: ChartEngine[], prior: string, note?: string, ex
       <div class="dumb-vals">${prev}<span class="to">&rarr;</span><span class="cur"><span class="cnt" data-v="${cur}">${cur}</span>%</span></div>
     </div>`;
   }).join("");
-  const cap = `Each AI tool shows two dots. The hollow dot is ${prior} and the gold dot is this month. When the gold dot sits to the right of the hollow one, that tool pulled from your site more than it did. To the left means less. The line is the size of the move.`;
+  const cap = `Each AI tool shows two dots. The hollow dot is ${prior} and the gold dot is this month. When the gold dot sits to the right of the hollow one, more of that tool's links went to your site than before. To the left means fewer. The line is the size of the move.${extraCap}`;
   const names = disclosed.map((e) => e.name);
   const excluded = names.length
     ? `<p class="nr-note">${esc(names.length === 1 ? names[0] : names.join(" and "))} ${names.length === 1 ? "is" : "are"} left out of this chart on purpose. ${names.length === 1 ? "It returned" : "They returned"} plenty of sources this month, but not one of them was any venue in your category, yours or a competitor's. That points at how ${names.length === 1 ? "that tool" : "those tools"} sourced answers this month rather than at anything on your side, so scoring it as a zero would be misleading.</p>`
@@ -536,15 +636,26 @@ function renderDumbbell(engines: ChartEngine[], prior: string, note?: string, ex
 // 100% stacked bar for the source-type composition (part-to-whole). One bar
 // split into segments, "your own site" in gold, with a matched legend below.
 const STACK_COLORS = ["#9c8a4e", "#75704f", "#5b563f", "#4a4436", "#3d382c", "#332f25", "#2b271f", "#232019"];
-function renderStack(sources: ChartRow[], note?: string, extraHtml = ""): string {
+// Frozen facts carry the source-type label as text. "Independent web" also
+// holds booking sites (Expedia, Booking.com) and google.com's own links, so
+// it is shown as what it is: every other website.
+const SOURCE_LABEL_SHOWN: Record<string, string> = { "Independent web": "Other websites" };
+
+function renderStack(sources: ChartRow[], note?: string, googlePct?: number, googleSetAside?: number, extraHtml = ""): string {
   const total = sources.reduce((s, r) => s + num(r.pct), 0) || 100;
   let ci = 0;
   const colors = sources.map((r) => (r.own ? "#d4c596" : STACK_COLORS[ci++ % STACK_COLORS.length]));
+  const shown = (label: string) => SOURCE_LABEL_SHOWN[label] ?? label;
   const segs = sources.map((r, i) =>
-    `<div class="stack-seg" style="width:${(num(r.pct) / total) * 100}%;background:${colors[i]}" title="${esc(r.label)}: ${num(r.pct)}%"></div>`).join("");
+    `<div class="stack-seg" style="width:${(num(r.pct) / total) * 100}%;background:${colors[i]}" title="${esc(shown(r.label))}: ${num(r.pct)}%"></div>`).join("");
   const legend = sources.map((r, i) =>
-    `<div class="leg-item${r.own ? " own" : ""}"><span class="leg-sw" style="background:${colors[i]}"></span>${esc(r.label)} <span class="leg-pct">${num(r.pct)}%</span></div>`).join("");
-  const cap = `One bar, split by where the AI tools got their information. The independent web is most of it and your own site (the gold segment) is a thin sliver, which is why off-site presence matters as much as your own website.`;
+    `<div class="leg-item${r.own ? " own" : ""}"><span class="leg-sw" style="background:${colors[i]}"></span>${esc(shown(r.label))} <span class="leg-pct">${num(r.pct) === 0 ? UNDER_ONE : `${num(r.pct)}%`}</span></div>`).join("");
+  const google = typeof googleSetAside === "number" && googleSetAside > 0
+    ? ` ${googleSetAside.toLocaleString("en-US")} links to google.com itself are set aside. Almost all of them are Google's own viewer links, whose destination we cannot see.`
+    : typeof googlePct === "number" && googlePct > 0
+      ? ` Other websites here include links to google.com itself, ${googlePct}% of all links, almost all of them Google's own viewer links whose destination we cannot see.`
+      : "";
+  const cap = `One bar, split by the kind of site the AI tools that search the web listed as sources. Your own site is the gold segment.${google}`;
   return `<section class="nr-chart"><h3 class="nr-ctitle">Where AI's answers come from</h3><div class="stack-bar">${segs}</div><div class="stack-legend">${legend}</div>${chartText(cap, note)}${extraHtml}</section>`;
 }
 
@@ -574,50 +685,78 @@ function renderSummary(f: ReportFacts): string {
   if (p?.overall && Number.isFinite(p.overall.floorPct) && num(p.overall.total) > 0) {
     tiles.push({
       big: `${num(p.overall.floorPct)}%`,
-      label: "of AI answers name you",
-      sub: `at least, across ${num(p.overall.total).toLocaleString()} answers this month`,
+      label: "of answers from AI tools that search the web name you",
+      sub: `at least, across ${num(p.overall.total).toLocaleString("en-US")} answers from the ${countWord(Array.isArray(p.engines) ? p.engines.length : 0, "tool")} that ${Array.isArray(p.engines) && p.engines.length === 1 ? "searches" : "search"} the web`,
     });
   }
 
   // 2. The competitive position. Rank is what a GM asks for first.
+  //
+  // BASIS (2026-10-05). The venue share is a share of LINKS to the tracked
+  // businesses' own websites, from the tools that search the web. This tile
+  // called it "of all mentions", which is a different measure: a business is
+  // often named in an answer without its website being a source. Rank counts
+  // only businesses strictly ahead, and a tie at the top is named as a tie.
   const rows = (f.venue?.rows ?? []).filter((r: ChartRow) => r && typeof r.label === "string");
   const sorted = [...rows].sort((a, b) => num(b.pct) - num(a.pct));
-  const meIdx = sorted.findIndex((r) => r.you);
-  if (meIdx >= 0) {
+  const me = sorted.find((r) => r.you);
+  if (me) {
     const ord = (n: number) => ["1st", "2nd", "3rd"][n - 1] ?? `${n}th`;
+    const myPct = num(me.pct);
+    const topPct = num(sorted[0].pct);
+    const rank = 1 + sorted.filter((r) => num(r.pct) > myPct).length;
+    const leaders = sorted.filter((r) => !r.you && num(r.pct) === topPct).map((r) => String(r.label));
+    const standing = myPct === topPct
+      ? (leaders.length ? `Level with ${joinNames(leaders)}` : "The highest share of any business we track")
+      : leaders.length > 1
+        ? `${joinNames(leaders)} lead on ${topPct}% each`
+        : `${leaders[0]} leads on ${topPct}%`;
     tiles.push({
-      big: ord(meIdx + 1),
-      label: "in your category",
-      sub: `${num(sorted[meIdx].pct)}% of all mentions. ${esc(String(sorted[0].label))} leads on ${num(sorted[0].pct)}%`,
+      big: ord(rank),
+      label: "among the businesses we track",
+      sub: `${myPct}% of the links to their own websites went to yours. ${esc(standing)}`,
     });
   }
 
   // 3. The gap, and the reason this document exists. Questions where no
-  //    web-searching tool put them anywhere at all.
+  //    web-searching tool used their site as a source.
+  //
+  //    NOT "never named" (2026-10-05). The grid's search rows are built from
+  //    the links each tool listed, so a dark row means the site was never a
+  //    source. The answers can still name the business, and on a delivered
+  //    readout they did, on five of the nine questions this tile called
+  //    "no AI tool put you anywhere in the answer".
   const g = f.grid;
   const cells = g?.cells;
-  if (g && Array.isArray(cells) && Array.isArray(g.questions) && g.questions.length) {
-    const layer1 = (g.layers ?? []).map((l: string, i: number) => (l !== "model_knowledge" && g.engines?.[i] !== "Bing search (control)" ? i : -1)).filter((i) => i >= 0);
+  if (g && Array.isArray(cells) && Array.isArray(g.questions) && g.questions.length && Array.isArray(g.engines)) {
+    const layer1 = g.engines
+      .map((e: string, i: number) => (gridRowLayer(g.layers, i, displayEngine(String(e))) === "citation" ? i : -1))
+      .filter((i: number) => i >= 0);
+    // No search-tool row at all means nothing was measured here. Every()
+    // over an empty list is true, which is how "18 of 18" was printed.
     let blank = 0;
-    for (let q = 0; q < g.questions.length; q++) {
+    if (layer1.length === 0) blank = -1;
+    for (let q = 0; blank >= 0 && q < g.questions.length; q++) {
       if (layer1.every((e: number) => !num(cells[e]?.[q]))) blank++;
     }
     if (blank > 0) {
       tiles.push({
         big: `${blank}`,
         label: `of ${g.questions.length} questions`,
-        sub: "no AI tool put you anywhere in the answer",
+        sub: "your website was never among the sources of the AI tools that search the web",
       });
     }
   }
 
-  // 4. Where to act. The single biggest off-site source.
-  const top = (f.topSources ?? [])[0];
-  if (top && typeof top.host === "string") {
+  // 4. Where to act. The biggest source other than the businesses' own
+  //    websites. google.com is skipped: its links are Google's own viewer
+  //    links, not a site anyone can be listed on.
+  const top = (f.topSources ?? []).find((r) => r && typeof r.host === "string" && !isGoogleHost(r.host));
+  if (top) {
     tiles.push({
       big: `${num(top.pct)}%`,
       label: "of what AI reads",
-      sub: `comes from ${esc(top.host)}, the biggest single source in your category`,
+      sub: `comes from ${esc(top.host)}, the biggest source other than the businesses' own websites`,
     });
   }
 
@@ -630,8 +769,8 @@ function renderSummary(f: ReportFacts): string {
      </div>`).join("");
   return `<section class="nr-chart sum-card"><h3 class="nr-ctitle">The short version</h3>
     <div class="sum-grid">${cards}</div>
-    <p class="nr-cap"><strong>How to read this.</strong> Four numbers from the month, each explained in full further down.
-    The first is the one that matters most: when someone asks an AI about hotels in your category, how often does it say your name.</p>
+    <p class="nr-cap"><strong>How to read this.</strong> ${["", "One number", "Two numbers", "Three numbers", "Four numbers"][tiles.length]} from the month, each explained in full further down.
+    The first is the one that matters most: when someone asks an AI about your category, how often does it say your name.</p>
   </section>`;
 }
 
@@ -660,11 +799,11 @@ function coverageKey(markThin: boolean): string {
 
   const items: string[] = [
     `<div class="cg-kitem cg-kramp"><div class="cg-kswatches">${ramp}</div>
-       <div class="cg-klab"><b>How often you showed up</b><span>Left: you appeared on a few of that month's checks. Right: nearly every one.</span></div></div>`,
+       <div class="cg-klab"><b>How often you appeared</b><span>For the tools that search the web, how often your site was among the sources. For the tools that answer from memory, how often they named you. Left: a few of that month's checks. Right: nearly every one.</span></div></div>`,
     `<div class="cg-kitem">${sw(cell(0.9, ' stroke="#e8c767" stroke-width="1.5"'))}
        <div class="cg-klab"><b>A gold outline</b><span>You appeared on at least half that question's checks.</span></div></div>`,
     `<div class="cg-kitem">${sw(cell(0))}
-       <div class="cg-klab"><b>A dark square</b><span>The tool answered that question and did not include you.</span></div></div>`,
+       <div class="cg-klab"><b>A dark square</b><span>The tool answered that question, and your site was not among its sources. For the tools that answer from memory, it did not name you. An answer can still name you without using your site.</span></div></div>`,
     `<div class="cg-kitem">${sw('<rect x="1" y="1" width="24" height="24" rx="4" class="cg-na"/>')}
        <div class="cg-klab"><b>A dashed outline</b><span>The tool never answered that question this month, so there is nothing to report.</span></div></div>`,
   ];
@@ -686,13 +825,27 @@ export function renderCharts(factsJson: string | null): string {
   const prior = f.prior_label ? esc(f.prior_label) : "last month";
   const notes = f.notes && typeof f.notes === "object" ? f.notes : {};
   const blocks: string[] = [];
+  // google.com, in either of the two shapes frozen facts come in. See
+  // isGoogleHost and ReportFacts.googleLinksSetAside.
+  const allTopSources = Array.isArray(f.topSources) ? f.topSources.filter((r) => r && typeof r.host === "string") : [];
+  const googleRow = allTopSources.find((r) => isGoogleHost(r.host));
+  // Facts counted on LINK_BASIS left Google's viewer links out of the source
+  // mix, the host list and the per-engine link totals, so a google.com row
+  // still in them is google.com's real pages, and the "still counted"
+  // sentences built from googlePct would be false. Only facts that still
+  // count the viewer links get them.
+  const viewerLinksCounted = f.linkBasis !== LINK_BASIS;
+  const googlePct = googleRow && viewerLinksCounted ? num(googleRow.pct) : undefined;
+  const googleSetAside = typeof f.googleLinksSetAside === "number" && f.googleLinksSetAside > 0 ? f.googleLinksSetAside : undefined;
   // Above everything. See renderSummary.
   const summary = renderSummary(f);
   if (summary) blocks.push(summary);
 
   // 1. Per-engine citation share. A dumbbell (foregrounds the movement) when a
   // prior month exists; bars for a baseline report (nothing to move from yet).
-  const allEngines = Array.isArray(f.engines) ? f.engines.filter((e) => e && typeof e.name === "string") : [];
+  const allEngines = Array.isArray(f.engines)
+    ? f.engines.filter((e) => e && typeof e.name === "string").map((e) => ({ ...e, name: displayEngine(e.name) }))
+    : [];
   // 1b. Did the AI say your name. Placed directly under the "reads you" bars
   // because the pair is the point: being read is the mechanism, being named is
   // the outcome, and on real data they are far apart (15% against 38-45% on
@@ -739,27 +892,28 @@ export function renderCharts(factsJson: string | null): string {
     // 0-100 scale is both honest and readable.
     const maxP = 100;
     const bars = rows.map((e, i) => {
-      const label = ENGINE_ORDER.find((x) => x.key === e.name)?.label ?? String(e.name);
+      const label = displayEngine(ENGINE_ORDER.find((x) => x.key === e.name)?.label ?? String(e.name));
       const lo = num(e.floorPct), hi = num(e.ceilingPct);
+      // "about": frozen shares are whole percents, so a bound stated in them
+      // can sit a fraction of a point past the exact one (2026-10-05 audit:
+      // 27.88% had been shown as "at least 28%").
       const title = lo === hi
-        ? `${label}: named you in ${lo}% of its answers`
-        : `${label}: named you in at least ${lo}% of its answers, and up to ${hi}% once ${e.unknown} answer${e.unknown === 1 ? "" : "s"} too long to store are allowed for`;
+        ? `${label}: named you in about ${lo}% of its answers`
+        : `${label}: named you in about ${lo}% to ${hi}% of its answers, the range allowing for ${e.unknown} answer${e.unknown === 1 ? "" : "s"} too long to store`;
       return barRow(label, lo, maxP, i, { title });
     }).join("");
     const cap =
       `This is the one that matters most. When someone asks an AI about your category, ` +
       `does it say your name? Across every question and every web-searching tool this month, ` +
       `the answer was yes on at least ${floor}% of answers. ` +
-      `"At least" is exact, not modest: ${pres.overall.unknown} of ${pres.overall.total} answers ran longer than we keep, ` +
+      `"At least" is a floor: ${pres.overall.unknown.toLocaleString("en-US")} of ${pres.overall.total.toLocaleString("en-US")} answers ran longer than we keep, ` +
       `so your name may also be in a part we did not store. Counting every one of those in your favour would put the figure at ${ceil}%. ` +
-      `We publish the number that holds either way. ` +
-      `One thing to expect, said now rather than after the fact: we have since increased how much of each answer we keep, ` +
-      `so next month is measured on whole answers and will probably read higher for that reason alone, not because anything changed for you. ` +
-      `The chart above it answers a different question, so do not read the two as versions of each other. ` +
-      `That one is a share of SOURCES: out of every page a tool pulled while answering, how many were yours. ` +
-      `A tool reads a dozen or more pages per answer, so a few percent there is normal and is not a smaller version of the number here. ` +
+      storageNote(f.period_label) +
+      `The next chart answers a different question, so do not read the two as versions of each other. ` +
+      `That one is a share of SOURCES: out of every link a tool used while answering, how many went to your website. ` +
+      `A tool lists several sources per answer, so that share is not a smaller version of the number here. ` +
       `This one is a share of ANSWERS: out of every answer it gave, how many said your name. ` +
-      `Being named is the result. Being read is how a tool gets there.`;
+      `Being named is what a reader sees. The sources a tool lists are a separate measure, and most of them are other websites.`;
     blocks.push(chartBlock("Where AI says your name", bars, cap, undefined));
     }
   }
@@ -771,21 +925,46 @@ export function renderCharts(factsJson: string | null): string {
   // own caption ("that tool pulled from your site more") is Layer 1 language.
   // Engines with no layer recorded (every bridge-written snapshot) are
   // citation-grade, so hawaii-theatre renders exactly as it does today.
-  const engines = allEngines.filter((e) => e.layer !== "model_knowledge");
+  // The classic-search control is not an AI tool (2026-10-05: a delivered
+  // readout drew it as a bar among them). It is named under the chart instead.
+  const engines = allEngines.filter((e) => e.layer !== "model_knowledge" && !isControlLabel(e.name));
+  const controls = allEngines.filter((e) => e.layer !== "model_knowledge" && isControlLabel(e.name));
   const namedFromMemory = allEngines.filter((e) => e.layer === "model_knowledge");
+  const hasAio = allEngines.some((e) => /AI Overviews|Google AIO/i.test(String(e.name)));
+  // SAID ONCE. Facts that carry linkBasisNote state, under this chart, every
+  // tool whose link count leaves Google's viewer links out (ownSiteNotes), so
+  // the caption does not say it a second time.
+  const basisNoteShown = typeof f.linkBasisNote === "string" && f.linkBasisNote.length > 0;
+  const controlNote = (controls.length
+    ? ` ${controls.map((e) => e.name).join(" and ")} is left out of this chart. It is a classic search run as a control, not an AI tool.`
+    : "")
+    + (basisNoteShown
+      ? ""
+      : hasAio && googleSetAside
+        ? ` For Google AI Overviews, Google's own viewer links are set aside from its link count.`
+        : hasAio && typeof googlePct === "number" && googlePct > 0
+          ? ` For Google AI Overviews, the links counted here include Google's own viewer links, so its share reads lower than it would without them.`
+          : "");
 
   if (engines.length) {
     // The raw label: ownSiteNotes escapes what it renders, and `prior` above is already escaped.
     const disclosures = ownSiteNotes(f, engines, f.prior_label || "last month");
     if (engines.some((e) => typeof e.prev === "number")) {
-      blocks.push(renderDumbbell(engines, prior, notes.engines, disclosures));
+      blocks.push(renderDumbbell(engines, prior, notes.engines, controlNote, disclosures));
     } else {
       const sorted = [...engines].sort((a, b) => num(b.pct) - num(a.pct));
       const max = Math.max(...sorted.map((e) => num(e.pct)), 1);
-      const bars = sorted.map((e, i) => barRow(e.name, num(e.pct), max, i, { title: `${e.name}: ${num(e.pct)}% of the pages it pulled were yours` })).join("");
-      const cap = `Out of every page a tool opened while answering questions in your category, this is the share that came from your own website. ` +
-        `Single digits is the normal range and not a bad result: a tool reads a dozen or more sources per answer, and every hotel in the set is competing for the same slots. ` +
-        `It matters because your own site is the one source here you control outright. The chart above shows whether AI says your name. This shows how much of what it reads is yours.`;
+      const bars = sorted.map((e, i) => {
+        const shown = num(e.pct) === 0 ? UNDER_ONE : `${num(e.pct)}%`;
+        return barRow(e.name, num(e.pct), max, i, {
+          title: `${e.name}: ${shown} of the links it used were to your website`,
+          display: num(e.pct) === 0 ? UNDER_ONE : undefined,
+        });
+      }).join("");
+      const cap = `Out of every link a tool used while answering questions in your category, this is the share that went to your own website. ` +
+        `A tool lists several sources per answer, and every business in the set competes for them. ` +
+        `It matters because your own site is the one source here you control outright. The chart above shows whether AI says your name. This shows how much of what it uses is yours.` +
+        controlNote;
       blocks.push(chartBlock("How much of what AI reads is your own site", bars, cap, notes.engines, max, disclosures));
     }
   }
@@ -816,21 +995,21 @@ export function renderCharts(factsJson: string | null): string {
     const bars = sorted
       .map((e, i) =>
         barRow(e.name, num(e.pct), max, i, {
-          title: `${e.name}: named you in ${num(e.pct)}% of its answers`,
+          title: `${e.name}: named you in ${num(e.pct) === 0 ? UNDER_ONE : `${num(e.pct)}%`} of its answers`,
+          display: num(e.pct) === 0 ? UNDER_ONE : undefined,
         }),
       )
       .join("");
-    // A zero here alarms people, and on this layer it is usually a fact about
-    // the model rather than about the customer. We have measured the same
-    // collapse in two unrelated industries. Saying so is the difference
-    // between a finding and a scare.
+    // A figure near zero alarms people. Say what this layer is, and claim no
+    // pattern we have not measured (2026-10-05 audit: "rarely name individual
+    // local businesses ... across unrelated categories" had no support, and
+    // another client's month showed both tools naming it in most answers).
     const anyZero = namedFromMemory.some((e) => num(e.pct) === 0);
     const cap = `These tools answer from what they already know instead of searching the web, so they have no sources to cite. ` +
       `What counts here is whether they name your business at all. Each bar is the share of that tool's answers that mentioned you by name.` +
       (anyZero
-        ? ` A zero on this chart is common and is not a fault in your business: models answering from training data rarely name individual local businesses, ` +
-          `and we have measured the same pattern across unrelated categories. It is the one layer nothing you publish this month can move, ` +
-          `because it only changes when the model is retrained.`
+        ? ` A figure under 1% here is not a verdict on your business: these tools answer from what they learned in training. ` +
+          `It is the one layer nothing you publish this month can move, because it only changes when the model is retrained.`
         : "");
     blocks.push(chartBlock("Where AI names you from memory", bars, cap));
   }
@@ -858,12 +1037,22 @@ export function renderCharts(factsJson: string | null): string {
     const hiddenPct = hidden.reduce((a, r) => a + num(r.pct), 0);
 
     const max = Math.max(...shown.map((r) => num(r.pct)), 1);
-    const bars = shown.map((r, i) => barRow(r.label, num(r.pct), max, i, { hl: !!r.you, title: `${r.label}: ${num(r.pct)}% of pages pulled in your category` })).join("");
+    // BASIS (2026-10-05). These are shares of LINKS to the tracked businesses'
+    // own websites, not of mentions. The chart was titled "Who AI names" over
+    // a caption saying "of every mention", which is a different measure: a
+    // business can be named in an answer without its website being a source.
+    const bars = shown.map((r, i) => barRow(r.label, num(r.pct), max, i, { hl: !!r.you, title: `${r.label}: ${num(r.pct)}% of the links to the tracked businesses' websites` })).join("");
+    // Frozen rows carry only a whole-percent share, so a hidden row at 0 may be
+    // a real link or none at all. Claim neither (2026-10-05 audit: one hidden
+    // row had no links and was listed only because a model named it).
+    const brandPages = hidden.some((r) => /\(brand pages\)/i.test(String(r.label)));
     const tail = hidden.length
-      ? ` ${hidden.length} more ${hidden.length === 1 ? "venue was" : "venues were"} named at least once and together account for ${hiddenPct}% of the category's citations. They are left off the chart to keep it readable, not because they scored zero.`
+      ? ` ${hidden.length} more ${hidden.length === 1 ? "entry is" : "entries are"} left off the chart to keep it readable. ${hidden.length === 1 ? "It accounts" : "Together they account"} for ${hiddenPct}%.` +
+        (brandPages ? ` Some are a chain's general pages rather than one business.` : "")
       : "";
-    const cap = `Of every mention the AI tools made of a business in your category, this is who got named. Your bar is highlighted.${tail}`;
-    blocks.push(chartBlock("Who AI names in your category", bars, cap, notes.venue));
+    const cap = `Of the links the AI tools that search the web sent to the tracked businesses' own websites, this is each one's share. ` +
+      `It counts links to websites, not mentions: a business can be named in an answer without its website being a source. Your bar is highlighted.${tail}`;
+    blocks.push(chartBlock("Whose website AI uses as a source", bars, cap, notes.venue));
   }
 
   // 2b. Per-engine x per-question citation grid (finest grain; the readout's
@@ -883,12 +1072,13 @@ export function renderCharts(factsJson: string | null): string {
     const affNote = aff.length
       ? `<p class="nr-note">Your group's other sites are their own segment here and are never counted as your own site: ${aff.map((r) => esc(String(r.host))).join(", ")}.</p>`
       : "";
-    blocks.push(renderStack(sources, notes.sources, affNote));
+    blocks.push(renderStack(sources, notes.sources, googlePct, googleSetAside, affNote));
   }
 
   // 4. The specific third-party sites AI pulled from (answers "which ones?" for the
   // buckets above). Each host is a clickable link — the off-site punch list.
-  const topSources = Array.isArray(f.topSources) ? f.topSources.filter((r) => r && typeof r.host === "string") : [];
+  // google.com is not one of them: see isGoogleHost.
+  const topSources = allTopSources.filter((r) => !isGoogleHost(r.host));
   if (topSources.length) {
     const max = Math.max(...topSources.map((r) => num(r.pct)), 1);
     const bars = topSources.map((r, i) => {
@@ -899,10 +1089,15 @@ export function renderCharts(factsJson: string | null): string {
       const labelHtml = isHost
         ? `<a href="https://${host}" target="_blank" rel="noopener noreferrer nofollow">${esc(host)}</a>`
         : esc(host);
-      return barRow(host, num(r.pct), max, i, { labelHtml, title: `${host}: ${num(r.pct)}% of sources pulled` });
+      return barRow(host, num(r.pct), max, i, { labelHtml, title: `${host}: ${num(r.pct)}% of the links used` });
     }).join("");
-    const cap = `Each percent is that site's share of every page the AI tools pulled from in your category, the same base as the chart above, so these are the biggest individual names inside the independent web. They are the off-site places to get listed and accurate. This is the top of a long tail, not the full picture, and each is a domain, not a single page.`;
-    blocks.push(chartBlock("The specific sites AI pulls from", bars, cap, notes.topSources));
+    const googleNote = googleSetAside
+      ? ` google.com is not listed. Its links are set aside, as in the chart above: almost all of them are Google's own viewer links, whose destination we cannot see.`
+      : typeof googlePct === "number" && googlePct > 0
+        ? ` google.com is left out of this list. Almost all of its ${googlePct}% are Google's own viewer links, whose destination we cannot see.`
+        : "";
+    const cap = `Each percent is that site's share of every link the AI tools used in your category, the same base as the chart above. These are the biggest single sites other than the businesses' own websites, and the places to check how you appear. This is the top of a long tail, not the full picture, and each is a domain, not a single page.${googleNote}`;
+    blocks.push(chartBlock("The specific sites AI uses most", bars, cap, notes.topSources));
   }
 
   // 5. Question-level movement (wins/losses since the prior window). Only

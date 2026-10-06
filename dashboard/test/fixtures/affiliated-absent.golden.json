@@ -362,6 +362,7 @@
   ],
   "linkBasis": "google_viewer_links_excluded",
   "linkBasisNote": "Google AI Overviews' link count leaves out Google's own viewer links.",
+  "googleLinksSetAside": 3,
   "venue": {
    "rows": [
     {
