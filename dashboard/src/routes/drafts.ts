@@ -33,7 +33,7 @@ function renderUpgradeNudge(clientSlug: string, user: User): string {
       <div style="font-size:13px;color:var(--text-soft);line-height:1.75;max-width:720px;margin-bottom:18px">
         Voice profile and in-dashboard drafting belong to the Amplify retainer. We learn how you write from samples you upload, then draft articles, FAQs, and landing pages that read like you wrote them. Drafts live in the dashboard with editor, version history, voice score, and export. Nothing leaves your account.
       </div>
-      <a href="https://app.neverranked.com/checkout/amplify" class="btn">Upgrade to Amplify</a>
+      <a href="https://neverranked.com/pricing/" class="btn">See pricing</a>
       <a href="mailto:hello@neverranked.com?subject=Amplify%20upgrade%20question" style="margin-left:14px;font-size:12px;color:var(--gold)">Questions first? Email us &rarr;</a>
     </div>
     ${buildGlossary()}

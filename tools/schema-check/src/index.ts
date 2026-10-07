@@ -8,7 +8,21 @@
 
 export interface Env {
   LEADS: KVNamespace;
+  // neverranked-app, shared with the dashboard. Schema is owned by
+  // dashboard/migrations (0131 for the free-check tables). This Worker never
+  // migrates it.
+  DB: D1Database;
   RESEND_API_KEY?: string;
+  // Admin-secret for the /api/admin/* family. Provisioned as a secret.
+  ADMIN_SECRET?: string;
+  // The day-3 / day-7 drip only runs when this is exactly "1". Default off
+  // (decision 2, 2026-10-07). See drip-email.ts for why.
+  DRIP_ENABLED?: string;
+  // Comma list of addresses that are us. Secret, because this repo is public.
+  INTERNAL_EMAILS?: string;
+  // Where the immediate new-lead alert goes. Secret or var, never hard-coded.
+  // Unset means no alert email (the admin inbox item is still written).
+  LEAD_ALERT_TO?: string;
   // Optional shared secret for the keyed Montaic API lane. When set,
   // a request carrying a matching X-API-Key header bypasses the per-IP
   // rate limit and is tagged as source "montaic" in telemetry. The
@@ -79,6 +93,27 @@ async function listAllKvKeys(
 import { buildReport, buildReportFollowingSnippets, reportReadNothing, gradeSchema, gradeBucket } from "../../../packages/aeo-analyzer/src";
 import { agentReadinessCheck, llmsTxtCheck } from "./scoring-ports";
 import { isPublicHttpUrl } from "./url-safety";
+import { PAGE_COPY, KIT_QUESTIONS, UNSUB_COPY } from "./copy";
+import { CURRENT_CONSENT_VERSION, consentFor } from "./consent";
+import { classifyRequest, cleanSessionId, internalEmail } from "./free-check-classify";
+import { isBotUserAgent } from "./bot-ua";
+import { extractIdentity } from "./identity";
+import { missingSignals, summaryFromClient, type ScanSummary } from "./missing-signals";
+import { buildReportEmail, buildLeadAlert } from "./report-email";
+import { buildDripDay3Email, buildDripDay7Email, dripDay3Subject, dripDay7Subject } from "./drip-email";
+import {
+  cleanUtm, cleanReferrer, cleanUa, nowSeconds, eventStatement, scanStatement, cleanScanId, loadScan,
+  insertLead, inboxStatement, recordReportResult, markUnsubscribed, type EventRow,
+} from "./free-check-store";
+
+// The link-preview image. /images/check-og.png never existed (404), so the
+// LinkedIn card showed no image. og.jpg is the site's own card and returns 200.
+const OG_IMAGE = "https://neverranked.com/og.jpg";
+
+/** Escape a string for an HTML attribute or text node. */
+function attr(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
 
 // ---------- HTML UI ----------
 
@@ -89,19 +124,19 @@ const HTML_PAGE = `<!doctype html>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#121212">
 <title>AI Search Check: see how AI tools read your site | Never Ranked</title>
-<meta name="description" content="Free check. See how ChatGPT, Google AI, and Perplexity read your website, and what's missing. No signup.">
+<meta name="description" content="${attr(PAGE_COPY.metaDescription)}">
 <link rel="canonical" href="https://check.neverranked.com/">
 <meta name="robots" content="index, follow">
 <meta property="og:title" content="AI Search Check: see how AI tools read your site">
-<meta property="og:description" content="Enter your URL. See what AI tools like ChatGPT and Google AI can read from your site, and what they can't. Free. No signup.">
+<meta property="og:description" content="${attr(PAGE_COPY.ogDescription)}">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://check.neverranked.com/">
 <meta property="og:site_name" content="Never Ranked">
-<meta property="og:image" content="https://neverranked.com/images/check-og.png">
+<meta property="og:image" content="${OG_IMAGE}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="AI Search Check: see how AI tools read your site">
 <meta name="twitter:description" content="Free check. See how AI tools read your website, and what's missing.">
-<meta name="twitter:image" content="https://neverranked.com/images/check-og.png">
+<meta name="twitter:image" content="${OG_IMAGE}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -116,7 +151,7 @@ const HTML_PAGE = `<!doctype html>
       "applicationCategory": "WebApplication",
       "operatingSystem": "Any",
       "url": "https://check.neverranked.com",
-      "description": "Free check. See how ChatGPT, Google AI, and Perplexity read your website, and what's missing.",
+      "description": ${JSON.stringify(PAGE_COPY.metaDescription)},
       "offers": {
         "@type": "Offer",
         "price": "0",
@@ -136,7 +171,7 @@ const HTML_PAGE = `<!doctype html>
           "name": "What does this tool check?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "The labels AI tools use to read your site, how your site appears to AI search tools like ChatGPT and Google AI, and what’s making you harder for AI to find."
+            "text": ${JSON.stringify(PAGE_COPY.faqWhatChecks)}
           }
         },
         {
@@ -144,7 +179,7 @@ const HTML_PAGE = `<!doctype html>
           "name": "Why does this matter?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "More people are asking ChatGPT, Google’s AI, and Perplexity for recommendations instead of scrolling search results. If those AI tools can’t read your site clearly, they name someone else."
+            "text": ${JSON.stringify(PAGE_COPY.faqWhy)}
           }
         },
         {
@@ -152,7 +187,7 @@ const HTML_PAGE = `<!doctype html>
           "name": "Is this tool free?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes, completely free with no signup required. Enter any URL and get an instant report."
+            "text": ${JSON.stringify(PAGE_COPY.faqFree)}
           }
         },
         {
@@ -160,7 +195,7 @@ const HTML_PAGE = `<!doctype html>
           "name": "What’s the difference between this check and a full engagement?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "This check looks at your website. A full engagement measures what AI tools actually say about your category. We ask the same 18 real customer questions across six AI tools: four that cite live sources (Perplexity, ChatGPT search, Gemini grounded, Google AI Overviews) plus two that answer from model knowledge (Claude, Gemma). We also run Bing organic as a classic-search control, which makes seven measured surfaces. We track who gets recommended instead of you, and hand your team a clear list of what to fix. Monitoring is $199 a month per category. A full audit with a pre-registered method and a written readout is $750 a month per category after a $950 baseline month."
+            "text": "This check looks at your website. A full engagement measures what AI tools actually say about your category. We ask the same 18 real customer questions across six AI tools: four that cite live sources (Perplexity, ChatGPT search, Gemini grounded, Google AI Overviews) plus two that answer from model knowledge (Claude, Gemma). We also run Bing organic as a classic-search control, which makes seven measured surfaces. We hand your team a clear list of what to fix. Monitoring is $199 a month per category. A full audit with a pre-registered method and a written readout is $750 a month per category after a $950 baseline month."
           }
         }
       ]
@@ -957,6 +992,42 @@ body.channel-mode #channel-cta-card{display:block}
   .email-gate-count{font-size:40px}
   .email-gate-form input{width:100%}
 }
+.email-gate-sent{
+  margin:24px auto;max-width:560px;text-align:center;
+  font-family:var(--mono);font-size:13px;color:var(--gold);
+}
+
+/* "Ask it yourself" kit */
+.ask-kit{margin:40px 0 8px;animation:fadeUp .5s var(--ease) .15s both}
+.ask-kit-lead{
+  font-family:var(--mono);font-size:13px;color:var(--text-soft);line-height:1.7;margin:0 0 16px;
+}
+.ask-kit-fields{display:flex;gap:12px;flex-wrap:wrap;margin:0 0 16px}
+.ask-kit-field{flex:1;min-width:200px;display:flex;flex-direction:column;gap:6px}
+.ask-kit-field span{
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.16em;font-size:10px;color:var(--text-faint);
+}
+.ask-kit-field input{
+  padding:10px 12px;background:var(--bg);border:1px solid var(--line-strong);border-radius:3px;
+  color:var(--text);font-family:var(--mono);font-size:13px;outline:none;width:100%;
+}
+.ask-kit-field input:focus{border-color:var(--gold)}
+.ask-kit-field input::placeholder{color:var(--text-faint)}
+.ask-kit-questions{list-style:none;padding:0;margin:0 0 16px;counter-reset:q}
+.ask-kit-questions li{
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+  padding:12px 14px;margin:0 0 8px;background:var(--bg-lift);border:1px solid var(--line);border-radius:3px;
+}
+.ask-kit-q{font-family:var(--serif);font-style:italic;font-size:16px;color:var(--text);line-height:1.4;overflow-wrap:anywhere}
+.ask-kit-copy{
+  flex:none;padding:8px 14px;border:1px solid var(--gold-dim);border-radius:3px;color:var(--gold);
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.14em;font-size:10px;
+}
+.ask-kit-copy:hover{background:var(--gold-wash)}
+.ask-kit-after{font-family:var(--mono);font-size:12px;color:var(--text-faint);line-height:1.7;margin:0}
+@media (max-width:640px){
+  .ask-kit-questions li{flex-direction:column;align-items:flex-start}
+}
 
 .email-capture{
   margin:32px 0 0;
@@ -1363,7 +1434,7 @@ body.channel-mode #channel-cta-card{display:block}
 
   <section class="hero">
     <h1>See what AI tools can read from <em>your site</em>.</h1>
-    <p class="sub">When someone asks ChatGPT or Google's AI to recommend a business like yours, can they even read your site? Paste your URL and see what AI tools can and cannot read from your pages, what they miss, and why it matters. Free. No signup.</p>
+    <p class="sub">${attr(PAGE_COPY.heroSub)}</p>
     <div class="input-area">
       <label for="url-input" class="sr-only">Your website URL</label>
       <input type="url" id="url-input" placeholder="https://example.com" autocomplete="url" spellcheck="false">
@@ -1373,8 +1444,6 @@ body.channel-mode #channel-cta-card{display:block}
          the moment users decide whether to engage. -->
     <div class="hero-trust" style="margin-top:18px;display:flex;gap:18px;flex-wrap:wrap;justify-content:center;align-items:center;font-family:var(--mono);font-size:11px;color:var(--text-faint)">
       <span><strong style="color:var(--text)">10</strong> categories measured</span>
-      <span style="opacity:.4">&middot;</span>
-      <span><strong style="color:var(--text)">6</strong> AI tools</span>
       <span style="opacity:.4">&middot;</span>
       <span>every number public</span>
       <span style="opacity:.4">&middot;</span>
@@ -1394,26 +1463,43 @@ body.channel-mode #channel-cta-card{display:block}
     <div class="grade-insight" id="grade-insight"></div>
 
     <!-- Email gate: teaser + capture. Hidden once email is captured.
-         Gate copy revised 2026-05-06 against the 1% capture rate baseline.
-         A/B test added 2026-05-07 — JS picks Variant A or B per visitor
-         and applies via the data-variant elements below. Conversion
-         tracked via /api/gate-impression and /api/send-report (variant
-         field). Stats at /api/ab-stats. -->
+         One version since 2026-10-07: both A/B tests (gate copy, gate
+         level) closed without reaching their own 50-per-arm threshold, and
+         the decision was made on honesty. The score stays visible above the
+         gate ("your score is free"), the body promises only what the email
+         contains, and the fine print is the versioned consent line stored
+         with every capture (consent.ts). -->
     <div class="email-gate" id="email-gate" style="display:none">
       <div class="email-gate-head">
         <div class="email-gate-count" id="email-gate-count">-</div>
-        <div class="email-gate-title" id="email-gate-title">more gaps below this fold</div>
+        <div class="email-gate-title" id="email-gate-title">${attr(PAGE_COPY.gateTitleMany)}</div>
       </div>
       <div class="email-gate-teaser" id="email-gate-teaser"></div>
       <div class="email-gate-body">
-        <p id="email-gate-body-text">One page, sent once: every signal AI is missing on your site, each fix in plain language, why it matters, and the read from a person, not a bot.</p>
+        <p id="email-gate-body-text">${attr(PAGE_COPY.gateBody)}</p>
         <div class="email-gate-form">
           <label for="gate-email-input" class="sr-only">Your work email</label>
           <input type="email" id="gate-email-input" placeholder="you@company.com" autocomplete="email">
-          <button type="button" id="gate-email-btn">Show me every fix</button>
+          <button type="button" id="gate-email-btn">${attr(PAGE_COPY.gateButton)}</button>
         </div>
-        <div class="email-gate-privacy">Your report now, plus two short follow-ups over the next week. Nothing after that. We never sell or share your email.</div>
+        <div class="email-gate-privacy">${attr(PAGE_COPY.gateConsent)}</div>
       </div>
+    </div>
+    <div class="email-gate-sent" id="email-gate-sent" role="status" aria-live="polite" style="display:none">${attr(PAGE_COPY.gateSent)}</div>
+
+    <!-- "Ask it yourself" kit (plan section 4 fallback, 2026-10-07). No
+         email needed and no API cost. Three fixed question templates,
+         prefilled with the category and town the scanned page states in its
+         own JSON-LD, editable, each with a copy button. -->
+    <div class="ask-kit" id="ask-kit" style="display:none">
+      <div class="section-label"><span class="num">&sect;</span> ${attr(PAGE_COPY.kitLabel)} <span class="rule"></span></div>
+      <p class="ask-kit-lead">${attr(PAGE_COPY.kitLead)}</p>
+      <div class="ask-kit-fields">
+        <label class="ask-kit-field"><span>${attr(PAGE_COPY.kitCategoryLabel)}</span><input type="text" id="ask-kit-category" maxlength="40" placeholder="${attr(PAGE_COPY.kitCategoryPlaceholder)}" autocomplete="off" spellcheck="false"></label>
+        <label class="ask-kit-field"><span>${attr(PAGE_COPY.kitTownLabel)}</span><input type="text" id="ask-kit-town" maxlength="40" placeholder="${attr(PAGE_COPY.kitTownPlaceholder)}" autocomplete="off" spellcheck="false"></label>
+      </div>
+      <ol class="ask-kit-questions" id="ask-kit-questions"></ol>
+      <p class="ask-kit-after">${attr(PAGE_COPY.kitAfter)}</p>
     </div>
 
     <!-- Gated details: hidden until email captured -->
@@ -1455,7 +1541,7 @@ body.channel-mode #channel-cta-card{display:block}
       <div class="section-label"><span class="num">05</span> See what AI says in your category <span class="rule"></span></div>
       <div class="quick-wins-grid" id="quick-wins-grid"></div>
       <div style="margin-top:16px;font-family:var(--mono);font-size:11px;color:var(--text-faint);line-height:1.7">
-        This check looks at your website. The full engagement measures what AI tools actually say about your business: who they recommend, who they mention instead of you, and what to do about it.
+        This check looks at your website. The full engagement measures what AI tools actually say about your business: who they name, who they name instead of you, and what to do about it.
       </div>
     </div>
 
@@ -1465,7 +1551,7 @@ body.channel-mode #channel-cta-card{display:block}
     <div class="dash-preview">
       <div class="dash-preview-label">What a NeverRanked engagement produces <span class="rule"></span></div>
       <div class="dash-preview-frame" style="padding:24px 28px">
-        <p style="font-size:14px;color:#b9b9bd;line-height:1.7;margin:0 0 14px">This check looks at your website. The full engagement asks the AI tools your customers actually use (ChatGPT, Google's AI answers, Perplexity, and three others) what they say about your category. Who gets recommended. Who gets mentioned instead of you. And the specific moves the data points at.</p>
+        <p style="font-size:14px;color:#b9b9bd;line-height:1.7;margin:0 0 14px">This check looks at your website. The full engagement asks the AI tools your customers actually use (ChatGPT, Google's AI answers, Perplexity, and three others) what they say about your category. Who gets named and who does not. And the specific moves the data points at.</p>
         <p style="font-size:14px;color:#b9b9bd;line-height:1.7;margin:0 0 18px">See the published look at AI answers for Hawaii consumer banking for the shape of what an engagement produces: <a href="https://neverranked.com/teardowns/bank-honolulu/" style="color:var(--gold);text-decoration:underline;text-underline-offset:3px">/teardowns/bank-honolulu/</a></p>
         <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
           <a href="https://neverranked.com/pricing" id="cta-preview" class="btn-ghost-link" style="padding:12px 28px;border-radius:4px;text-decoration:none;font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px;font-weight:600">Monitor this monthly</a>
@@ -1486,8 +1572,8 @@ body.channel-mode #channel-cta-card{display:block}
         <div style="font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:10px;color:var(--gold);margin-bottom:12px">§ You run an agency</div>
         <h3 style="font-family:var(--serif);font-size:24px;font-style:italic;line-height:1.25;margin:0 0 14px;color:var(--text)">The check you just ran is the one you run on your clients.</h3>
         <p style="font-size:14px;color:var(--text-faint);line-height:1.7;margin:0 0 20px">White-labeled to your shop, it is the wedge you put in front of any prospect. The measurement behind it is the layer no agency builds in-house at these margins. You resell the engagement at your markup, your team executes the punch list, and your client keeps you as the expert. We stay upstream, and we never contact your clients.</p>
-        <a href="https://cal.com/neverranked/scope-call" style="display:inline-block;padding:12px 28px;background:var(--gold);color:#080808;font-family:var(--label);text-transform:uppercase;letter-spacing:.14em;font-size:12px;font-weight:500;text-decoration:none;border-radius:2px">Grab 15 minutes with Lance &rarr;</a>
-        <p style="margin:14px 0 0;font-family:var(--mono);font-size:11px;color:var(--text-faint);line-height:1.6">15 minutes, one client category, and I'll show you the resell math. Or <a href="https://neverranked.com/for-agencies/" style="color:var(--gold);border-bottom:1px solid var(--gold-dim);text-decoration:none">see the channel and margin math &rarr;</a> first. The first step is one client category on Monitor at $199 a month, and those payments credit in full toward the audit baseline inside 90 days. Your cost is the list rate below. What you charge your client is yours.</p>
+        <a href="https://neverranked.com/pricing/" style="display:inline-block;padding:12px 28px;background:var(--gold);color:#080808;font-family:var(--label);text-transform:uppercase;letter-spacing:.14em;font-size:12px;font-weight:500;text-decoration:none;border-radius:2px">See pricing &rarr;</a>
+        <p style="margin:14px 0 0;font-family:var(--mono);font-size:11px;color:var(--text-faint);line-height:1.6">Or <a href="https://neverranked.com/for-agencies/" style="color:var(--gold);border-bottom:1px solid var(--gold-dim);text-decoration:none">see the channel and margin math &rarr;</a> first. The first step is one client category on Monitor at $199 a month, and those payments credit in full toward the audit baseline inside 90 days. Your cost is the list rate below. What you charge your client is yours.</p>
       </div>
       <h3 id="cta-headline">This check looks at your site.<br>The full engagement looks at <em>what AI says about you.</em></h3>
       <p id="cta-subtext">The check above measures what's on your website. A NeverRanked engagement measures what AI tools actually say when someone asks about your category: which competitors get named, which AI tool names who, and a prioritized punch list you or your agency execute. The check is a starting point. The engagement tells you what's actually happening.</p>
@@ -1537,21 +1623,6 @@ body.channel-mode #channel-cta-card{display:block}
       </div>
     </div>
 
-    <!-- Post-capture confirmation: this used to be a SECOND email capture
-         form (redundant with the gate above). Removed the duplicate form;
-         this block now only carries the post-send "we got it" message and
-         the email-input/btn ids the gate's JS still references. The hidden
-         input + button keep the existing event wiring intact. -->
-    <div class="email-capture" id="email-capture" style="display:none">
-      <div class="email-capture-inner">
-        <input type="email" id="email-input" placeholder="" autocomplete="email" hidden>
-        <button type="button" id="email-btn" hidden>Send</button>
-      </div>
-      <div class="email-success" id="email-success" style="display:none">
-        <span style="color:var(--gold)">Sent.</span> Check your inbox for the full report.<br>
-        <span style="font-size:12px;color:var(--text-faint)">We'll follow up in 3 days with a competitor comparison and again in 7 days with a re-scan check-in.</span>
-      </div>
-    </div>
   </section>
 </main>
 
@@ -1562,6 +1633,11 @@ body.channel-mode #channel-cta-card{display:block}
 
 <script>
 (function(){
+  // Customer copy, single-sourced in src/copy.ts and guarded by
+  // dashboard/test/free-check-copy-guards.test.ts.
+  var NR_COPY = ${JSON.stringify(PAGE_COPY)};
+  var NR_KIT_QUESTIONS = ${JSON.stringify(KIT_QUESTIONS)};
+  var NR_CONSENT_VERSION = ${JSON.stringify(CURRENT_CONSENT_VERSION)};
   const input = document.getElementById('url-input');
   const btn = document.getElementById('run-btn');
   const loading = document.getElementById('loading');
@@ -1590,95 +1666,40 @@ body.channel-mode #channel-cta-card{display:block}
   // runCheck replaced by runCheckFinal below
 
   function renderResults(data){
-    // Aggressive-gate UX (rolled out 2026-05-13): above the gate the
-    // visitor sees ONLY a directional band ("top half" vs "bottom
-    // half"). The actual letter grade, the exact score, the insight
-    // line, and the full report are revealed AFTER email capture by
-    // revealGatedDetails(). The mild version (grade-letter + insight
-    // visible above gate) gave a 1% capture rate; this aggressive
-    // version targets 4-6% by trading some of the "free score" value
-    // for higher conversion. Reverts cleanly to the old behavior by
-    // restoring the old gradeSection.innerHTML block.
-    var gradeClass = 'grade-'+data.grade.toLowerCase();
+    // One gate level since 2026-10-07: the score, grade and insight line are
+    // always visible above the gate ("your score is free"). The aggressive
+    // variant, which hid the score until an email was given, is deleted. It
+    // contradicted the free score and never reached its own sample threshold.
+    var gradeClass = 'grade-'+String(data.grade).toLowerCase();
     // Show the exact URL scanned (host + path), not just the hostname. A
     // prospect scanning /products/foo vs the homepage can see why the score
     // differs when they check the same domain at two different URLs.
     var scannedDisplay = (data.url || data.domain || '')
       .replace(/^https?:\\/\\//i,'').replace(/^www\\./i,'').replace(/\\/$/,'');
-    var score = data.aeo_score;
+    var score = Number(data.aeo_score) || 0;
 
-    // Grade-specific insight (computed now, stored on data for revealGatedDetails)
-    var insightText = '';
-    if(score >= 80){
-      insightText = 'Your site is in strong shape for AI search. The foundation is there. The real question is whether AI tools are actually <strong>naming you</strong> when someone asks, and whether you’re <em>keeping that lead</em> as competitors catch up.';
-    } else if(score >= 65){
-      insightText = 'You’re close to the line. A few targeted fixes would make your site read as cleanly to AI as the strongest sites in your space. Whether AI is naming those cleaner sites and not you right now is <em>what a full measurement shows</em>.';
-    } else if(score >= 45){
-      insightText = 'Your site has gaps that make it harder for AI tools to read and cite than cleaner sites in your space. Those gaps are fixable. The question that matters next: when someone asks ChatGPT or Google’s AI for a business like yours, who gets named instead? <em>That takes measurement, not a page scan.</em>';
-    } else {
-      insightText = 'AI tools can’t reliably read your site, and a page that can’t be read can’t be cited. Cleaner sites in your space have a real edge right now. Fixing the readability is step one. <em>Measuring who AI actually names is step two.</em>';
-    }
-    // Build the full grade markup once; how it's rendered depends on
-    // gateLevel below.
+    // Score-band insight (Appendix A). Plain text: no claim that a score
+    // decides whether AI tools name anyone.
+    var insightText = score >= 80 ? NR_COPY.insight80
+      : score >= 65 ? NR_COPY.insight65
+      : score >= 45 ? NR_COPY.insight45
+      : NR_COPY.insightLow;
     // r=54 ring (viewBox 120): circumference 2*pi*54 = 339.292. The arc is
     // drawn fully then hidden by an offset; animateGradeRing() sweeps it to the
     // score. data-score carries the target so the reveal can find it.
-    var fullGradeHtml =
-      '<div class="grade-circle '+gradeClass+'" data-score="'+data.aeo_score+'">'+
+    gradeSection.innerHTML =
+      '<div class="grade-circle '+escHtml(gradeClass)+'" data-score="'+score+'" role="img" aria-label="Grade '+escHtml(String(data.grade))+'">'+
         '<svg class="grade-ring" viewBox="0 0 120 120" aria-hidden="true">'+
           '<circle class="gr-track" cx="60" cy="60" r="54"></circle>'+
           '<circle class="gr-arc" cx="60" cy="60" r="54" stroke-dasharray="339.292" stroke-dashoffset="339.292"></circle>'+
         '</svg>'+
-        '<span class="letter">'+data.grade+'</span>'+
+        '<span class="letter">'+escHtml(String(data.grade))+'</span>'+
       '</div>'+
-      '<div class="aeo-score">AI-ready score: <span>'+data.aeo_score+'</span>/100</div>'+
+      '<div class="aeo-score">AI-ready score: <span>'+score+'</span>/100</div>'+
       '<div class="grade-domain">'+escHtml(scannedDisplay)+'</div>';
-
     var insight = document.getElementById('grade-insight');
-
-    if (gateLevel === 'aggressive') {
-      // AGGRESSIVE variant: directional band above the gate. Full grade
-      // and insight are stashed on the report data and swapped in by
-      // revealGatedDetails() after email capture.
-      data._fullGradeHtml = fullGradeHtml;
-      data._insightText = insightText;
-      var inTopHalf = score >= 50;
-      // Above-gate proof (#13): show the visitor's bar sitting short of
-      // the citation tier BEFORE the email ask. Exact number stays hidden
-      // (no score text on the You bar); the gap is shown, not stated.
-      var bandBenchP75 = (window.NR_BENCHMARK && window.NR_BENCHMARK.p75) ? window.NR_BENCHMARK.p75 : 78;
-      var youW = Math.max(4, Math.min(100, score));
-      var benchW = Math.max(4, Math.min(100, bandBenchP75));
-      gradeSection.innerHTML =
-        '<div class="grade-band-domain">'+escHtml(scannedDisplay)+'</div>'+
-        '<div class="grade-band-headline">Your site scores '+
-          '<strong>'+(inTopHalf ? 'above the midpoint' : 'below the midpoint')+'</strong>'+
-        '</div>'+
-        '<div class="grade-band-sub">of our 0-100 AI-readability scale. Enter your email below to see your exact score, your grade, and the full breakdown.</div>'+
-        '<div class="grade-band-compare">'+
-          '<div class="gbc-bar"><div class="gbc-label">You</div><div class="gbc-track"><div class="gbc-fill gbc-you" data-w="'+youW+'"></div></div></div>'+
-          '<div class="gbc-bar"><div class="gbc-label">Top quartile audited</div><div class="gbc-track"><div class="gbc-fill gbc-bench" data-w="'+benchW+'"></div></div></div>'+
-          '<div class="gbc-caption">Your bar sits short of the sites AI tools read most cleanly. The email below shows exactly how short.</div>'+
-        '</div>';
-      if (insight) insight.innerHTML = '';
-      // Animate the fills from 0 once painted (respecting reduced-motion).
-      var gbcReduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
-      var gbcFills = gradeSection.querySelectorAll('.gbc-fill');
-      if(gbcReduce){
-        gbcFills.forEach(function(el){ el.style.width = el.dataset.w + '%'; });
-      } else {
-        requestAnimationFrame(function(){ requestAnimationFrame(function(){
-          gbcFills.forEach(function(el){ el.style.width = el.dataset.w + '%'; });
-        }); });
-      }
-    } else {
-      // MILD variant (original behavior): score + grade + insight all
-      // visible above the gate. The gate only hides the detailed report
-      // (schema coverage, technical signals, red flags, fixes).
-      gradeSection.innerHTML = fullGradeHtml;
-      if (insight) insight.innerHTML = insightText;
-      animateGradeRing(gradeSection);
-    }
+    if (insight) insight.textContent = insightText;
+    animateGradeRing(gradeSection);
 
     // Schema coverage — aggregated to a coverage summary, no named
     // schemas. Naming the specific schemas the visitor is missing
@@ -1701,7 +1722,7 @@ body.channel-mode #channel-cta-card{display:block}
       '<div class="schema-summary-bar"><div class="schema-summary-fill" style="width:'+schemaPct+'%"></div></div>'+
       '<div class="schema-summary-sub">'+
         (schemaMissing > 0
-          ? schemaMissing+' signals are missing or incomplete. The full report below names which ones and the order to fix them.'
+          ? schemaMissing+' '+NR_COPY.schemaMissingSuffix
           : 'Strong coverage. The next layer of work is whether AI tools are actually citing you, which only the full measurement can answer.')+
       '</div>';
     schemaGrid.appendChild(schemaSummary);
@@ -1747,10 +1768,7 @@ body.channel-mode #channel-cta-card{display:block}
       flagSummary.innerHTML =
         '<div class="flag-summary-count">'+data.red_flags.length+'</div>'+
         '<div class="flag-summary-text">'+
-          (data.red_flags.length === 1
-            ? 'specific issue flagged on your site as a signal AI engines treat as a trust-and-clarity problem.'
-            : 'specific issues flagged on your site as signals AI engines treat as trust-and-clarity problems.')+
-          ' The named breakdown is in the full report.'+
+          (data.red_flags.length === 1 ? NR_COPY.flagOne : NR_COPY.flagMany)+
         '</div>';
       flagsList.appendChild(flagSummary);
     }else{
@@ -1805,27 +1823,22 @@ body.channel-mode #channel-cta-card{display:block}
     });
     distEl.innerHTML = distHtml;
 
-    // Competitor teaser text (grade-aware). Framed as distribution
-    // language about the sites we have audited, never as a hard external
-    // "AI cites sites scoring X" claim — that reads as an invented stat
-    // to the rigor-valuing buyer and is not something this scan proves.
+    // The grade-aware "competitor teaser" lines are gone (2026-10-07). They
+    // said the sites AI engines cite "cluster at the top of this scale" and
+    // that a visitor was "not yet in the conversation", which nothing we have
+    // measured supports. The bars and the one comparison line below say what
+    // is true: where this score sits against the sites we have checked.
     var compText = document.getElementById('comp-teaser-text');
-    if(score >= 75){
-      compText.textContent = 'You are in the top tier. But this scan checks one page at one point in time. NeverRanked monitors your full site weekly and shows you exactly which competitors are closing the gap.';
-    } else if(score >= 50){
-      compText.textContent = 'Across the sites we have audited, the ones AI engines cite consistently cluster at the top of this scale. At '+score+', you sit just below that band. Close is not enough when AI names one winner per query. NeverRanked tracks the gap in real time.';
-    } else {
-      compText.textContent = 'Across the sites we have audited, the ones AI engines cite consistently sit well above your score. At '+score+', you are not yet in the conversation. NeverRanked measures what AI tools say about your category, hands you the prioritized punch list, and tracks the change week over week.';
-    }
-    // One-line gap-to-target (#14): the honest distance between the
-    // visitor's score and the citation line we track, matching the
-    // bench bar shown above. Uses live p75 when present.
+    if(compText){ compText.textContent = ''; compText.style.display = 'none'; }
+    // One-line gap to the top quarter of sites we have checked (live p75
+    // when present, 78 otherwise). It is a distribution fact about scans,
+    // never a citation threshold.
     var compGapLine = document.getElementById('comp-gap-line');
     if(compGapLine){
       var benchP75 = (window.NR_BENCHMARK && window.NR_BENCHMARK.p75) ? window.NR_BENCHMARK.p75 : 78;
       var gapToTarget = benchP75 - score;
       if(gapToTarget > 0){
-        compGapLine.innerHTML = '<span class="comp-gap-num">'+gapToTarget+'</span> points below the score where AI engines reliably start citing.';
+        compGapLine.innerHTML = '<span class="comp-gap-num">'+gapToTarget+'</span> '+escHtml(NR_COPY.comparisonSuffix);
         compGapLine.style.display = 'block';
       } else {
         compGapLine.style.display = 'none';
@@ -1898,147 +1911,80 @@ body.channel-mode #channel-cta-card{display:block}
       });
     }
 
-    // Grade-aware CTA headline and recommended plan highlight. All DOM
-    // references are null-guarded so the post-scan flow never throws when an
-    // element has been removed or hidden (e.g. agency-mode swap).
-    var ctaHeadline = document.getElementById('cta-headline');
-    var ctaSubtext = document.getElementById('cta-subtext');
-    var tierAudit = document.getElementById('cta-tier-audit');
-    var tierSignal = document.getElementById('cta-tier-signal');
-    var tierAmplify = document.getElementById('cta-tier-amplify');
-
-    function setHeadline(html){ if(ctaHeadline) ctaHeadline.innerHTML = html; }
-    function setSubtext(txt){ if(ctaSubtext) ctaSubtext.textContent = txt; }
-    function setBorder(el, color){ if(el) el.style.borderColor = color; }
-    function recolorBtn(tier, primary){
-      if(!tier) return;
-      var b = tier.querySelector('.btn');
-      if(!b) return;
-      b.className = primary ? 'btn btn-primary' : 'btn btn-ghost-link';
-      b.style.fontSize = '10px';
-      b.style.display = 'inline-block';
-      b.style.marginTop = '8px';
-    }
-
-    if(score >= 75){
-      setHeadline("You're ahead. <em>Stay there.</em>");
-      setSubtext('AI search indexes refresh weekly. Your score today does not guarantee your score next month. NeverRanked tracks every shift so you never lose ground.');
-      setBorder(tierSignal, 'var(--gold)');
-    } else if(score >= 50){
-      setHeadline("You're close to the top.<br><em>One push gets you there.</em>");
-      setSubtext('You have a foundation. NeverRanked measures what AI tools say about your category and hands you (or your agency) the prioritized punch list. You execute, we track the change.');
-      setBorder(tierSignal, 'var(--gold)');
-    } else if(score >= 30){
-      setHeadline("Your competitors are already <em>ahead.</em>");
-      setSubtext('At this score, AI engines are citing your competitors for the questions that matter. NeverRanked measures what AI tools say about your category and hands you (or your agency) the prioritized punch list. You execute, we track the change.');
-      setBorder(tierSignal, 'var(--line)');
-      setBorder(tierAmplify, 'var(--gold)');
-      recolorBtn(tierAmplify, true);
-      recolorBtn(tierSignal, false);
-    } else {
-      setHeadline("You are <em>invisible</em> to AI search.");
-      setSubtext('AI engines cannot parse your site well enough to cite it. NeverRanked measures what AI tools say about your category and hands you (or your agency) the prioritized punch list. You execute, we track the change.');
-      setBorder(tierSignal, 'var(--line)');
-      setBorder(tierAmplify, 'var(--gold)');
-      recolorBtn(tierAmplify, true);
-      recolorBtn(tierSignal, false);
-    }
+    // The grade-aware CTA overrides are gone (2026-10-07). They told a low
+    // scorer that AI search could not see them at all and that AI engines
+    // were naming their competitors, neither of which this check measures.
+    // The static headline and subtext in the markup show for every score.
 
     results.classList.add('active');
     gradeSection.scrollIntoView({behavior:'smooth',block:'start'});
   }
 
-  // Email capture
-  const emailInput = document.getElementById('email-input');
-  const emailBtn = document.getElementById('email-btn');
-  const emailForm = document.getElementById('email-form');
-  const emailSuccess = document.getElementById('email-success');
-  let lastReportData = null;
-
-  async function sendReport(){
-    const email = emailInput.value.trim();
-    // Strict email format check -- prevents bad addresses bouncing in
-    // the drip sequence and seeding garbage into LEADS KV.
-    if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)){emailInput.focus();return;}
-    if(!lastReportData) return;
-
-    emailBtn.disabled=true;
-    emailBtn.textContent='Sending...';
-
-    try{
-      const resp = await fetch('/api/send-report',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({email:email,report:lastReportData})
-      });
-      if(!resp.ok) throw new Error('Failed');
-      if (emailForm) emailForm.style.display='none';
-      if (emailSuccess) emailSuccess.style.display='block';
-      // Fire conversion events for retargeting
-      if(typeof fbq==='function') fbq('track','Lead');
-      if(typeof lintrk==='function') lintrk('track',{conversion_id:0});
-    }catch{
-      emailBtn.textContent='Retry';
-      emailBtn.disabled=false;
-    }
+  // ---------- Session + attribution ----------
+  // One id per tab session, sent with every call. The scan Worker counts a
+  // row as a person only when it carries this id and client:'page', which
+  // scripts, our MCP tool, Montaic and the audit template never send.
+  var SESSION_KEY = 'nr_session_id';
+  function newSessionId(){
+    try { if (window.crypto && crypto.randomUUID) return crypto.randomUUID(); } catch (e) {}
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 12);
   }
+  var sessionId = (function(){
+    try {
+      var v = sessionStorage.getItem(SESSION_KEY);
+      if (v) return v;
+      v = newSessionId();
+      sessionStorage.setItem(SESSION_KEY, v);
+      return v;
+    } catch (e) {
+      return newSessionId();
+    }
+  })();
 
-  emailBtn.addEventListener('click',sendReport);
-  emailInput.addEventListener('keydown',function(e){
-    if(e.key==='Enter')sendReport();
+  // Referrer + UTM params from the landing URL, sent with scans and captures.
+  var _ref = document.referrer || '';
+  var _sp = new URLSearchParams(window.location.search);
+  var _utm = {};
+  ['utm_source','utm_medium','utm_campaign','utm_content','utm_term'].forEach(function(k){
+    if(_sp.get(k)) _utm[k] = _sp.get(k);
   });
 
-  // Override renderResults to store data and update competitor bar
-  const origRender = renderResults;
+  var lastReportData = null;
+
   function renderResultsWrapped(data){
     lastReportData = data;
-    origRender(data);
+    renderResults(data);
 
     // Fire retargeting events on scan completion
     if(typeof fbq==='function') fbq('track','ViewContent',{content_name:'aeo_check',value:data.aeo_score});
     if(typeof lintrk==='function') lintrk('track',{conversion_id:0});
 
     // Update competitor teaser bar
-    const compBarYou = document.getElementById('comp-bar-you');
-    const compScoreYou = document.getElementById('comp-score-you');
+    var compBarYou = document.getElementById('comp-bar-you');
+    var compScoreYou = document.getElementById('comp-score-you');
     if(compBarYou && compScoreYou){
-      compBarYou.style.width = data.aeo_score+'%';
-      compScoreYou.textContent = data.aeo_score;
+      compBarYou.style.width = (Number(data.aeo_score) || 0)+'%';
+      compScoreYou.textContent = String(Number(data.aeo_score) || 0);
     }
     // Text-equivalent for the comparison (#26): the bars convey the gap by
     // width alone, so a screen reader gets two bare numbers with no stated
     // relationship. Give the group a spoken summary.
-    const compInner = document.querySelector('.comp-teaser-inner');
+    var compInner = document.querySelector('.comp-teaser-inner');
     if(compInner){
       compInner.setAttribute('role','group');
-      compInner.setAttribute('aria-label','Your AI-readability score '+data.aeo_score+' out of 100, versus the top quartile of sites we have audited.');
+      compInner.setAttribute('aria-label','Your AI-readability score '+(Number(data.aeo_score) || 0)+' out of 100, versus the top quartile of sites we have audited.');
     }
-
-    // Update CTA links with domain param
-    var domain = data.domain || '';
-    var ctaAudit = document.getElementById('cta-audit');
-    var ctaSignal = document.getElementById('cta-signal');
-    var ctaAmplify = document.getElementById('cta-amplify');
-    var ctaPreview = document.getElementById('cta-preview');
     // Retired checkout links removed 2026-06-22, and the retired offers
-    // they pointed at removed 2026-08-18. The on-page CTAs now link to
+    // they pointed at removed 2026-08-18. The on-page CTAs link to
     // neverranked.com/pricing and must NOT be overwritten with dead
-    // app.neverranked.com/checkout/* URLs. If a self-serve checkout comes
-    // back, it belongs on the pricing page, not wired in from here.
+    // app.neverranked.com/checkout/* URLs.
 
-    // Reset email capture (guarded — the email-form element was removed from
-    // the HTML when we killed the duplicate capture section; these null-safe
-    // checks keep the post-scan flow from throwing on missing elements).
-    if (emailForm) emailForm.style.display='flex';
-    if (emailSuccess) emailSuccess.style.display='none';
-    if (emailBtn) { emailBtn.textContent='Send'; emailBtn.disabled=false; }
-    if (emailInput) emailInput.value='';
-
-    // Email gate: show teaser + hidden-count, or auto-reveal if already captured
+    // Email gate: show teaser + count, or auto-reveal if already captured
     updateEmailGate(data);
+    renderAskKit(data);
   }
 
-  // ---------- Email gate: teaser + capture before full report is revealed ----------
+  // ---------- Email gate ----------
   var CAPTURED_EMAIL_KEY = 'nr_captured_email';
   function getCapturedEmail(){
     try { return localStorage.getItem(CAPTURED_EMAIL_KEY) || ''; } catch(e){ return ''; }
@@ -2052,99 +1998,33 @@ body.channel-mode #channel-cta-card{display:block}
   var gateCount = document.getElementById('email-gate-count');
   var gateTeaser = document.getElementById('email-gate-teaser');
   var gateTitle = document.getElementById('email-gate-title');
-  var gateBodyText = document.getElementById('email-gate-body-text');
+  var gateSent = document.getElementById('email-gate-sent');
   var gatedDetails = document.getElementById('gated-details');
-
-  // ── A/B variant assignment ────────────────────────────────────────────────
-  // Per-visitor sticky assignment via localStorage. First visit picks A or B
-  // randomly and persists. Subsequent visits get the same variant so the
-  // measurement is per-unique-visitor, not per-pageview.
-  var GATE_VARIANT_KEY = 'nr_gate_variant';
   var GATE_IMPRESSION_KEY = 'nr_gate_impression_logged';
-  var gateVariant = (function(){
-    try {
-      var v = localStorage.getItem(GATE_VARIANT_KEY);
-      if (v === 'A' || v === 'B') return v;
-      var pick = Math.random() < 0.5 ? 'A' : 'B';
-      localStorage.setItem(GATE_VARIANT_KEY, pick);
-      return pick;
-    } catch (e) {
-      return 'A'; // fallback if localStorage blocked
-    }
-  })();
 
-  // Second A/B test (orthogonal to gate-COPY above): gate-LEVEL.
-  // mild       = old behavior. Score + grade + insight visible above gate.
-  // aggressive = directional band only above gate; score + grade + insight
-  //              swapped in after email capture.
-  // Hypothesis: aggressive lifts capture rate 2-4x at modest scan-volume
-  // cost. Decision after 7 days of data.
-  var GATE_LEVEL_KEY = 'nr_gate_level';
-  var gateLevel = (function(){
-    try {
-      var v = localStorage.getItem(GATE_LEVEL_KEY);
-      if (v === 'mild' || v === 'aggressive') return v;
-      var pick = Math.random() < 0.5 ? 'mild' : 'aggressive';
-      localStorage.setItem(GATE_LEVEL_KEY, pick);
-      return pick;
-    } catch (e) {
-      return 'mild'; // safest default — show the score
-    }
-  })();
-
-  // Variant copy table. Rewritten 2026-05-24 to remove retracted-
-  // product framing ("AEO score", "90-day roadmap", "we will fix
-  // them" — all tied to the retired snippet product). New framing
-  // is observational only and points at the current research
-  // practice. No promises of citation lift or specific outcomes.
-  //   A: "send me the breakdown" — emphasizes COMPLETENESS (every
-  //      schema gap, every signal, all in one report)
-  //   B: "follow-up conversation" — emphasizes CONVERSATION (Lance
-  //      personally reaches out to discuss what the data points at)
-  var GATE_COPY = {
-    A: {
-      title: 'things on your site AI tools can’t read',
-      body: 'Drop your email and we’ll send the full breakdown as one page: every signal AI is missing on your site, every label making you harder to find, why each one matters in plain language, and the read from a person, not a bot.',
-      button: 'Send me the full breakdown',
-      buttonInProgress: 'Sending...'
-    },
-    B: {
-      title: 'things worth talking through for your category',
-      body: 'Drop your email. You’ll get the full breakdown of what we found, plus a short conversation with Lance about whether what we measure matters for your buyers. No pressure, no pitch.',
-      button: 'Send me the breakdown',
-      buttonInProgress: 'Sending...'
-    }
-  };
-
-  function applyGateCopy() {
-    var copy = GATE_COPY[gateVariant] || GATE_COPY.A;
-    if (gateTitle) gateTitle.textContent = copy.title;
-    if (gateBodyText) gateBodyText.textContent = copy.body;
-    if (gateEmailBtn) gateEmailBtn.textContent = copy.button;
-  }
-
-  // Log gate impression once per unique visitor (when they FIRST see the gate)
+  // Log that this session SAW the email ask, once per session. This is the
+  // denominator of the capture rate the briefing reports.
   function logGateImpression(reportData) {
     try {
       if (sessionStorage.getItem(GATE_IMPRESSION_KEY) === '1') return;
       sessionStorage.setItem(GATE_IMPRESSION_KEY, '1');
+    } catch (e) {}
+    try {
       fetch('/api/gate-impression', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
-          variant: gateVariant,
-          gate_level: gateLevel,
+          session_id: sessionId,
+          client: 'page',
+          scan_id: reportData && reportData.scan_id ? reportData.scan_id : null,
           domain: reportData ? reportData.domain : null,
-          score: reportData ? reportData.aeo_score : null
+          score: reportData ? reportData.aeo_score : null,
+          consent_version: NR_CONSENT_VERSION
         })
       }).catch(function(){});
     } catch (e) {}
   }
 
-  // Sweep the score ring to its target arc length. Circumference of the r=54
-  // ring is 2*pi*54 = 339.292; the arc offset is the empty remainder, so the
-  // drawn length equals the score. Jumps straight to target under reduced
-  // motion. Safe to call whenever a .grade-circle enters the DOM.
   function animateGradeRing(root){
     if(!root) return;
     var circle = root.querySelector('.grade-circle');
@@ -2168,50 +2048,11 @@ body.channel-mode #channel-cta-card{display:block}
     }); });
   }
 
-  function revealGatedDetails(){
+  function revealGatedDetails(justSent){
     if(gatedDetails) gatedDetails.style.display = 'block';
     if(emailGateEl) emailGateEl.style.display = 'none';
+    if(gateSent) gateSent.style.display = justSent ? 'block' : 'none';
     var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
-    // Swap the directional band for the full grade reveal once email
-    // is captured. lastReportData was set when the scan completed and
-    // carries the cached HTML/insight produced by renderResults.
-    if(lastReportData && lastReportData._fullGradeHtml){
-      var gs = document.getElementById('grade-section');
-      if(gs){
-        gs.innerHTML = lastReportData._fullGradeHtml;
-        // Accessibility (#9): the grade letter is the headline payoff —
-        // give it an image role with a spoken label, else SR reads a bare
-        // "C". And animate the reveal (#11): fade the circle in and count
-        // the score up from 0, the one moment worth a little motion.
-        var circle = gs.querySelector('.grade-circle');
-        if(circle) circle.setAttribute('role','img');
-        if(circle && lastReportData.grade) circle.setAttribute('aria-label','Grade '+lastReportData.grade);
-        var scoreSpan = gs.querySelector('.aeo-score span');
-        var target = Number(lastReportData.aeo_score) || 0;
-        if(scoreSpan){
-          if(reduceMotion || !window.requestAnimationFrame){
-            scoreSpan.textContent = String(target);
-          } else {
-            if(circle){ circle.style.animation = 'none'; requestAnimationFrame(function(){ circle.style.animation = 'fadeUp .5s var(--ease) both'; }); }
-            var startT = null;
-            var step = function(ts){
-              if(startT === null) startT = ts;
-              var p = Math.min(1, (ts - startT) / 600);
-              var eased = 1 - Math.pow(1 - p, 3);
-              scoreSpan.textContent = String(Math.round(target * eased));
-              if(p < 1) requestAnimationFrame(step); else scoreSpan.textContent = String(target);
-            };
-            scoreSpan.textContent = '0';
-            requestAnimationFrame(step);
-          }
-        }
-        // Sweep the score ring in sync with the count-up (or jump under
-        // reduced-motion). Kept in one helper so the mild path animates too.
-        animateGradeRing(gs);
-      }
-      var insightEl = document.getElementById('grade-insight');
-      if(insightEl) insightEl.innerHTML = lastReportData._insightText || '';
-    }
     // Animate the in-report bar fills (#12). Their widths were baked into
     // markup while #gated-details was display:none, so the CSS width
     // transition never fired and they painted flat. Re-run them from 0
@@ -2234,85 +2075,91 @@ body.channel-mode #channel-cta-card{display:block}
         });
       }); });
     }
-    // Bottom-of-page email form is redundant once they've unlocked — hide it
-    var bottomCapture = document.getElementById('email-capture');
-    if(bottomCapture) bottomCapture.style.display = 'none';
+  }
+
+  // The count in the gate title is the number of items the email names. The
+  // scan Worker builds that list (missing_signals) from the same function the
+  // email uses, so the two cannot disagree.
+  function missingList(data){
+    if (Array.isArray(data.missing_signals)) return data.missing_signals;
+    // A response without the list (an older Worker). Count missing schema
+    // types and failing technical signals, once each.
+    var out = [];
+    (data.schema_coverage || []).forEach(function(s){ if(!s.present) out.push({ name: s.type + ' schema' }); });
+    (data.technical_signals || []).forEach(function(t){ if(t.status === 'bad') out.push({ name: t.label }); });
+    return out;
   }
 
   function updateEmailGate(data){
     if(!emailGateEl || !gatedDetails) return;
+    var missing = missingList(data);
+    var total = missing.length;
 
-    // Count hidden issues: red flags + missing critical schemas + blocking
-    // tech signals. Uses status 'bad' so this gate number reconciles exactly
-    // with the report's totalGaps (the analyzer emits good|warning|bad; the
-    // old 'fail'||'warn' matched nothing, silently undercounting the number
-    // the visitor trades their email for).
-    var flags = (data.red_flags || []).length;
-    var missingSchemas = ((data.schema_coverage || []).filter(function(s){ return !s.present; })).length;
-    var failingTech = ((data.technical_signals || []).filter(function(t){ return t.status === 'bad'; })).length;
-    var total = flags + missingSchemas + failingTech;
+    if(gateCount) gateCount.textContent = total > 0 ? String(total) : '';
+    if(gateTitle) gateTitle.textContent = total === 1 ? NR_COPY.gateTitleOne : (total > 1 ? NR_COPY.gateTitleMany : NR_COPY.gateTitleNone);
+    if(gateSent) gateSent.style.display = 'none';
 
-    if(gateCount) gateCount.textContent = String(total || '');
-
-    // Teaser: top 2 red flags (or top missing schemas if no red flags)
-    var teaserItems = [];
-    if((data.red_flags || []).length > 0){
-      teaserItems = data.red_flags.slice(0, 2);
-    } else if(missingSchemas > 0){
-      teaserItems = (data.schema_coverage || [])
-        .filter(function(s){ return !s.present; })
-        .slice(0, 2)
-        .map(function(s){ return 'Missing ' + s.type + ' schema'; });
-    }
-
+    // Teaser: the first two names. What each one is comes in the email.
     if(gateTeaser){
-      if(teaserItems.length > 0){
-        gateTeaser.innerHTML = '<ul>' + teaserItems.map(function(msg){
-          var safe = String(msg).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-          return '<li>' + safe + '</li>';
-        }).join('') + '</ul>';
-      } else {
-        gateTeaser.innerHTML = '';
-      }
+      var names = missing.slice(0, 2).map(function(m){ return String(m && m.name || ''); }).filter(Boolean);
+      gateTeaser.innerHTML = names.length
+        ? '<ul>' + names.map(function(n){ return '<li>' + escHtml(n) + '</li>'; }).join('') + '</ul>'
+        : '';
     }
 
-    // If already captured before, skip the gate entirely
     if(getCapturedEmail()){
-      revealGatedDetails();
+      revealGatedDetails(false);
     } else {
       emailGateEl.style.display = 'block';
       gatedDetails.style.display = 'none';
       if(gateEmailBtn){
         gateEmailBtn.disabled = false;
+        gateEmailBtn.textContent = NR_COPY.gateButton;
       }
       if(gateEmailInput) gateEmailInput.value = '';
-      // Apply variant copy (A/B test) every time gate is shown — overrides
-      // the static HTML defaults with the variant-specific text.
-      applyGateCopy();
-      // Log gate impression once per session for proper denominator
       logGateImpression(data);
     }
+  }
+
+  // Only the fields the Worker accepts as a fallback. Normally it ignores
+  // this and builds the email from its own stored copy (scan_id).
+  function fallbackReport(d){
+    return {
+      domain: d.domain,
+      aeo_score: d.aeo_score,
+      grade: d.grade,
+      schema_coverage: (d.schema_coverage || []).map(function(s){ return { type: s.type, present: !!s.present }; }),
+      technical_signals: (d.technical_signals || []).map(function(t){ return { label: t.label, status: t.status }; })
+    };
   }
 
   async function submitGateEmail(){
     if(!gateEmailInput || !gateEmailBtn) return;
     var email = gateEmailInput.value.trim();
-    if(!email || !email.includes('@') || !email.includes('.')){ gateEmailInput.focus(); return; }
+    if(!email || email.indexOf('@') < 1 || email.indexOf('.') === -1){ gateEmailInput.focus(); return; }
     if(!lastReportData) return;
 
-    var copy = GATE_COPY[gateVariant] || GATE_COPY.A;
     gateEmailBtn.disabled = true;
-    gateEmailBtn.textContent = copy.buttonInProgress;
+    gateEmailBtn.textContent = NR_COPY.gateButtonBusy;
 
     try{
       var resp = await fetch('/api/send-report', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({email: email, report: lastReportData, variant: gateVariant, gate_level: gateLevel})
+        body: JSON.stringify({
+          email: email,
+          scan_id: lastReportData.scan_id || null,
+          session_id: sessionId,
+          client: 'page',
+          consent_version: NR_CONSENT_VERSION,
+          referrer: _ref || null,
+          utm: Object.keys(_utm).length ? _utm : null,
+          report: fallbackReport(lastReportData)
+        })
       });
       if(!resp.ok) throw new Error('Failed');
       setCapturedEmail(email);
-      revealGatedDetails();
+      revealGatedDetails(true);
       // Retargeting events
       if(typeof fbq === 'function') fbq('track', 'Lead');
       if(typeof lintrk === 'function') lintrk('track', {conversion_id: 0});
@@ -2327,13 +2174,103 @@ body.channel-mode #channel-cta-card{display:block}
     if(e.key === 'Enter') submitGateEmail();
   });
 
-  // Capture referrer + UTM params on page load for attribution
-  var _ref = document.referrer || '';
-  var _sp = new URLSearchParams(window.location.search);
-  var _utm = {};
-  ['utm_source','utm_medium','utm_campaign','utm_content','utm_term'].forEach(function(k){
-    if(_sp.get(k)) _utm[k] = _sp.get(k);
-  });
+  // ---------- "Ask it yourself" kit ----------
+  // Three fixed questions, filled from the category and town the scanned
+  // page states in its own JSON-LD (data.identity), editable, each with a
+  // copy button. No email, no API call, no cost.
+  var kitEl = document.getElementById('ask-kit');
+  var kitCat = document.getElementById('ask-kit-category');
+  var kitTown = document.getElementById('ask-kit-town');
+  var kitList = document.getElementById('ask-kit-questions');
+
+  function kitPlural(w){
+    var lower = w.toLowerCase();
+    var last = lower.slice(-1), last2 = lower.slice(-2);
+    if (last === 's') return w;
+    if (last === 'x' || last === 'z' || last2 === 'ch' || last2 === 'sh') return w + 'es';
+    if (last === 'y' && 'aeiou'.indexOf(lower.charAt(lower.length - 2)) === -1) return w.slice(0, -1) + 'ies';
+    return w + 's';
+  }
+  function kitArticle(w){
+    if (w.slice(0, 4).toUpperCase() === 'HVAC') return 'an';
+    return 'aeiou'.indexOf(w.charAt(0).toLowerCase()) !== -1 ? 'an' : 'a';
+  }
+  function kitQuestions(){
+    var cat = kitCat ? kitCat.value.trim() : '';
+    var town = kitTown ? kitTown.value.trim() : '';
+    var townText = town || NR_COPY.kitTownPlaceholder;
+    return NR_KIT_QUESTIONS.map(function(q){
+      var plural = cat ? kitPlural(cat) : NR_COPY.kitCategoryPlaceholder;
+      var singular = cat || NR_COPY.kitCategoryPlaceholder;
+      var article = cat ? kitArticle(cat) : '';
+      return q.split('{article} ').join(article ? article + ' ' : '')
+        .split('{plural}').join(plural)
+        .split('{singular}').join(singular)
+        .split('{town}').join(townText);
+    });
+  }
+  function copyText(text, btn){
+    function done(){
+      if(!btn) return;
+      btn.textContent = NR_COPY.kitCopied;
+      setTimeout(function(){ btn.textContent = NR_COPY.kitCopy; }, 1600);
+    }
+    function fallback(){
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        done();
+      } catch (e) {}
+    }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done, fallback);
+        return;
+      }
+    } catch (e) {}
+    fallback();
+  }
+  function paintKit(){
+    if(!kitList) return;
+    var qs = kitQuestions();
+    if(kitList.children.length !== qs.length){
+      kitList.innerHTML = '';
+      qs.forEach(function(){
+        var li = document.createElement('li');
+        var span = document.createElement('span');
+        span.className = 'ask-kit-q';
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'ask-kit-copy';
+        b.textContent = NR_COPY.kitCopy;
+        b.addEventListener('click', function(){ copyText(span.textContent || '', b); });
+        li.appendChild(span);
+        li.appendChild(b);
+        kitList.appendChild(li);
+      });
+    }
+    qs.forEach(function(q, i){
+      var span = kitList.children[i].querySelector('.ask-kit-q');
+      if(span) span.textContent = q;
+    });
+  }
+  function renderAskKit(data){
+    if(!kitEl) return;
+    var id = (data && data.identity) || {};
+    if(kitCat) kitCat.value = typeof id.category === 'string' ? id.category.slice(0, 40) : '';
+    if(kitTown) kitTown.value = typeof id.town === 'string' ? id.town.slice(0, 40) : '';
+    paintKit();
+    kitEl.style.display = 'block';
+  }
+  if(kitCat) kitCat.addEventListener('input', paintKit);
+  if(kitTown) kitTown.addEventListener('input', paintKit);
 
   // Agency pitch-link mode. When ref_name is present in the URL, an agency
   // reseller has sent this link to their prospect. We swap:
@@ -2475,7 +2412,7 @@ body.channel-mode #channel-cta-card{display:block}
       'Reading the markup AI crawlers see…',
       'Checking schema and structured data…',
       'Testing agent-readiness and llms.txt…',
-      'Scoring against the citation line…'
+      NR_COPY.loading
     ];
     let si = 0;
     loadingText.textContent = stages[0];
@@ -2498,7 +2435,7 @@ body.channel-mode #channel-cta-card{display:block}
       const resp = await fetch('/api/check',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({url, referrer:_ref, utm:Object.keys(_utm).length?_utm:undefined}),
+        body:JSON.stringify({url, referrer:_ref, utm:Object.keys(_utm).length?_utm:undefined, session_id:sessionId, client:'page'}),
         signal: controller ? controller.signal : undefined
       });
       let data = {};
@@ -2642,114 +2579,13 @@ function blockedAiBots(robotsTxt: string): string[] {
   return [...blocked];
 }
 
-function buildReportEmail(report: any): string {
-  const gradeColor = report.grade === "A" ? "#27ae60"
-    : report.grade === "B" ? "#e8c767"
-    : report.grade === "C" ? "#e67e22"
-    : "#c0392b";
-
-  // Anonymized lead-magnet rendering (2026-05-28). The earlier version
-  // of this email enumerated every named schema (LocalBusiness, FAQPage,
-  // Organization, etc.) and every specific red-flag description, which
-  // gave away the proprietary fix list for free. Now we surface the
-  // SHAPE of the gap (counts) and drive to Monitor for the ongoing
-  // category picture.
-  const schemaCoverage = report.schema_coverage || [];
-  const schemaTotal = schemaCoverage.length;
-  const schemaPresent = schemaCoverage.filter((s: any) => s.present).length;
-  const schemaMissing = schemaTotal - schemaPresent;
-  const schemaPct = schemaTotal ? Math.round((schemaPresent / schemaTotal) * 100) : 0;
-  const schemaRows = `
-    <tr>
-      <td style="padding:20px 22px;font-family:Georgia,serif;font-size:16px;color:#fbf8ef;border-bottom:1px solid #2a2a2a">
-        <div style="font-size:32px;color:#e8c767;line-height:1;margin-bottom:6px">${schemaPresent} <span style="font-size:13px;color:#888888;font-family:'Courier New',monospace">of ${schemaTotal}</span></div>
-        <div style="font-family:'Courier New',monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#888888;margin-bottom:14px">critical AI-readability signals present</div>
-        <div style="height:6px;background:#2a2a2a;border-radius:3px;overflow:hidden;margin-bottom:14px"><div style="height:100%;width:${schemaPct}%;background:#e8c767;border-radius:3px"></div></div>
-        <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;line-height:1.6">
-          ${schemaMissing > 0
-            ? `${schemaMissing} signals are missing or incomplete. The full report names which ones and the order to fix them.`
-            : `Strong coverage. The next layer of work is whether AI tools are actually citing you, which only the full measurement can answer.`}
-        </div>
-      </td>
-    </tr>
-  `;
-
-  const flagsCount = (report.red_flags || []).length;
-  const flagRows = flagsCount > 0 ? `
-    <div style="padding:18px 22px;background:#1c1c1c;border-left:3px solid #c0392b;border-radius:4px;font-family:'Courier New',monospace;color:#b0b0a8;line-height:1.6">
-      <span style="font-family:Georgia,serif;font-size:28px;color:#e8c767;display:inline-block;vertical-align:middle;margin-right:14px">${flagsCount}</span>
-      <span style="font-size:12px;vertical-align:middle">${flagsCount === 1 ? 'specific issue flagged' : 'specific issues flagged'} on your site as ${flagsCount === 1 ? 'a signal AI engines treat' : 'signals AI engines treat'} as ${flagsCount === 1 ? 'a trust-and-clarity problem' : 'trust-and-clarity problems'}. The named breakdown is in the full report.</span>
-    </div>
-  ` : "";
-
-  return `
-<!doctype html>
-<html>
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AI Search Report</title></head>
-<body style="margin:0;padding:0;background:#121212;font-family:Georgia,serif">
-<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#121212">
-<tr><td align="center" style="padding:32px 16px">
-<table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px">
-
-  <!-- Header -->
-  <tr><td style="padding-bottom:32px;border-bottom:1px solid #2a2a2a">
-    <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
-      <td style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:#e8c767">Never Ranked</td>
-      <td align="right" style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#888888">AI Search Report</td>
-    </tr></table>
-  </td></tr>
-
-  <!-- Score -->
-  <tr><td style="padding:32px 0;text-align:center">
-    <div style="display:inline-block;width:80px;height:80px;border-radius:50%;border:2px solid ${gradeColor};text-align:center;line-height:80px;font-family:Georgia,serif;font-size:42px;font-style:italic;color:${gradeColor}">${report.grade}</div>
-    <div style="font-family:'Courier New',monospace;font-size:32px;color:#fbf8ef;margin-top:12px">${report.aeo_score}<span style="font-size:14px;color:#888888">/100</span></div>
-    <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;margin-top:8px">${escHtml(report.domain)}</div>
-  </td></tr>
-
-  <!-- Schema coverage (summary) -->
-  <tr><td style="padding-bottom:24px">
-    <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888888;margin-bottom:12px">AI-readability signal coverage</div>
-    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px">
-      ${schemaRows}
-    </table>
-  </td></tr>
-
-  ${flagRows ? `
-  <!-- Red flags (count summary) -->
-  <tr><td style="padding-bottom:24px">
-    <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888888;margin-bottom:12px">Trust-and-clarity flags</div>
-    ${flagRows}
-  </td></tr>
-  ` : ""}
-
-  <!-- CTA -->
-  <tr><td style="padding:24px;background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px;text-align:center">
-    <div style="font-family:Georgia,serif;font-size:20px;font-style:italic;color:#fbf8ef;margin-bottom:14px">See whether AI is naming you in your category right now.</div>
-    <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;line-height:1.7;margin-bottom:22px">This automated check reads your own site. It does not show what AI actually says about your category. Monitor runs your category across all 6 AI tools every month and shows which competitors are being named, whether you appear in those answers, and what changed since last month. The named fix list, the per-query playbooks, and the monthly delta tracking ship with the paid engagement.</div>
-    <a href="https://neverranked.com/pricing" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px;margin-bottom:10px">See what monitoring costs</a>
-    <div style="font-family:'Courier New',monospace;font-size:10px;color:#555555;letter-spacing:.06em">$199 a month per category. Month to month.</div>
-  </td></tr>
-
-  <!-- Footer -->
-  <tr><td style="padding:24px 0;border-top:1px solid #2a2a2a;margin-top:24px">
-    <div style="font-family:'Courier New',monospace;font-size:10px;color:#555555;line-height:1.6">
-      Powered by <a href="https://neverranked.com" style="color:#bfa04d;text-decoration:none">NeverRanked</a><br>
-      You received this because you requested an AI search report at check.neverranked.com
-    </div>
-  </td></tr>
-
-</table>
-</td></tr>
-</table>
-</body>
-</html>`.trim();
-}
+// buildReportEmail moved to report-email.ts (2026-10-07): it is built from
+// our stored scan summary, escapes every field and names each missing signal.
 
 // ---------- Drip sequence ----------
 
 const DRIP_DAY_3 = 3;
 const DRIP_DAY_7 = 7;
-const CITATION_LINE = 78; // score where AI engines reliably start citing a site; matches the on-page benchmark (no second "average" number)
 
 interface LeadData {
   email: string;
@@ -2814,6 +2650,9 @@ async function recordDelivery(
 }
 
 async function runDripSequence(env: Env): Promise<void> {
+  // Off unless explicitly enabled (decision 2, 2026-10-07). Checked here as
+  // well as in scheduled() so no other caller can start it by accident.
+  if (env.DRIP_ENABLED !== "1") return;
   if (!env.RESEND_API_KEY) return;
 
   // List all leads from KV (paginated; see listAllKvKeys helper above)
@@ -2836,8 +2675,8 @@ async function runDripSequence(env: Env): Promise<void> {
         const result = await sendResend(env, {
           from: "NeverRanked <reports@neverranked.com>",
           to: [lead.email],
-          subject: `${latestScan.domain} vs. the industry: where you stand`,
-          html: buildDripDay3Email(latestScan, lead.email),
+          subject: dripDay3Subject(latestScan),
+          html: buildDripDay3Email(latestScan),
         });
         await recordDelivery(env, "drip_day3", lead.email, result);
         if (result.ok) {
@@ -2857,8 +2696,8 @@ async function runDripSequence(env: Env): Promise<void> {
         const result = await sendResend(env, {
           from: "NeverRanked <reports@neverranked.com>",
           to: [lead.email],
-          subject: `A week later: has ${latestScan.domain} moved?`,
-          html: buildDripDay7Email(latestScan, lead.email),
+          subject: dripDay7Subject(latestScan),
+          html: buildDripDay7Email(latestScan),
         });
         await recordDelivery(env, "drip_day7", lead.email, result);
         if (result.ok) {
@@ -2872,7 +2711,8 @@ async function runDripSequence(env: Env): Promise<void> {
     }
 
     if (updated) {
-      await env.LEADS.put(key.name, JSON.stringify(lead), { expirationTtl: 365 * 24 * 60 * 60 });
+      // No TTL: a lead record never expires (2026-10-07).
+      await env.LEADS.put(key.name, JSON.stringify(lead));
     }
 
     // Rate limit: 200ms between sends
@@ -2884,175 +2724,7 @@ async function runDripSequence(env: Env): Promise<void> {
   console.log(`Drip sequence complete: ${sent} emails sent`);
 }
 
-function buildDripDay3Email(scan: { domain: string; score: number; grade: string }, email: string): string {
-  const diff = scan.score - CITATION_LINE;
-  const diffLabel = diff > 0 ? `+${diff} above` : diff < 0 ? `${Math.abs(diff)} below` : "right at";
-  const diffColor = diff > 0 ? "#27ae60" : diff < 0 ? "#c0392b" : "#e8c767";
-
-  const narrative = diff >= 12
-    ? "You clear the line where AI engines reliably start citing a site. Holding that takes active work as competitors clean up their own sites."
-    : diff >= 0
-    ? "You’re right at the line where AI engines start citing a site. That’s the threshold, not a lead. A competitor a few points cleaner gets named first."
-    : diff >= -15
-    ? "You’re below the line where AI engines reliably cite a site. They are already recommending cleaner competitors for the questions that matter."
-    : "You’re well below the line where AI engines cite a site. Every week without action is a week competitors get named instead of you.";
-
-  return `<!doctype html>
-<html>
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Competitor Comparison</title></head>
-<body style="margin:0;padding:0;background:#121212;font-family:Georgia,serif">
-<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#121212">
-<tr><td align="center" style="padding:32px 16px">
-<table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px">
-
-  <!-- Header -->
-  <tr><td style="padding-bottom:32px;border-bottom:1px solid #2a2a2a">
-    <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
-      <td style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:#e8c767">Never Ranked</td>
-      <td align="right" style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#888888">Day 3 Update</td>
-    </tr></table>
-  </td></tr>
-
-  <!-- Comparison -->
-  <tr><td style="padding:32px 0">
-    <div style="font-family:Georgia,serif;font-size:22px;font-style:italic;color:#fbf8ef;margin-bottom:8px">How do you compare?</div>
-    <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;margin-bottom:28px">${escHtml(scan.domain)} vs. the citation line</div>
-
-    <!-- Score bars -->
-    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px">
-      <tr>
-        <td style="padding:8px 0;font-family:'Courier New',monospace;font-size:12px;color:#b0b0a8;width:100px">${escHtml(scan.domain)}</td>
-        <td style="padding:8px 0">
-          <div style="background:#1c1c1c;border-radius:2px;height:24px;position:relative">
-            <div style="background:${diffColor};height:24px;border-radius:2px;width:${Math.min(scan.score, 100)}%;max-width:100%"></div>
-            <span style="position:absolute;right:8px;top:4px;font-family:'Courier New',monospace;font-size:12px;color:#fbf8ef">${scan.score}</span>
-          </div>
-        </td>
-      </tr>
-      <tr>
-        <td style="padding:8px 0;font-family:'Courier New',monospace;font-size:12px;color:#888888">Citation line</td>
-        <td style="padding:8px 0">
-          <div style="background:#1c1c1c;border-radius:2px;height:24px;position:relative">
-            <div style="background:#555555;height:24px;border-radius:2px;width:${CITATION_LINE}%"></div>
-            <span style="position:absolute;right:8px;top:4px;font-family:'Courier New',monospace;font-size:12px;color:#888888">${CITATION_LINE}</span>
-          </div>
-        </td>
-      </tr>
-    </table>
-
-    <div style="font-family:'Courier New',monospace;font-size:13px;color:${diffColor};margin-bottom:16px">${diffLabel} the citation line</div>
-    <div style="font-family:'Courier New',monospace;font-size:12px;color:#b0b0a8;line-height:1.7">${narrative}</div>
-  </td></tr>
-
-  <!-- CTA -->
-  <tr><td style="padding:24px;background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px;text-align:center">
-    <div style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:#fbf8ef;margin-bottom:12px">See where your competitors actually score.</div>
-    <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;line-height:1.7;margin-bottom:20px">NeverRanked clients get side-by-side competitor benchmarks, weekly scans, regression alerts, and a prioritized punch list you or your agency execute. Real domains. Real scores.</div>
-    <a href="https://neverranked.com/pricing" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Start monitoring, $199 a month</a>
-    <div style="margin-top:12px">
-      <a href="mailto:Lance@hi.neverranked.com?subject=Audit%20-%20${encodeURIComponent(scan.domain)}" style="font-family:'Courier New',monospace;font-size:11px;color:#bfa04d;text-decoration:none">Or scope a full audit, $750 a month after a $950 baseline</a>
-    </div>
-  </td></tr>
-
-  <!-- Footer -->
-  <tr><td style="padding:24px 0;border-top:1px solid #2a2a2a;margin-top:24px">
-    <div style="font-family:'Courier New',monospace;font-size:10px;color:#555555;line-height:1.6">
-      Powered by <a href="https://neverranked.com" style="color:#bfa04d;text-decoration:none">NeverRanked</a><br>
-      You received this because you scanned ${escHtml(scan.domain)} at check.neverranked.com<br>
-      This is email 2 of 3. No further emails after this series.
-    </div>
-  </td></tr>
-
-</table>
-</td></tr>
-</table>
-</body>
-</html>`.trim();
-}
-
-function buildDripDay7Email(scan: { domain: string; score: number; grade: string }, email: string): string {
-  return `<!doctype html>
-<html>
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Score Update</title></head>
-<body style="margin:0;padding:0;background:#121212;font-family:Georgia,serif">
-<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#121212">
-<tr><td align="center" style="padding:32px 16px">
-<table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px">
-
-  <!-- Header -->
-  <tr><td style="padding-bottom:32px;border-bottom:1px solid #2a2a2a">
-    <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
-      <td style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:#e8c767">Never Ranked</td>
-      <td align="right" style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#888888">Week 1 Check-in</td>
-    </tr></table>
-  </td></tr>
-
-  <!-- Content -->
-  <tr><td style="padding:32px 0">
-    <div style="font-family:Georgia,serif;font-size:22px;font-style:italic;color:#fbf8ef;margin-bottom:8px">A week has passed.</div>
-    <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;margin-bottom:28px">Has anything changed for ${escHtml(scan.domain)}?</div>
-
-    <div style="font-family:'Courier New',monospace;font-size:12px;color:#b0b0a8;line-height:1.8;margin-bottom:24px">
-      Seven days ago, ${escHtml(scan.domain)} scored <strong style="color:#fbf8ef">${scan.score}/100</strong> on how AI-ready your site is.<br><br>
-      In those seven days:<br>
-      &bull; Google may have updated its AI Overviews<br>
-      &bull; ChatGPT refreshed which sources it pulls from<br>
-      &bull; Your competitors may have cleaned up their sites<br>
-      &bull; Perplexity re-read millions of pages<br><br>
-      One check tells you where you were. Ongoing tracking tells you where you’re heading.
-    </div>
-
-    <!-- Re-scan CTA -->
-    <div style="text-align:center;margin-bottom:28px">
-      <a href="https://check.neverranked.com" style="display:inline-block;padding:14px 32px;border:1px solid #e8c767;color:#e8c767;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Re-scan your site free</a>
-    </div>
-  </td></tr>
-
-  <!-- Monitoring pitch -->
-  <tr><td style="padding:24px;background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px">
-    <div style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:#fbf8ef;margin-bottom:12px">Stop checking manually.</div>
-    <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;line-height:1.7;margin-bottom:20px">
-      NeverRanked tracks what AI says about your business every month. You see whether you are named, who is named instead of you, what changed, and exactly what to do next.
-    </div>
-
-    <table width="100%" cellpadding="0" cellspacing="0" border="0">
-      <tr>
-        <td style="padding:6px 0;font-family:'Courier New',monospace;font-size:11px;color:#b0b0a8">&#8635; Monthly AI checks</td>
-        <td style="padding:6px 0;font-family:'Courier New',monospace;font-size:11px;color:#b0b0a8">&#9670; Clear list of what to fix</td>
-      </tr>
-      <tr>
-        <td style="padding:6px 0;font-family:'Courier New',monospace;font-size:11px;color:#b0b0a8">&#9888; Alerts when something changes</td>
-        <td style="padding:6px 0;font-family:'Courier New',monospace;font-size:11px;color:#b0b0a8">&#9646;&#9646; Who AI names instead</td>
-      </tr>
-      <tr>
-        <td style="padding:6px 0;font-family:'Courier New',monospace;font-size:11px;color:#b0b0a8">&#9993; Monthly email summary</td>
-        <td style="padding:6px 0;font-family:'Courier New',monospace;font-size:11px;color:#b0b0a8">&#8599; Shareable reports</td>
-      </tr>
-    </table>
-
-    <div style="text-align:center;margin-top:20px">
-      <a href="https://neverranked.com/pricing" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Start monitoring, $199 a month</a>
-    </div>
-    <div style="text-align:center;margin-top:12px">
-      <a href="mailto:Lance@hi.neverranked.com?subject=Audit%20-%20${encodeURIComponent(scan.domain)}" style="font-family:'Courier New',monospace;font-size:11px;color:#bfa04d;text-decoration:none">Or scope a full audit, $750 a month after a $950 baseline</a>
-    </div>
-  </td></tr>
-
-  <!-- Footer -->
-  <tr><td style="padding:24px 0;border-top:1px solid #2a2a2a;margin-top:24px">
-    <div style="font-family:'Courier New',monospace;font-size:10px;color:#555555;line-height:1.6">
-      Powered by <a href="https://neverranked.com" style="color:#bfa04d;text-decoration:none">NeverRanked</a><br>
-      You received this because you scanned ${escHtml(scan.domain)} at check.neverranked.com<br>
-      This is the last email in this series. No further emails.
-    </div>
-  </td></tr>
-
-</table>
-</td></tr>
-</table>
-</body>
-</html>`.trim();
-}
+// The drip templates live in drip-email.ts.
 
 // ---------- Fetch failure descriptions ----------
 // Maps upstream HTTP status codes to specific, diagnostic messages. Cloudflare
@@ -3065,7 +2737,7 @@ function describeFetchFailure(status: number): string {
     case 400:
       return "The site rejected the request (HTTP 400). The URL may be malformed or the server may require additional headers.";
     case 401:
-      return "The site requires authentication (HTTP 401). AI crawlers cannot access pages behind a login, so anything gated this way is invisible to ChatGPT, Perplexity, and Google AI Overviews.";
+      return "The site requires authentication (HTTP 401). AI crawlers cannot access pages behind a login, so they cannot read anything gated this way.";
     case 403:
       return "The site is blocking our scanner (HTTP 403). If your firewall or bot filter is too aggressive, it may also be blocking GPTBot, ClaudeBot, and PerplexityBot. Check your robots.txt and WAF rules.";
     case 404:
@@ -3352,7 +3024,7 @@ export default {
         );
       }
 
-      let body: { url?: string; referrer?: string; utm?: Record<string, string> };
+      let body: { url?: string; referrer?: string; utm?: Record<string, string>; session_id?: string; client?: string };
       try {
         body = await request.json();
       } catch {
@@ -3362,6 +3034,7 @@ export default {
       const targetUrl = body.url?.trim();
       const referrer = body.referrer?.trim() || "";
       const utm = body.utm || {};
+      const sessionId = cleanSessionId(body.session_id);
       if (!targetUrl) {
         return Response.json({ error: "Please provide a URL." }, { status: 400, headers: corsHeaders });
       }
@@ -3442,10 +3115,15 @@ export default {
       // uncitable no matter how strong its schema, so it must not score high.
       // Caught here in the free-check path (where prospects self-serve) so a
       // gagged site grades honestly -- including our own noindex site.
+      // Crawl facts kept for the stored summary, so the emailed result can name
+      // a noindex or a robots.txt block as plainly as the page's red flag does.
+      const crawl: { noindex: boolean; nofollow: boolean; blocked: string[] } = { noindex: false, nofollow: false, blocked: [] };
       try {
         const robotsMeta = (report.signals.robots_meta || "").toLowerCase();
         const noindex = /noindex/.test(robotsMeta);
         const nofollow = /nofollow/.test(robotsMeta);
+        crawl.noindex = noindex;
+        crawl.nofollow = nofollow;
         let aiBotsBlocked: string[] = [];
         try {
           const rc = new AbortController();
@@ -3457,6 +3135,7 @@ export default {
           clearTimeout(rt);
           if (rr.ok) aiBotsBlocked = blockedAiBots(await rr.text());
         } catch { /* robots.txt unreachable -> treat as not blocking */ }
+        crawl.blocked = aiBotsBlocked;
 
         if (noindex || aiBotsBlocked.length > 0) {
           report.aeo_score = Math.min(report.aeo_score, 35);
@@ -3469,38 +3148,103 @@ export default {
         }
       } catch { /* never let the crawlability gate break the report */ }
 
-      // Internal-source filter: the outreach pipeline scans every
-      // prospect's site as part of email generation, and those scans
-      // were polluting the free-check activity dashboards (real-visitor
-      // counts inflated, "(direct)" attribution column dominated by
-      // pipeline traffic). The pipeline sets X-Internal-Source on every
-      // call to /api/check, so any request carrying that header gets
-      // its report back but is excluded from the event log entirely.
-      // Real-visitor scans (no such header) continue to log normally.
+      // ---- Who called (classified once, written to D1) ----
+      // Any X-Internal-Source value is internal now, not only outreach-scan.
       const internalSource = request.headers.get("X-Internal-Source") || "";
-      if (internalSource === "outreach-scan") {
-        return Response.json(report, { headers: corsHeaders });
+      const ua = request.headers.get("User-Agent") || "";
+      const cls = classifyRequest({ userAgent: ua, internalSource, keyed, client: body.client, sessionId });
+      const rawIp = request.headers.get("CF-Connecting-IP") || request.headers.get("X-Forwarded-For") || "";
+      const ipHash = rawIp ? await sha256Hex(rawIp) : "";
+      const country = ((request as any).cf?.country as string | undefined) || null;
+      const createdAt = nowSeconds();
+      const cleanedUtm = cleanUtm(utm);
+
+      const eventRow: EventRow = {
+        type: "scan",
+        session_id: sessionId,
+        domain: report.domain,
+        source: cls.source,
+        is_internal: cls.is_internal,
+        is_bot: cls.is_bot,
+        ip_hash: ipHash || null,
+        user_agent: cleanUa(ua),
+        country,
+        referrer: cleanReferrer(referrer),
+        utm: cleanedUtm,
+        created_at: createdAt,
+      };
+
+      // Page-originated scans get a scan_id and a stored summary, so the
+      // email endpoint builds the result from OUR copy, not the browser's.
+      let pageExtras: Record<string, unknown> = {};
+      const isPage = cls.source === "page";
+      const statements: D1PreparedStatement[] = [];
+      if (env.DB) {
+        try {
+          if (isPage) {
+            const scanId = crypto.randomUUID();
+            const identity = extractIdentity(html);
+            const summary: ScanSummary = {
+              v: 1,
+              url: targetUrl,
+              domain: report.domain,
+              score: report.aeo_score,
+              grade: report.grade,
+              schema_coverage: report.schema_coverage.map((c) => ({ type: c.type, present: c.present })),
+              technical_signals: report.technical_signals.map((t) => ({ label: t.label, status: t.status })),
+              red_flags: report.red_flags.slice(0, 30).map((f) => String(f).slice(0, 600)),
+              crawl,
+              client_side_rendered: !!report.client_side_rendered,
+              jsonld_parse_errors: report.signals.jsonld_parse_errors || 0,
+              schema_types: report.signals.schema_types.slice(0, 30).map((t) => String(t).slice(0, 80)),
+              identity,
+            };
+            statements.push(scanStatement(env.DB, {
+              scan_id: scanId, session_id: sessionId, url: targetUrl, domain: report.domain,
+              score: report.aeo_score, grade: report.grade, summary, created_at: createdAt,
+            }));
+            pageExtras = {
+              scan_id: scanId,
+              missing_signals: missingSignals(summary).map((m) => ({ key: m.key, name: m.name })),
+              identity: { category: identity.category, town: identity.town },
+            };
+          }
+          statements.push(eventStatement(env.DB, eventRow));
+          await env.DB.batch(statements);
+        } catch (e) {
+          // The scan result still goes back to the visitor. Without a stored
+          // row, send-report falls back to the whitelisted client copy.
+          console.error("free-check-d1-scan-failed", e instanceof Error ? e.message : String(e));
+          if (pageExtras.scan_id) delete pageExtras.scan_id;
+        }
+      }
+      if (isPage && !pageExtras.missing_signals) {
+        // D1 unbound or failed: still give the page its count and prefill.
+        const identity = extractIdentity(html);
+        pageExtras.missing_signals = missingSignals({
+          schema_coverage: report.schema_coverage, technical_signals: report.technical_signals, crawl,
+          client_side_rendered: !!report.client_side_rendered, jsonld_parse_errors: report.signals.jsonld_parse_errors || 0,
+        }).map((m) => ({ key: m.key, name: m.name }));
+        pageExtras.identity = { category: identity.category, town: identity.town };
       }
 
-      // Log anonymous scan event to KV (with referrer/UTM attribution).
-      // Enriched with ip_hash + user-agent so we can dedupe unique humans
-      // and filter out internal/test traffic in the admin report.
+      // Internal-source filter (KV, unchanged): the outreach pipeline's scans
+      // stay out of the legacy KV event log. They are now counted in D1 with
+      // source "outreach-scan" and excluded from the people counts there.
+      if (internalSource === "outreach-scan") {
+        return Response.json({ ...report, ...pageExtras }, { headers: corsHeaders });
+      }
+
+      // Legacy KV scan log, kept unchanged for now so the old readers keep
+      // working. D1 (above) is the record the briefing reads.
       //
       // Write-time dedup: when a visitor scans on the marketing homepage
       // demo and then clicks "See full report" -> check.neverranked.com
       // auto-runs the same scan a second time with ?url=. Same person,
       // same domain, two events. We use a short-TTL dedup key
       // (dedup:scan:<domain>:<ip_hash>, TTL 60s) and skip the second
-      // event if seen recently. Doesn't affect:
-      //   - Different visitors scanning same domain (different ip_hash)
-      //   - Same visitor scanning a different domain
-      //   - Same visitor re-scanning later (TTL expires)
+      // event if seen recently.
       try {
-        const ua = request.headers.get("User-Agent") || "";
-        const rawIp = request.headers.get("CF-Connecting-IP") || request.headers.get("X-Forwarded-For") || "";
-        const ipHash = rawIp ? await sha256Hex(rawIp) : "";
-
-        // Dedup check: same domain + ip_hash within last 60s = skip
         const dedupKey = `dedup:scan:${report.domain}:${ipHash}`;
         const recent = ipHash ? await env.LEADS.get(dedupKey) : null;
         if (!recent) {
@@ -3527,167 +3271,360 @@ export default {
         console.error("scan-log-failed", e instanceof Error ? e.message : String(e));
       }
 
-      return Response.json(report, { headers: corsHeaders });
+      return Response.json({ ...report, ...pageExtras }, { headers: corsHeaders });
     }
 
-    // Send report via email + capture lead
-    // ── /api/gate-impression: log that a visitor SAW the email gate ──
-    // Called once per session by the JS in the email gate. Provides the
-    // denominator for A/B conversion rate calculations. Stored as a
-    // discrete event in KV so /api/ab-stats can scan + count.
+    // ── /api/gate-impression: a page session SAW the email ask ──
+    // Called once per session by the page JS. The denominator of the capture
+    // rate. Written to D1 (classified) and, for continuity, to KV.
     if (url.pathname === "/api/gate-impression" && request.method === "POST") {
       const ip = request.headers.get("CF-Connecting-IP") || "unknown";
       if (isRateLimited(ip)) {
         return Response.json({ ok: false }, { status: 429, headers: corsHeaders });
       }
-      let imp: { variant?: string; gate_level?: string; domain?: string; score?: number };
+      let imp: { session_id?: string; client?: string; scan_id?: string; domain?: string; score?: number; consent_version?: string };
       try { imp = await request.json(); } catch {
         return Response.json({ ok: false }, { status: 400, headers: corsHeaders });
       }
-      const variant = imp.variant === "A" || imp.variant === "B" ? imp.variant : "A";
-      const gateLevel = imp.gate_level === "mild" || imp.gate_level === "aggressive" ? imp.gate_level : "unknown";
+      const sessionId = cleanSessionId(imp.session_id);
+      const domain = typeof imp.domain === "string" ? imp.domain.toLowerCase().replace(/[^a-z0-9.-]/g, "").slice(0, 253) || null : null;
+      const consentVersion = consentFor(imp.consent_version).version;
       try {
-        const key = `event:gate_impression:${variant}:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
+        const key = `event:gate_impression:${consentVersion}:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
         await env.LEADS.put(key, JSON.stringify({
           type: "gate_impression",
-          variant,
-          gate_level: gateLevel,
-          domain: imp.domain || null,
+          consent_version: consentVersion,
+          domain,
           score: typeof imp.score === "number" ? imp.score : null,
           ts: new Date().toISOString(),
         }), { expirationTtl: 90 * 24 * 60 * 60 });
       } catch (e) {
         console.error("gate-impression-log-failed", e instanceof Error ? e.message : String(e));
       }
+      if (env.DB) {
+        try {
+          const ua = request.headers.get("User-Agent") || "";
+          const cls = classifyRequest({
+            userAgent: ua,
+            internalSource: request.headers.get("X-Internal-Source") || "",
+            keyed: false,
+            client: imp.client,
+            sessionId,
+          });
+          const rawIp = request.headers.get("CF-Connecting-IP") || request.headers.get("X-Forwarded-For") || "";
+          await eventStatement(env.DB, {
+            type: "gate_impression",
+            session_id: sessionId,
+            domain,
+            source: cls.source,
+            is_internal: cls.is_internal,
+            is_bot: cls.is_bot,
+            ip_hash: rawIp ? await sha256Hex(rawIp) : null,
+            user_agent: cleanUa(ua),
+            country: ((request as any).cf?.country as string | undefined) || null,
+            referrer: null,
+            utm: {},
+            created_at: nowSeconds(),
+          }).run();
+        } catch (e) {
+          console.error("gate-impression-d1-failed", e instanceof Error ? e.message : String(e));
+        }
+      }
       return Response.json({ ok: true }, { headers: corsHeaders });
     }
 
-    // ── /api/ab-stats: read out gate impression + capture counts per variant ──
-    // Returns { A: { impressions, captures, rate }, B: { ... } }. Public —
-    // no auth, but contains only aggregate counts (no PII).
-    if (url.pathname === "/api/ab-stats" && request.method === "GET") {
-      const counts: Record<string, { impressions: number; captures: number }> = {
-        A: { impressions: 0, captures: 0 },
-        B: { impressions: 0, captures: 0 },
-      };
-      try {
-        // Impressions: scan event:gate_impression:* keys
-        let cursor: string | undefined;
-        do {
-          const list: any = await env.LEADS.list({ prefix: "event:gate_impression:", limit: 1000, cursor });
-          for (const k of list.keys) {
-            const m = k.name.match(/^event:gate_impression:(A|B):/);
-            if (m) counts[m[1]].impressions++;
-          }
-          cursor = list.list_complete ? undefined : list.cursor;
-        } while (cursor);
-        // Captures: scan event:capture:* and read variant field
-        cursor = undefined;
-        do {
-          const list: any = await env.LEADS.list({ prefix: "event:capture:", limit: 1000, cursor });
-          for (const k of list.keys) {
-            try {
-              const raw = await env.LEADS.get(k.name);
-              if (!raw) continue;
-              const v = JSON.parse(raw);
-              const vr = v.variant === "A" || v.variant === "B" ? v.variant : null;
-              if (vr) counts[vr].captures++;
-            } catch {}
-          }
-          cursor = list.list_complete ? undefined : list.cursor;
-        } while (cursor);
-      } catch (e) {
-        return Response.json({ error: e instanceof Error ? e.message : "scan failed" }, { status: 500, headers: corsHeaders });
-      }
-      const result: Record<string, any> = {};
-      for (const v of ["A", "B"]) {
-        const c = counts[v];
-        result[v] = {
-          impressions: c.impressions,
-          captures: c.captures,
-          rate: c.impressions > 0 ? +((c.captures / c.impressions) * 100).toFixed(2) : 0,
-        };
-      }
-      return Response.json({
-        as_of: new Date().toISOString(),
-        variants: result,
-        winner: (() => {
-          if (result.A.impressions < 50 || result.B.impressions < 50) return "INSUFFICIENT_SAMPLE";
-          const diff = Math.abs(result.A.rate - result.B.rate);
-          if (diff < 1) return "TIE";
-          return result.A.rate > result.B.rate ? "A" : "B";
-        })(),
-      }, { headers: corsHeaders });
-    }
+    // /api/ab-stats was removed 2026-10-07 with both A/B tests. Neither arm
+    // reached the code's own 50-impression threshold, so there is no winner
+    // to read, and the gate now has one version.
 
+    // ── /api/send-report: capture the email, store it durably, send the result ──
+    //
+    // Order matters, and every step after the first is allowed to fail
+    // without losing the capture:
+    //   1. free_check_leads row FIRST, with the consent words looked up here
+    //      from consent_version (never taken from the browser)
+    //   2. lead:<email> and event:capture:* in KV with NO expiry. If step 1
+    //      failed, also lead_d1_failed:<ts> so a reconcile can recover it
+    //   3. admin_inbox item + capture event (D1)
+    //   4. the result email, built from OUR stored scan (free_check_scans by
+    //      scan_id), falling back to a whitelisted client copy only when no
+    //      stored row exists. Resend's answer is written back to the lead row
+    //   5. an immediate alert to LEAD_ALERT_TO for every non-internal capture
     if (url.pathname === "/api/send-report" && request.method === "POST") {
       const ip = request.headers.get("CF-Connecting-IP") || "unknown";
       if (isRateLimited(ip)) {
         return Response.json({ error: "Rate limit exceeded." }, { status: 429, headers: corsHeaders });
       }
 
-      let body: { email?: string; report?: any; variant?: string; gate_level?: string };
+      let body: {
+        email?: unknown; report?: unknown; scan_id?: unknown; session_id?: unknown; client?: unknown;
+        consent_version?: unknown; referrer?: unknown; utm?: unknown;
+      };
       try {
         body = await request.json();
       } catch {
         return Response.json({ error: "Invalid request." }, { status: 400, headers: corsHeaders });
       }
 
-      const email = body.email?.trim().toLowerCase();
-      const report = body.report;
-      const variant = body.variant === "A" || body.variant === "B" ? body.variant : null;
-      const gateLevel = body.gate_level === "mild" || body.gate_level === "aggressive" ? body.gate_level : "unknown";
-
+      const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
       // Server-side check mirrors client validation -- belt and suspenders.
-      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) || !report) {
+      if (!email || email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
         return Response.json({ error: "Valid email and report required." }, { status: 400, headers: corsHeaders });
       }
 
-      // Store lead in KV
-      const leadKey = `lead:${email}`;
-      const now = new Date().toISOString();
-      const existing = await env.LEADS.get(leadKey);
-      const leadData = existing ? JSON.parse(existing) : { email, scans: [], created: now };
-      leadData.scans.push({
-        domain: report.domain,
-        score: report.aeo_score,
-        grade: report.grade,
-        date: now,
-      });
-      leadData.lastScan = now;
-      await env.LEADS.put(leadKey, JSON.stringify(leadData), { expirationTtl: 365 * 24 * 60 * 60 });
+      const scanId = cleanScanId(body.scan_id);
+      const sessionId = cleanSessionId(body.session_id);
+      let stored: Awaited<ReturnType<typeof loadScan>> = null;
+      if (scanId && env.DB) {
+        try { stored = await loadScan(env.DB, scanId); }
+        catch (e) { console.error("free-check-load-scan-failed", e instanceof Error ? e.message : String(e)); }
+      }
+      const summary: ScanSummary | null = stored ? stored.summary : summaryFromClient(body.report);
+      if (!summary) {
+        return Response.json({ error: "Valid email and report required." }, { status: 400, headers: corsHeaders });
+      }
+      const scanUrl = stored ? stored.url : summary.url;
 
-      // Log email capture event
+      const consent = consentFor(body.consent_version);
+      const ua = request.headers.get("User-Agent") || "";
+      const cls = classifyRequest({
+        userAgent: ua,
+        internalSource: request.headers.get("X-Internal-Source") || "",
+        keyed: false,
+        client: typeof body.client === "string" ? body.client : null,
+        sessionId,
+      });
+      const internal = internalEmail(email, env.INTERNAL_EMAILS);
+      const isInternal = internal.internal || cls.is_internal === 1;
+      const internalReason = internal.reason ?? (cls.is_internal ? `source:${cls.source}` : null);
+      const rawIp = request.headers.get("CF-Connecting-IP") || request.headers.get("X-Forwarded-For") || "";
+      const ipHash = rawIp ? await sha256Hex(rawIp) : null;
+      const country = ((request as any).cf?.country as string | undefined) || null;
+      const utm = cleanUtm(body.utm);
+      const referrer = cleanReferrer(body.referrer);
+      const createdAt = nowSeconds();
+      const nowIso = new Date().toISOString();
+
+      // A person who unsubscribed earlier still gets the result they just
+      // asked for (that is transactional), but the new row carries the flag.
+      let priorUnsub: number | null = null;
       try {
+        if (await env.LEADS.get(`unsubscribed:${email}`)) priorUnsub = createdAt;
+      } catch { /* treat as not unsubscribed */ }
+
+      // 1. D1 lead row first.
+      let leadId: number | null = null;
+      let d1Error: string | null = null;
+      if (env.DB) {
+        try {
+          leadId = await insertLead(env.DB, {
+            email,
+            scan_id: stored ? scanId : null,
+            url: scanUrl,
+            domain: summary.domain,
+            business_name: summary.identity?.name ?? null,
+            score: summary.score,
+            grade: summary.grade,
+            consent_version: consent.version,
+            consent_text: consent.text,
+            followup_ok: consent.followup_ok,
+            source: "check_page",
+            session_id: sessionId,
+            referrer,
+            utm,
+            ip_hash: ipHash,
+            user_agent: cleanUa(ua),
+            country,
+            is_internal: isInternal ? 1 : 0,
+            internal_reason: internalReason,
+            unsubscribed_at: priorUnsub,
+            created_at: createdAt,
+          });
+        } catch (e) {
+          d1Error = e instanceof Error ? e.message : String(e);
+          console.error("free-check-lead-d1-failed", d1Error);
+        }
+      } else {
+        d1Error = "DB binding missing";
+      }
+
+      // 2. KV, with no expiry. The capture can never be lost to a D1 hiccup.
+      try {
+        const leadKey = `lead:${email}`;
+        const existing = await env.LEADS.get(leadKey);
+        let leadData: any = { email, scans: [], created: nowIso };
+        if (existing) { try { leadData = JSON.parse(existing); } catch { /* keep the fresh record */ } }
+        if (!Array.isArray(leadData.scans)) leadData.scans = [];
+        leadData.scans.push({ domain: summary.domain, score: summary.score, grade: summary.grade, date: nowIso });
+        leadData.lastScan = nowIso;
+        leadData.consent_version = consent.version;
+        await env.LEADS.put(leadKey, JSON.stringify(leadData));
+
         const captureKey = `event:capture:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
         await env.LEADS.put(captureKey, JSON.stringify({
           type: "email_captured",
-          domain: report.domain,
-          score: report.aeo_score,
-          variant: variant,  // gate-COPY A/B (null on legacy or missing)
-          gate_level: gateLevel,  // gate-LEVEL A/B: mild | aggressive | unknown
-          ts: new Date().toISOString(),
-        }), { expirationTtl: 90 * 24 * 60 * 60 });
+          domain: summary.domain,
+          score: summary.score,
+          consent_version: consent.version,
+          d1_lead_id: leadId,
+          ts: nowIso,
+        }));
+
+        if (leadId === null) {
+          const failKey = `lead_d1_failed:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
+          await env.LEADS.put(failKey, JSON.stringify({
+            error: d1Error,
+            email, scan_id: scanId, session_id: sessionId, url: scanUrl, domain: summary.domain,
+            score: summary.score, grade: summary.grade, consent_version: consent.version,
+            followup_ok: consent.followup_ok, referrer, utm, ip_hash: ipHash, user_agent: cleanUa(ua), country,
+            is_internal: isInternal ? 1 : 0, internal_reason: internalReason, created_at: createdAt,
+          }));
+        }
       } catch (e) {
-        console.error("capture-log-failed", e instanceof Error ? e.message : String(e));
+        console.error("free-check-lead-kv-failed", e instanceof Error ? e.message : String(e));
       }
 
-      // Send email if RESEND_API_KEY is set
+      // 3. Admin inbox item + capture event.
+      if (env.DB) {
+        try {
+          const statements: D1PreparedStatement[] = [
+            eventStatement(env.DB, {
+              type: "capture",
+              session_id: sessionId,
+              domain: summary.domain,
+              source: cls.source,
+              is_internal: isInternal ? 1 : 0,
+              is_bot: cls.is_bot,
+              ip_hash: ipHash,
+              user_agent: cleanUa(ua),
+              country,
+              referrer,
+              utm,
+              created_at: createdAt,
+            }),
+          ];
+          if (leadId !== null) {
+            const attribution = [utm.utm_source, utm.utm_campaign, utm.utm_content].filter(Boolean).join(" / ") || (referrer ? `referrer ${referrer}` : "direct");
+            statements.push(inboxStatement(env.DB, {
+              leadId,
+              title: isInternal ? `Internal test capture: ${summary.domain}` : `New free-check lead: ${summary.domain}`,
+              body: [
+                `Email: ${email}`,
+                `Score: ${summary.score}/100 (${summary.grade})`,
+                `Attribution: ${attribution}`,
+                `Consent: ${consent.version}${consent.followup_ok ? " (follow-up allowed)" : " (no follow-up)"}`,
+                isInternal ? `Internal: ${internalReason}` : "",
+              ].filter(Boolean).join("\n"),
+              urgency: isInternal ? "low" : "high",
+              now: createdAt,
+            }));
+          }
+          await env.DB.batch(statements);
+        } catch (e) {
+          console.error("free-check-inbox-or-event-failed", e instanceof Error ? e.message : String(e));
+        }
+      }
+
+      // 4. The result email, with a working unsubscribe link (the consent
+      //    line promises one in every email).
+      let unsubscribeUrl: string | null = null;
+      try {
+        const token = crypto.randomUUID();
+        await env.LEADS.put(`unsub:${token}`, JSON.stringify({ email, lead_id: leadId, created: nowIso }));
+        unsubscribeUrl = `${url.origin}/unsubscribe?t=${token}`;
+      } catch (e) {
+        console.error("free-check-unsub-token-failed", e instanceof Error ? e.message : String(e));
+      }
+
+      let reportStatus = "not_sent: RESEND_API_KEY unset";
+      let reportId: string | null = null;
       if (env.RESEND_API_KEY) {
-        const emailHtml = buildReportEmail(report);
-        const result = await sendResend(env, {
+        const mail = buildReportEmail(summary, { unsubscribeUrl });
+        const payload: Record<string, unknown> = {
           from: "NeverRanked <reports@neverranked.com>",
           to: [email],
-          subject: `Your AI search report: ${report.domain} scored ${report.aeo_score}/100`,
-          html: emailHtml,
-        });
+          reply_to: "hello@neverranked.com",
+          subject: mail.subject,
+          html: mail.html,
+          text: mail.text,
+        };
+        if (unsubscribeUrl) {
+          payload.headers = {
+            "List-Unsubscribe": `<${unsubscribeUrl}>`,
+            "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+          };
+        }
+        const result = await sendResend(env, payload);
         await recordDelivery(env, "report", email, result);
+        reportStatus = result.ok ? "sent" : `failed: HTTP ${result.status} ${result.error ?? ""}`.trim();
+        reportId = result.id;
         if (!result.ok) {
-          console.error(`Report email failed for ${email}: status=${result.status} error=${result.error}`);
+          console.error(`Report email failed for lead ${leadId ?? "(kv only)"}: status=${result.status} error=${result.error}`);
+        }
+      }
+      if (leadId !== null && env.DB) {
+        try { await recordReportResult(env.DB, leadId, reportStatus, reportId); }
+        catch (e) { console.error("free-check-report-status-failed", e instanceof Error ? e.message : String(e)); }
+      }
+
+      // 5. Immediate alert to Lance for a real lead (decision 12). The address
+      //    is a Worker secret, never in this public repo. Unset = skip.
+      if (!isInternal && env.LEAD_ALERT_TO && env.RESEND_API_KEY) {
+        const to = env.LEAD_ALERT_TO.split(",").map((s) => s.trim()).filter(Boolean);
+        if (to.length) {
+          const alert = buildLeadAlert({
+            leadId,
+            email,
+            domain: summary.domain,
+            score: summary.score,
+            grade: summary.grade,
+            createdAtMs: createdAt * 1000,
+            utm,
+            referrer,
+            consentVersion: consent.version,
+            followupOk: consent.followup_ok === 1,
+            country,
+            reportEmailStatus: reportStatus,
+          });
+          ctx.waitUntil(
+            sendResend(env, { from: "NeverRanked <reports@neverranked.com>", to, subject: alert.subject, text: alert.text })
+              .then((r) => { if (!r.ok) console.error(`lead-alert failed: status=${r.status} error=${r.error}`); }),
+          );
         }
       }
 
       return Response.json({ ok: true }, { headers: corsHeaders });
+    }
+
+    // ── /unsubscribe: the link in every result email ──
+    // GET shows a confirm button (mail scanners prefetch links, so a GET must
+    // never unsubscribe on its own). POST does it, which is also what an
+    // RFC 8058 one-click List-Unsubscribe-Post sends.
+    if (url.pathname === "/unsubscribe" && (request.method === "GET" || request.method === "POST")) {
+      const token = (url.searchParams.get("t") || "").toLowerCase();
+      const page = (msg: string, form: boolean, status = 200) => new Response(
+        `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>${escHtml(UNSUB_COPY.title)} | Never Ranked</title></head>` +
+        `<body style="margin:0;background:#121212;color:#fbf8ef;font-family:Georgia,serif"><main style="max-width:520px;margin:0 auto;padding:64px 20px">` +
+        `<p style="font-style:italic;color:#e8c767;font-size:20px;margin:0 0 24px">Never Ranked</p>` +
+        `<p style="font-family:'Courier New',monospace;font-size:14px;line-height:1.7">${escHtml(msg)}</p>` +
+        (form ? `<form method="post" action="/unsubscribe?t=${escHtml(token)}"><button type="submit" style="margin-top:12px;padding:12px 24px;background:#e8c767;color:#121212;border:0;border-radius:2px;font-family:'Courier New',monospace;font-size:12px;letter-spacing:1px;text-transform:uppercase;cursor:pointer">${escHtml(UNSUB_COPY.button)}</button></form>` : "") +
+        `</main></body></html>`,
+        { status, headers: { "Content-Type": "text/html;charset=utf-8", "Cache-Control": "no-store" } },
+      );
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(token)) return page(UNSUB_COPY.invalid, false, 400);
+      let rec: { email?: string } | null = null;
+      try { const raw = await env.LEADS.get(`unsub:${token}`); rec = raw ? JSON.parse(raw) : null; } catch { rec = null; }
+      if (!rec || typeof rec.email !== "string") return page(UNSUB_COPY.invalid, false, 404);
+      if (request.method === "GET") return page(UNSUB_COPY.ask, true);
+      const at = nowSeconds();
+      try {
+        await env.LEADS.put(`unsubscribed:${rec.email}`, JSON.stringify({ at: new Date(at * 1000).toISOString(), token }));
+      } catch (e) { console.error("unsubscribe-kv-failed", e instanceof Error ? e.message : String(e)); }
+      if (env.DB) {
+        try { await markUnsubscribed(env.DB, rec.email, at); }
+        catch (e) { console.error("unsubscribe-d1-failed", e instanceof Error ? e.message : String(e)); }
+      }
+      return page(UNSUB_COPY.done, false);
     }
 
     // Admin: recent audit-tool events (scans + captures) for the
@@ -3923,6 +3860,10 @@ export default {
       if (!secret || secret !== (env as any).ADMIN_SECRET) {
         return Response.json({ error: "Unauthorized" }, { status: 401, headers: corsHeaders });
       }
+      // The drip is off (decision 2). Forcing a send would bypass the flag.
+      if (env.DRIP_ENABLED !== "1") {
+        return Response.json({ error: "Drip is disabled (DRIP_ENABLED is not \"1\")." }, { status: 409, headers: corsHeaders });
+      }
       const email = url.searchParams.get("email");
       const day = url.searchParams.get("day");
       if (!email || (day !== "3" && day !== "7")) {
@@ -3941,15 +3882,13 @@ export default {
       const result = await sendResend(env, {
         from: "NeverRanked <reports@neverranked.com>",
         to: [lead.email],
-        subject: isDay3
-          ? `${latestScan.domain} vs. the industry: where you stand`
-          : `A week later: has ${latestScan.domain} moved?`,
-        html: isDay3 ? buildDripDay3Email(latestScan, lead.email) : buildDripDay7Email(latestScan, lead.email),
+        subject: isDay3 ? dripDay3Subject(latestScan) : dripDay7Subject(latestScan),
+        html: isDay3 ? buildDripDay3Email(latestScan) : buildDripDay7Email(latestScan),
       });
       await recordDelivery(env, isDay3 ? "drip_day3" : "drip_day7", lead.email, result);
       if (result.ok) {
         if (isDay3) lead.drip_day3_sent = true; else lead.drip_day7_sent = true;
-        await env.LEADS.put(`lead:${email}`, JSON.stringify(lead), { expirationTtl: 365 * 24 * 60 * 60 });
+        await env.LEADS.put(`lead:${email}`, JSON.stringify(lead));
       }
       return Response.json({ forced: true, day, email, result }, { headers: corsHeaders });
     }
@@ -4026,9 +3965,13 @@ export default {
     });
   },
 
-  // ---------- Drip sequence cron (runs daily at 2pm UTC) ----------
+  // ---------- Drip sequence cron (daily at 14:00 UTC) ----------
+  // OFF unless DRIP_ENABLED is exactly "1" (decision 2, 2026-10-07). The
+  // drip sent two commercial emails per lead with no approval and no
+  // unsubscribe link. Follow-ups belong to the supervised outreach lane.
 
   async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
+    if (env.DRIP_ENABLED !== "1") return;
     ctx.waitUntil(runDripSequence(env));
   },
 };

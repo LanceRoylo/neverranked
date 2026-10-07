@@ -876,8 +876,12 @@ export default {
     if (path === "/checkout/pulse/waitlist" && method === "POST") {
       return handlePulseWaitlist(request, env);
     }
-    const checkoutMatch = path.match(/^\/checkout\/(audit|pulse|signal|amplify)$/);
-    if (checkoutMatch && method === "GET") {
+    // Every /checkout/<plan> 302s to the pricing page (2026-10-07). The
+    // matcher takes any plan name, not only the four retired ones, so a link
+    // to /checkout/kickoff or /checkout/retainer lands on pricing too.
+    // /checkout/success is excluded here and keeps its own route below.
+    const checkoutMatch = path !== "/checkout/success" ? path.match(/^\/checkout\/([a-z0-9_-]{1,40})\/?$/i) : null;
+    if (checkoutMatch && (method === "GET" || method === "HEAD")) {
       const ip = request.headers.get("CF-Connecting-IP") || "unknown";
       ctx.waitUntil(logEvent(env, { type: "checkout_view", detail: { plan: checkoutMatch[1] }, ipHash: hashIP(ip) }));
       return handleCheckout(checkoutMatch[1], request, env);

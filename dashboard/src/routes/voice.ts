@@ -38,7 +38,7 @@ function renderUpgradeNudge(title: string, clientSlug: string, user: User): stri
       <div style="font-size:12px;color:var(--text-faint);line-height:1.6;margin-bottom:20px;max-width:720px">
         Signal clients get the citation tracking, schema work, monthly brief, and roadmap -- everything that identifies where to write. Amplify adds the drafting that turns the roadmap into finished content.
       </div>
-      <a href="https://app.neverranked.com/checkout/amplify" class="btn">Upgrade to Amplify</a>
+      <a href="https://neverranked.com/pricing/" class="btn">See pricing</a>
       <a href="mailto:hello@neverranked.com?subject=Amplify%20upgrade%20question" style="margin-left:14px;font-size:12px;color:var(--gold)">Questions first? Email us &rarr;</a>
     </div>
 
