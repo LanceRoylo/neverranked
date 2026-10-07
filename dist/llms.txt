@@ -9,7 +9,7 @@
 
 ## What we actually do now
 
-- Repeated measurement runs across seven AI tools: five citation-grade tools that search the live web (Perplexity, ChatGPT search, Gemini grounded, Microsoft Copilot via Bing, Google AI Overviews) and two model-knowledge tools (Claude, Gemma).
+- Repeated measurement runs across six AI tools: four citation-grade tools that search the live web (Perplexity, ChatGPT search, Gemini grounded, Google AI Overviews) and two model-knowledge tools that answer from memory (Claude, Gemma). Bing organic search runs beside them as a classic-search control. The control is not an AI tool. Seven measured surfaces in total.
 - Per question, per AI tool, per competitor, per source type. The output is a forensic research memo, not a dashboard.
 - The deliverable: a prepped punch list for the customer's team to execute. We do not make the changes ourselves. The boundary is structural.
 
@@ -17,9 +17,9 @@
 
 10 measurements published so far: 9 Hawaii categories plus a cross-geo CPA market (Austin, TX), 39 substantiated claims in total. Non-customer businesses are anonymized on these public pages; the fully named cohort ships only inside a customer's 1:1 deliverable.
 
-- [Cross-category teardown](https://neverranked.com/teardowns/cross-category/): the same 7-AI-tool methodology across every category, including the training-data collapse finding (the two model-knowledge tools name far fewer businesses than the web-searching tools).
-- [Hawaii consumer banking](https://neverranked.com/teardowns/bank-honolulu/): the roughly 75-percentage-point spread between Microsoft Copilot and the other web-searching AI tools.
-- [Honolulu dental](https://neverranked.com/teardowns/dental-honolulu/): Microsoft Copilot cites zero practice websites cohort-wide; insurance-carrier provider directories are a measurable AEO surface most practices treat as paperwork.
+- [Cross-category teardown](https://neverranked.com/teardowns/cross-category/): the same method across every category (six AI tools plus a Bing search control), including the training-data collapse finding (the two model-knowledge tools name far fewer businesses than the web-searching tools).
+- [Hawaii consumer banking](https://neverranked.com/teardowns/bank-honolulu/): the roughly 75-percentage-point spread between the AI tools and Bing organic search, run as a control, which returned bank-owned sites 0% of the time.
+- [Honolulu dental](https://neverranked.com/teardowns/dental-honolulu/): Bing organic search, run as a control, returns zero practice websites cohort-wide; insurance-carrier provider directories are a measurable AEO surface most practices treat as paperwork.
 - [Hawaii law firms](https://neverranked.com/teardowns/law-firm-hawaii/): citation share concentrates in a small top tier; the closable ground sits outside it.
 - [Hawaii wealth management](https://neverranked.com/teardowns/wealth-mgmt-hawaii/): lead-gen platforms and financial-planner directories account for a large share of third-party citations.
 - [Hawaii CPAs](https://neverranked.com/teardowns/cpa-hawaii/) and [Austin CPAs](https://neverranked.com/teardowns/cpa-austin/): the same category measured in two geographies (the cross-geo match).
@@ -27,7 +27,7 @@
 
 ## Substantiation surfaces
 
-- [Methodology](https://neverranked.com/methodology/): The 7 AI tools, the question-set discipline, the source-type classifier, the pattern-readiness rule, the cross-category aggregate.
+- [Methodology](https://neverranked.com/methodology/): The six AI tools and the Bing control, the question-set discipline, the source-type classifier, the pattern-readiness rule, the cross-category aggregate.
 - [Example 18-question set](https://neverranked.com/methodology/#query-set): the actual locked Hawaii wealth-management question set from a real 1:1 brief.
 - [How we differ from dashboard-style AEO tools](https://neverranked.com/vs/): structural comparison.
 - [What an engagement actually produces](https://neverranked.com/example-engagement/): a real anonymized example deliverable.
@@ -58,7 +58,7 @@
 
 Full detail: https://neverranked.com/pricing/
 
-- Monitor: $199 per month per category, month to month. Whether each of the seven AI tools names the business or not, question by question, the cases where an AI used the business's site without crediting it, and a plain English monthly report. No percentages from single runs, because one run cannot support one honestly.
+- Monitor: $199 per month per category, month to month. Whether each of the six AI tools names the business or not, question by question, the cases where an AI used the business's site without crediting it, and a plain English monthly report. No percentages from single runs, because one run cannot support one honestly.
 - Audit: $750 per month per category, ongoing, after a one-time $950 baseline month. The baseline locks the competitor set, the question set, and the frozen starting measurement, and includes the first research memo and prepped punch list. Ongoing months: repeated full measurement runs, the monthly research memo, drift monitoring, punch list refreshes.
 - Per category, not per client. A research practice, not a SaaS subscription.
 
