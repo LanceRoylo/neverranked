@@ -3,21 +3,33 @@
  *
  * THE DRIP IS OFF. scheduled() in index.ts returns unless DRIP_ENABLED is "1"
  * (decision 2, 2026-10-07), and /api/admin/drip-force refuses on the same
- * flag. It sent with no approval, no unsubscribe link and no postal address,
- * outside the outreach engine's gate. Follow-ups now belong to the supervised
- * outreach lane. Retire this file entirely once that lane is live.
+ * flag. It sent with no approval, outside the outreach engine's gate.
+ * Follow-ups now belong to the supervised outreach lane. Retire this file
+ * entirely once that lane is live.
  *
  * Until then the templates are kept SAFE to send in case the flag is ever
- * flipped. Gone: the score-78 threshold presented as the point where AI
- * engines start to cite a site (78 is the 75th percentile of scanned sites,
- * never a measured threshold), the line that engines were already endorsing
- * cleaner competitors (an engine-endorsement verb and a causal claim), the
- * "every week without action" urgency and the unverified "in those seven
- * days" bullets. Turning the flag on would still send commercial email
- * without an unsubscribe link, which is the reason it must stay off.
+ * flipped:
+ *   - Gone: the score-78 threshold presented as the point where AI engines
+ *     start to cite a site (78 is the 75th percentile of scanned sites, never
+ *     a measured threshold), the line that engines were already endorsing
+ *     cleaner competitors (an engine-endorsement verb and a causal claim),
+ *     the "every week without action" urgency, the unverified "in those
+ *     seven days" bullets and the Monitor pitch (Monitor is out of every
+ *     customer line until delivery is confirmed).
+ *   - Every drip email REQUIRES a working unsubscribe link and the postal
+ *     address. The builders take both as mandatory arguments, and the sender
+ *     in index.ts refuses to send when POSTAL_ADDRESS is unset, so flipping
+ *     the flag can never send a CAN-SPAM-incomplete email. The address is a
+ *     Worker secret, not a constant here, because this repo is public.
  */
 
 import { escHtml } from "./report-email";
+
+/** What the footer of every drip email must carry. Both are required. */
+export interface DripCompliance {
+  unsubscribeUrl: string;
+  postalAddress: string;
+}
 
 export interface DripScan {
   domain: string;
@@ -32,9 +44,9 @@ export const DRIP_COPY = {
   day7Heading: "A week later",
   day7Body: "AI answers change from one asking to the next. Running the check again shows whether your site changed. It does not show whether the answers did.",
   day7Rescan: "Run the check again",
-  monitor: "Monitor runs your category's questions through six AI tools every month and shows whether your name is in the answers.",
-  monitorCta: "Start monitoring, $199 a month",
-  audit: "Or scope a full audit, $750 a month after a $950 baseline",
+  reply: "Questions about your result? Reply to this email.",
+  unsubscribe: "Unsubscribe",
+  stop: "or reply STOP and we will take you off the list.",
 } as const;
 
 function score(n: unknown): number {
@@ -42,7 +54,12 @@ function score(n: unknown): number {
   return Number.isFinite(v) ? Math.max(0, Math.min(100, Math.round(v))) : 0;
 }
 
-function shell(label: string, inner: string, footer: string): string {
+function shell(label: string, inner: string, footer: string, c: DripCompliance): string {
+  if (!c || !c.unsubscribeUrl || !c.postalAddress || !c.postalAddress.trim()) {
+    // Refuse rather than render an email without its unsubscribe link or
+    // postal address.
+    throw new Error("drip email needs an unsubscribe link and a postal address");
+  }
   return `<!doctype html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escHtml(label)}</title></head>
@@ -58,7 +75,7 @@ function shell(label: string, inner: string, footer: string): string {
   </td></tr>
 ${inner}
   <tr><td style="padding:24px 0;border-top:1px solid #2a2a2a">
-    <div style="font-family:'Courier New',monospace;font-size:10px;color:#666666;line-height:1.6">${footer}</div>
+    <div style="font-family:'Courier New',monospace;font-size:10px;color:#666666;line-height:1.6">${footer}<br>${escHtml(c.postalAddress.trim())}<br><a href="${escHtml(c.unsubscribeUrl)}" style="color:#bfa04d;text-decoration:underline">${escHtml(DRIP_COPY.unsubscribe)}</a> ${escHtml(DRIP_COPY.stop)}</div>
   </td></tr>
 </table>
 </td></tr>
@@ -67,14 +84,10 @@ ${inner}
 </html>`;
 }
 
-function monitorBlock(domain: string): string {
+function replyBlock(): string {
   return `
-  <tr><td style="padding:24px;background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px;text-align:center">
-    <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;line-height:1.7;margin-bottom:18px">${escHtml(DRIP_COPY.monitor)}</div>
-    <a href="https://neverranked.com/pricing/" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">${escHtml(DRIP_COPY.monitorCta)}</a>
-    <div style="margin-top:12px">
-      <a href="mailto:hello@neverranked.com?subject=${encodeURIComponent(`Audit - ${domain}`)}" style="font-family:'Courier New',monospace;font-size:11px;color:#bfa04d;text-decoration:none">${escHtml(DRIP_COPY.audit)}</a>
-    </div>
+  <tr><td style="padding:8px 0 24px;text-align:center">
+    <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888">${escHtml(DRIP_COPY.reply)}</div>
   </td></tr>`;
 }
 
@@ -82,7 +95,7 @@ export function dripDay3Subject(scan: DripScan): string {
   return `${String(scan.domain).slice(0, 120)}: a second look at your result`;
 }
 
-export function buildDripDay3Email(scan: DripScan): string {
+export function buildDripDay3Email(scan: DripScan, c: DripCompliance): string {
   const domain = String(scan.domain || "");
   const inner = `
   <tr><td style="padding:28px 0">
@@ -91,15 +104,15 @@ export function buildDripDay3Email(scan: DripScan): string {
     <div style="font-family:Georgia,serif;font-size:16px;font-style:italic;color:#fbf8ef;margin-bottom:10px">${escHtml(DRIP_COPY.day3Confession)}</div>
     <div style="font-family:'Courier New',monospace;font-size:12px;color:#b0b0a8;line-height:1.7">${escHtml(DRIP_COPY.day3Ask)}</div>
   </td></tr>
-${monitorBlock(domain)}`;
-  return shell("Day 3", inner, `You received this because you scanned ${escHtml(domain)} at check.neverranked.com<br>This is email 2 of 3. No further emails after this series.`);
+${replyBlock()}`;
+  return shell("Day 3", inner, `You received this because you scanned ${escHtml(domain)} at check.neverranked.com<br>This is email 2 of 3. No further emails after this series.`, c);
 }
 
 export function dripDay7Subject(scan: DripScan): string {
   return `A week later: ${String(scan.domain).slice(0, 120)}`;
 }
 
-export function buildDripDay7Email(scan: DripScan): string {
+export function buildDripDay7Email(scan: DripScan, c: DripCompliance): string {
   const domain = String(scan.domain || "");
   const inner = `
   <tr><td style="padding:28px 0">
@@ -110,6 +123,6 @@ export function buildDripDay7Email(scan: DripScan): string {
       <a href="https://check.neverranked.com/?url=${encodeURIComponent(domain)}" style="display:inline-block;padding:14px 32px;border:1px solid #e8c767;color:#e8c767;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">${escHtml(DRIP_COPY.day7Rescan)}</a>
     </div>
   </td></tr>
-${monitorBlock(domain)}`;
-  return shell("Week 1", inner, `You received this because you scanned ${escHtml(domain)} at check.neverranked.com<br>This is the last email in this series. No further emails.`);
+${replyBlock()}`;
+  return shell("Week 1", inner, `You received this because you scanned ${escHtml(domain)} at check.neverranked.com<br>This is the last email in this series. No further emails.`, c);
 }

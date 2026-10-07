@@ -12,11 +12,18 @@
  * and the one unescaped field is how the hole above existed.
  *
  * What the email contains is exactly what the gate promised (Appendix A, Body
- * A): each missing signal by name, and what it is, in plain words.
+ * A): each missing signal by name, and what it is, in plain words. Nothing
+ * else. It carries no product pitch (Monitor is out of every customer line
+ * until delivery is confirmed), so it stays a transactional message: the
+ * result the visitor asked for, a reply line and an unsubscribe link.
  */
 
 import { missingSignals, type ScanSummary, type MissingSignal } from "./missing-signals";
 import { PAGE_COPY } from "./copy";
+
+/** Replies to the result email (and the drip) land in the mailbox Lance's
+ *  watcher reads, the same default dashboard/src/agency-emails.ts uses. */
+export const REPLY_TO = "lance@hi.neverranked.com";
 
 export function escHtml(s: unknown): string {
   return String(s ?? "")
@@ -44,8 +51,6 @@ export const RESULT_EMAIL_COPY = {
   noneMissing: "We found nothing missing from the signals this check reads.",
   confession: "This check reads your site. It does not ask an AI tool about you.",
   askYourself: "To see what an AI tool says, ask it the question your customer would ask. Not your business name. Their question. Then look at two things. Is your name in the answer? And whose websites do the links underneath point to?",
-  monitor: "Monitor runs your category's questions through six AI tools every month and shows whether your name is in the answers. $199 a month per category, month to month.",
-  monitorLink: "See pricing",
   reply: "Questions about your result? Reply to this email.",
   footer: "You received this because you asked for your result at check.neverranked.com.",
   unsubscribe: "Unsubscribe",
@@ -115,9 +120,7 @@ export function buildReportEmail(summary: ScanSummary, opts: { unsubscribeUrl: s
   </td></tr>
 
   <tr><td style="padding:24px 0;text-align:center">
-    <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;line-height:1.7;margin-bottom:16px">${escHtml(C.monitor)}</div>
-    <a href="https://neverranked.com/pricing/" style="display:inline-block;padding:12px 28px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">${escHtml(C.monitorLink)}</a>
-    <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;margin-top:18px">${escHtml(C.reply)}</div>
+    <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888">${escHtml(C.reply)}</div>
   </td></tr>
 
   <tr><td style="padding:20px 0;border-top:1px solid #2a2a2a">
@@ -140,9 +143,6 @@ export function buildReportEmail(summary: ScanSummary, opts: { unsubscribeUrl: s
     ``,
     C.confession,
     C.askYourself,
-    ``,
-    C.monitor,
-    `https://neverranked.com/pricing/`,
     ``,
     C.reply,
     ``,

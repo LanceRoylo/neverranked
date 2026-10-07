@@ -109,8 +109,9 @@ test("the result email passes the guards, as text and as rendered HTML", () => {
 
 test("both drip emails pass the guards and no longer carry the 78 line", () => {
   const scan = { domain: "shop.test", score: 61, grade: "C" };
-  const d3 = visibleText(buildDripDay3Email(scan));
-  const d7 = visibleText(buildDripDay7Email(scan));
+  const c = { unsubscribeUrl: "https://check.neverranked.com/unsubscribe?t=x", postalAddress: "NeverRanked, 1 Test Street, Testville, ST 00000" };
+  const d3 = visibleText(buildDripDay3Email(scan, c));
+  const d7 = visibleText(buildDripDay7Email(scan, c));
   const problems = [
     ...guard("drip day 3", d3),
     ...guard("drip day 7", d7),
@@ -122,7 +123,33 @@ test("both drip emails pass the guards and no longer carry the 78 line", () => {
     assert.doesNotMatch(t, /citation line/i);
     assert.doesNotMatch(t, /recommending/i);
     assert.doesNotMatch(t, /without action/i);
+    assert.doesNotMatch(t, /monitor/i, "Monitor is out of every customer line");
+    assert.doesNotMatch(t, /\$\d/, "no price pitch in the drip");
+    assert.match(t, /1 Test Street, Testville/, "postal address in the footer");
+    assert.match(t, /Unsubscribe/);
   }
+});
+
+test("a drip email cannot be built without its unsubscribe link and postal address", () => {
+  const scan = { domain: "shop.test", score: 61, grade: "C" };
+  for (const c of [
+    { unsubscribeUrl: "", postalAddress: "NeverRanked, 1 Test Street" },
+    { unsubscribeUrl: "https://check.neverranked.com/unsubscribe?t=x", postalAddress: "  " },
+    undefined as any,
+  ]) {
+    assert.throws(() => buildDripDay3Email(scan, c));
+    assert.throws(() => buildDripDay7Email(scan, c));
+  }
+});
+
+test("the result email is transactional: no Monitor line, no price", () => {
+  const m = buildReportEmail(EVERYTHING_MISSING, { unsubscribeUrl: "https://check.neverranked.com/unsubscribe?t=x" });
+  for (const t of [m.text, visibleText(m.html)]) {
+    assert.doesNotMatch(t, /monitor/i);
+    assert.doesNotMatch(t, /\$\d/);
+    assert.doesNotMatch(t, /pricing/i);
+  }
+  assert.ok(!Object.keys(RESULT_EMAIL_COPY).some((k) => /monitor/i.test(k)));
 });
 
 test("Appendix A strings are used verbatim", () => {

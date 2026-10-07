@@ -201,6 +201,8 @@ test("page scan, then capture: stored copy, server-side consent, no TTL, alert",
 
     const [report, alert] = net.calls;
     assert.deepEqual(report.body.to, ["owner@example-dental.test"]);
+    assert.equal(report.body.reply_to, "lance@hi.neverranked.com");
+    assert.doesNotMatch(report.body.html, /Monitor|\$199/);
     assert.match(report.body.subject, new RegExp(`scored ${scan.aeo_score}/100`));
     assert.doesNotMatch(report.body.subject, /100\/100/);
     assert.match(report.body.html, /FAQ label \(FAQPage schema\)/);
@@ -327,4 +329,54 @@ test("our MCP tool, Montaic and scripts are classified, not counted as people", 
   } finally {
     net.restore();
   }
+});
+
+test("the drip refuses without POSTAL_ADDRESS, and sends a compliant email with it", async () => {
+  const worker = (await import("../../tools/schema-check/src/index.ts")).default as any;
+  const lead = { email: "owner@shop.test", scans: [{ domain: "shop.test", score: 61, grade: "C", date: "2026-09-01T00:00:00.000Z" }], created: "2026-09-01T00:00:00.000Z", lastScan: "2026-09-01T00:00:00.000Z" };
+  const run = async (env: Record<string, unknown>) => {
+    const { kv, store } = kvFake();
+    await kv.put("lead:owner@shop.test", JSON.stringify(lead));
+    const net = installFetch();
+    try {
+      const pending: Promise<unknown>[] = [];
+      await worker.scheduled({} as any, { LEADS: kv, RESEND_API_KEY: "k", DRIP_ENABLED: "1", ...env } as any, { waitUntil: (p: Promise<unknown>) => { pending.push(p); } } as any);
+      await Promise.all(pending);
+      return { calls: net.calls, store };
+    } finally {
+      net.restore();
+    }
+  };
+
+  const refused = await run({});
+  assert.equal(refused.calls.length, 0, "no postal address, no drip email");
+
+  const { calls, store } = await run({ POSTAL_ADDRESS: "NeverRanked, 1 Test Street, Testville, ST 00000" });
+  assert.equal(calls.length, 2, "day 3 and day 7 are both due for a lead this old");
+  for (const c of calls) {
+    assert.match(c.body.html, /1 Test Street, Testville/);
+    assert.match(c.body.html, /\/unsubscribe\?t=[0-9a-f-]{36}/);
+    assert.match(c.body.headers["List-Unsubscribe"], /^<https:\/\/check\.neverranked\.com\/unsubscribe\?t=[0-9a-f-]{36}>$/);
+    assert.equal(c.body.reply_to, "lance@hi.neverranked.com");
+    assert.doesNotMatch(c.body.html, /Monitor|\$199|\$750/);
+  }
+  for (const [k, v] of store) if (k.startsWith("unsub:")) assert.equal(v.opts?.expirationTtl, undefined);
+
+  // An address that unsubscribed gets nothing.
+  const { kv } = kvFake();
+  await kv.put("lead:owner@shop.test", JSON.stringify(lead));
+  await kv.put("unsubscribed:owner@shop.test", "{}");
+  const net = installFetch();
+  try {
+    const pending: Promise<unknown>[] = [];
+    await worker.scheduled({} as any, { LEADS: kv, RESEND_API_KEY: "k", DRIP_ENABLED: "1", POSTAL_ADDRESS: "NeverRanked, 1 Test Street" } as any, { waitUntil: (p: Promise<unknown>) => { pending.push(p); } } as any);
+    await Promise.all(pending);
+    assert.equal(net.calls.length, 0);
+  } finally {
+    net.restore();
+  }
+});
+
+test("the loading steps only describe what the scan does", () => {
+  assert.doesNotMatch(WORKER_SRC, /Testing agent-readiness and llms\.txt/);
 });

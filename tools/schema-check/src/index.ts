@@ -23,6 +23,10 @@ export interface Env {
   // Where the immediate new-lead alert goes. Secret or var, never hard-coded.
   // Unset means no alert email (the admin inbox item is still written).
   LEAD_ALERT_TO?: string;
+  // The postal address every drip email must carry (CAN-SPAM). Secret, so no
+  // address sits in this public repo. Unset means the drip refuses to send,
+  // even with DRIP_ENABLED="1".
+  POSTAL_ADDRESS?: string;
   // Optional shared secret for the keyed Montaic API lane. When set,
   // a request carrying a matching X-API-Key header bypasses the per-IP
   // rate limit and is tagged as source "montaic" in telemetry. The
@@ -99,7 +103,7 @@ import { classifyRequest, cleanSessionId, internalEmail } from "./free-check-cla
 import { isBotUserAgent } from "./bot-ua";
 import { extractIdentity } from "./identity";
 import { missingSignals, summaryFromClient, type ScanSummary } from "./missing-signals";
-import { buildReportEmail, buildLeadAlert } from "./report-email";
+import { buildReportEmail, buildLeadAlert, REPLY_TO } from "./report-email";
 import { buildDripDay3Email, buildDripDay7Email, dripDay3Subject, dripDay7Subject } from "./drip-email";
 import {
   cleanUtm, cleanReferrer, cleanUa, nowSeconds, eventStatement, scanStatement, cleanScanId, loadScan,
@@ -2411,7 +2415,7 @@ body.channel-mode #channel-cta-card{display:block}
       'Fetching '+domain+'…',
       'Reading the markup AI crawlers see…',
       'Checking schema and structured data…',
-      'Testing agent-readiness and llms.txt…',
+      'Checking robots.txt for AI crawler rules…',
       NR_COPY.loading
     ];
     let si = 0;
@@ -2649,11 +2653,54 @@ async function recordDelivery(
   }
 }
 
+const CHECK_ORIGIN = "https://check.neverranked.com";
+
+/**
+ * A working unsubscribe link for one email to one address. The token is
+ * random and stored in KV with no expiry, so the link keeps working. POST to
+ * it (or the RFC 8058 one-click header) stamps the address unsubscribed.
+ */
+async function issueUnsubscribeUrl(env: Env, email: string, leadId: number | null, origin = CHECK_ORIGIN): Promise<string> {
+  const token = crypto.randomUUID();
+  await env.LEADS.put(`unsub:${token}`, JSON.stringify({ email, lead_id: leadId, created: new Date().toISOString() }));
+  return `${origin}/unsubscribe?t=${token}`;
+}
+
+function unsubscribeHeaders(unsubscribeUrl: string): Record<string, string> {
+  return { "List-Unsubscribe": `<${unsubscribeUrl}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" };
+}
+
+/** One drip email, or a refusal. Never sends without the unsubscribe link
+ *  and the postal address, and never to an address that unsubscribed. */
+async function sendDripEmail(env: Env, email: string, day: 3 | 7, scan: { domain: string; score: number; grade: string }): Promise<ResendResult> {
+  const postalAddress = (env.POSTAL_ADDRESS || "").trim();
+  if (!postalAddress) {
+    return { ok: false, id: null, status: 0, error: "refused: POSTAL_ADDRESS is not set" };
+  }
+  if (await env.LEADS.get(`unsubscribed:${email}`)) {
+    return { ok: false, id: null, status: 0, error: "refused: address unsubscribed" };
+  }
+  const unsubscribeUrl = await issueUnsubscribeUrl(env, email, null);
+  const c = { unsubscribeUrl, postalAddress };
+  return sendResend(env, {
+    from: "NeverRanked <reports@neverranked.com>",
+    to: [email],
+    reply_to: REPLY_TO,
+    subject: day === 3 ? dripDay3Subject(scan) : dripDay7Subject(scan),
+    html: day === 3 ? buildDripDay3Email(scan, c) : buildDripDay7Email(scan, c),
+    headers: unsubscribeHeaders(unsubscribeUrl),
+  });
+}
+
 async function runDripSequence(env: Env): Promise<void> {
   // Off unless explicitly enabled (decision 2, 2026-10-07). Checked here as
   // well as in scheduled() so no other caller can start it by accident.
   if (env.DRIP_ENABLED !== "1") return;
   if (!env.RESEND_API_KEY) return;
+  if (!(env.POSTAL_ADDRESS || "").trim()) {
+    console.error("drip refused: DRIP_ENABLED is 1 but POSTAL_ADDRESS is not set");
+    return;
+  }
 
   // List all leads from KV (paginated; see listAllKvKeys helper above)
   const allKeys = await listAllKvKeys(env.LEADS, "lead:");
@@ -2668,16 +2715,11 @@ async function runDripSequence(env: Env): Promise<void> {
     const age = daysSince(lead.created);
     let updated = false;
 
-    // Day 3: Competitor comparison email
+    // Day 3: a second look at the result
     if (age >= DRIP_DAY_3 && !lead.drip_day3_sent) {
       const latestScan = lead.scans[lead.scans.length - 1];
       if (latestScan) {
-        const result = await sendResend(env, {
-          from: "NeverRanked <reports@neverranked.com>",
-          to: [lead.email],
-          subject: dripDay3Subject(latestScan),
-          html: buildDripDay3Email(latestScan),
-        });
+        const result = await sendDripEmail(env, lead.email, 3, latestScan);
         await recordDelivery(env, "drip_day3", lead.email, result);
         if (result.ok) {
           lead.drip_day3_sent = true;
@@ -2689,16 +2731,11 @@ async function runDripSequence(env: Env): Promise<void> {
       }
     }
 
-    // Day 7: Re-scan nudge + monitoring pitch
+    // Day 7: re-scan nudge
     if (age >= DRIP_DAY_7 && !lead.drip_day7_sent) {
       const latestScan = lead.scans[lead.scans.length - 1];
       if (latestScan) {
-        const result = await sendResend(env, {
-          from: "NeverRanked <reports@neverranked.com>",
-          to: [lead.email],
-          subject: dripDay7Subject(latestScan),
-          html: buildDripDay7Email(latestScan),
-        });
+        const result = await sendDripEmail(env, lead.email, 7, latestScan);
         await recordDelivery(env, "drip_day7", lead.email, result);
         if (result.ok) {
           lead.drip_day7_sent = true;
@@ -3529,9 +3566,7 @@ export default {
       //    line promises one in every email).
       let unsubscribeUrl: string | null = null;
       try {
-        const token = crypto.randomUUID();
-        await env.LEADS.put(`unsub:${token}`, JSON.stringify({ email, lead_id: leadId, created: nowIso }));
-        unsubscribeUrl = `${url.origin}/unsubscribe?t=${token}`;
+        unsubscribeUrl = await issueUnsubscribeUrl(env, email, leadId, url.origin);
       } catch (e) {
         console.error("free-check-unsub-token-failed", e instanceof Error ? e.message : String(e));
       }
@@ -3543,17 +3578,12 @@ export default {
         const payload: Record<string, unknown> = {
           from: "NeverRanked <reports@neverranked.com>",
           to: [email],
-          reply_to: "hello@neverranked.com",
+          reply_to: REPLY_TO,
           subject: mail.subject,
           html: mail.html,
           text: mail.text,
         };
-        if (unsubscribeUrl) {
-          payload.headers = {
-            "List-Unsubscribe": `<${unsubscribeUrl}>`,
-            "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
-          };
-        }
+        if (unsubscribeUrl) payload.headers = unsubscribeHeaders(unsubscribeUrl);
         const result = await sendResend(env, payload);
         await recordDelivery(env, "report", email, result);
         reportStatus = result.ok ? "sent" : `failed: HTTP ${result.status} ${result.error ?? ""}`.trim();
@@ -3879,12 +3909,7 @@ export default {
         return Response.json({ error: "Lead has no scans" }, { status: 400, headers: corsHeaders });
       }
       const isDay3 = day === "3";
-      const result = await sendResend(env, {
-        from: "NeverRanked <reports@neverranked.com>",
-        to: [lead.email],
-        subject: isDay3 ? dripDay3Subject(latestScan) : dripDay7Subject(latestScan),
-        html: isDay3 ? buildDripDay3Email(latestScan) : buildDripDay7Email(latestScan),
-      });
+      const result = await sendDripEmail(env, lead.email, isDay3 ? 3 : 7, latestScan);
       await recordDelivery(env, isDay3 ? "drip_day3" : "drip_day7", lead.email, result);
       if (result.ok) {
         if (isDay3) lead.drip_day3_sent = true; else lead.drip_day7_sent = true;

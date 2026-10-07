@@ -50,3 +50,12 @@ test("in-app buttons link the pricing page, not a checkout route", () => {
     assert.match(src(f), /https:\/\/neverranked\.com\/pricing\//, f);
   }
 });
+
+test("no retired tier name or price in the in-app upsell", () => {
+  for (const f of ["../src/routes/drafts.ts", "../src/routes/voice.ts"]) {
+    const s = src(f);
+    const nudge = s.slice(s.indexOf("function renderUpgradeNudge"), s.indexOf("\n}\n", s.indexOf("function renderUpgradeNudge")));
+    assert.doesNotMatch(nudge, /Amplify|Signal|Pulse|\$\d/, f);
+    assert.match(nudge, /See what Audit includes/, f);
+  }
+});
