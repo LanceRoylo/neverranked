@@ -356,7 +356,70 @@ const RULES = [
     why: 'claims a cohort is named in full. Every non-customer cohort is anonymized (teardown 01: "Subject brand and cohort anonymized"); this exact claim was corrected 2026-07-17 and regressed once already',
   },
 
+  // ── What the free check does, 2026-10-07 ─────────────────────────────
+  //
+  // The free check at check.neverranked.com reads the visitor's own site.
+  // It does not query any AI tool. For months 13 live pages said it showed
+  // what "the six AI tools can read" or offered to "see how 6 AI tools read
+  // your site", and most of them called it "No signup" while the full result
+  // only arrives after the visitor gives an email. Both were false, and both
+  // sat on the exact path a campaign was about to send strangers down.
+  //
+  // These two rules are SITE-SCOPED (scope: "site"): built pages in dist/,
+  // llms.txt, and the check tool's own source. They are not applied to the
+  // published social and LinkedIn assets from May, which are dated record,
+  // or to dashboard/src, where an internal prompt describing the check is
+  // its own fix.
+  //
+  // scanStructured: the haystack also includes JSON-LD bodies and the meta
+  // description, og:description and twitter:description values. toText()
+  // strips both, and they are what a search engine, an AI crawler and a
+  // LinkedIn link card actually read. The FAQ schema carried "No signup"
+  // long after anyone would have spotted it on the rendered page.
+  //
+  // pending: the check tool's source is being corrected on its own branch.
+  // It already passes check-six-tools-read, so only check-no-signup carries it.
+  // Until that lands, a hit there reports as a warning instead of failing
+  // the build, so the merge order of the two branches cannot break a deploy.
+  // When the file is clean the checker says so, and the entry is deleted.
+  // Same ratchet as APP_SWEEP_PENDING: the list may only shrink.
+  {
+    id: "check-six-tools-read",
+    severity: "block",
+    scope: "site",
+    scanStructured: true,
+    re: /\b(?:6|six)\s+AI\s+tools\s+(?:can\s+)?(?:even\s+)?read\b/i,
+    why: 'says the free check shows what six AI tools read. The check reads the site itself and asks no AI tool anything. Say "what AI tools can read from your site"',
+  },
+  {
+    // Page-level proximity, not paragraph-level, on purpose. The homepage
+    // hero hands the URL to the check by script, so its note sits hundreds
+    // of lines from the nearest "check.neverranked.com" string. A paragraph
+    // window would have missed the single most visible instance. Any page
+    // that links to or names the check may not say "no signup", because the
+    // full result is emailed.
+    id: "check-no-signup",
+    severity: "block",
+    scope: "site",
+    scanStructured: true,
+    requires: /check\.neverranked\.com/i,
+    pending: ["tools/schema-check/src/index.ts"],
+    re: /\bno[\s-]*sign[\s-]?ups?\b/i,
+    why: 'calls the free check "no signup". The score shows without an email, but the full result is emailed. Say "Your score shows in seconds. The full result comes by email."',
+  },
+
 ];
+
+// Structured text a crawler reads but toText() strips: JSON-LD bodies and
+// the description metas. Used only by rules that set scanStructured.
+function structuredText(html) {
+  const ld = (html.match(/<script[^>]*application\/ld\+json[^>]*>[\s\S]*?<\/script>/gi) || [])
+    .map((s) => s.replace(/<\/?script[^>]*>/gi, " "));
+  const metas = (html.match(/<meta\b[^>]*>/gi) || [])
+    .filter((m) => /(?:name|property)\s*=\s*["'](?:description|og:description|twitter:description)["']/i.test(m))
+    .map((m) => (m.match(/content\s*=\s*"([^"]*)"/i) || m.match(/content\s*=\s*'([^']*)'/i) || [])[1] || "");
+  return decode([...ld, ...metas].join(" ")).replace(/\s+/g, " ");
+}
 
 // ── Allowlist ──────────────────────────────────────────────────────────
 // /retraction/ is the accounting itself. It cannot explain what was
@@ -539,6 +602,13 @@ const ALLOW = [
   { path: "dashboard/src/lib/retired-claims.ts", rules: ["retired-seven-tools", "retired-copilot-as-tool", "retired-copilot-attribution", "retracted-htc-score", "retracted-htc-perplexity"] },
   { path: "dashboard/src/lib/memo-inputs.ts", rules: ["retired-seven-tools", "retired-copilot-as-tool", "retired-copilot-attribution"] },
   { path: "dashboard/src/lib/engine-order.ts", rules: ["retired-copilot-as-tool", "retired-copilot-attribution"] },
+  // customer-readouts.ts ENGINE_DISPLAY, added 2026-10-05, does the same job
+  // as engine-order.ts above: it maps the dead "Copilot" / "Microsoft Copilot"
+  // snapshot keys onto "Bing search (control)" so a report frozen before the
+  // reclassification never renders the old label. The key is the phrase being
+  // removed, not a claim. Unlisted, it failed every site build from that commit
+  // on, which would have blocked the next homepage deploy.
+  { path: "dashboard/src/routes/customer-readouts.ts", rules: ["retired-copilot-as-tool"] },
 
   // ── Repo-root Markdown, in scope since 2026-09-14 ────────────────────────
   // Each NAMES a retired claim in order to forbid, record or correct it. Same
@@ -716,6 +786,14 @@ try {
   console.error("check-claims: dist/ not found — run scripts/build.sh first.");
   process.exit(1);
 }
+// llms.txt is the one file on the site written FOR AI crawlers, and walk()
+// only collects .html and .ts, so it was never read. It said "seven AI
+// tools" and named Microsoft Copilot for six weeks after the 2026-08-22
+// reclassification while every page beside it had been corrected.
+for (const name of ["llms.txt", "llms-full.txt"]) {
+  const p = join(DIST, name);
+  if (existsSync(p)) files.push(p);
+}
 for (const extra of EXTRA_SOURCES) {
   if (existsSync(extra)) files.push(extra);
   else console.warn(`check-claims: expected source not found, skipping ${extra}`);
@@ -738,7 +816,13 @@ for (const dir of EXTRA_DIRS) {
 
 for (const doc of ROOT_DOCS) files.push(doc);
 
+// scope: "site" rules read only what ships as the website (dist/, which
+// includes llms.txt) plus the check tool's own page source.
+const isSiteFile = (f) => f.startsWith(DIST) || EXTRA_SOURCES.includes(f);
+
 const hits = [];
+// rule id -> Set of pending paths that were scanned and came back clean.
+const pendingClean = new Map();
 for (const f of files) {
   const rel = f.startsWith(DIST) ? relative(DIST, f) : relative(ROOT, f);
   const raw = readFileSync(f, "utf8");
@@ -748,25 +832,47 @@ for (const f of files) {
   // sees. Pulled out explicitly rather than by loosening toText, because a
   // comment can contain ">" and would shred a naive tag-strip.
   const comments = decode((html.match(/<!--[\s\S]*?-->/g) || []).join(" ")).replace(/\s+/g, " ");
+  let structured = null;
 
   for (const rule of RULES) {
     if (allowed(rel, rule.id)) continue;
-    const haystack = rule.scanSource ? `${text} ${comments}` : text;
+    if (rule.scope === "site" && !isSiteFile(f)) continue;
+    if (rule.requires && !rule.requires.test(html)) continue;
+    let haystack = rule.scanSource ? `${text} ${comments}` : text;
+    if (rule.scanStructured) {
+      if (structured === null) structured = structuredText(html);
+      haystack = `${haystack} ${structured}`;
+    }
+    const isPending = (rule.pending || []).includes(rel);
     const m = haystack.match(rule.re);
-    if (!m) continue;
+    if (!m) {
+      if (isPending) {
+        if (!pendingClean.has(rule.id)) pendingClean.set(rule.id, new Set());
+        pendingClean.get(rule.id).add(rel);
+      }
+      continue;
+    }
     const at = haystack.indexOf(m[0]);
-    const inComment = at >= text.length;
+    const inComment = rule.scanSource && at >= text.length && at < text.length + 1 + comments.length;
     // Declared app debt reports as a warning; anything NOT declared blocks.
     // That is the ratchet: the list can only shrink, and a NEW retired claim
     // in the client-facing app fails the build the day it is written.
-    const declaredDebt = appSweepPending(rel);
+    const declaredDebt = appSweepPending(rel) || isPending;
     hits.push({
       page: rel,
       rule: rule.id,
       severity: declaredDebt ? "warn" : rule.severity,
-      why: rule.why + (inComment ? " — found in an HTML COMMENT: invisible to a reader, visible to a crawler and to view-source" : ""),
+      why: rule.why +
+        (inComment ? " — found in an HTML COMMENT: invisible to a reader, visible to a crawler and to view-source" : "") +
+        (isPending ? " (declared pending for this file: fixed on its own branch, warns until then)" : ""),
       quote: haystack.slice(Math.max(0, at - 55), at + m[0].length + 55).trim(),
     });
+  }
+}
+
+for (const [ruleId, paths] of pendingClean) {
+  for (const p of paths) {
+    console.log(`check-claims: ${p} is now clean for ${ruleId}. Delete it from that rule's pending list in scripts/check-claims.mjs.`);
   }
 }
 

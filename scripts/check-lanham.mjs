@@ -39,6 +39,9 @@ const VENDORS = [
   "Conductor", "seoClarity", "Otterly", "Scrunch", "Goodie", "Rankscale",
   "Athena HQ", "Evertune", "Daydream", "Bluefish", "TryProfound",
   "Metricus", "metricusapp", "AiRR", "AiRR Score",
+  // Added 2026-10-07, same commit as the JSON authority.
+  "Clear Cited", "ClearCited", "Thicket", "Siftly",
+  "HubSpot", "HubSpot AI Search Grader", "AI Search Grader",
 ];
 
 /**
