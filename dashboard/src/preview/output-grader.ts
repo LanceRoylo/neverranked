@@ -126,8 +126,11 @@ ABOUT WHAT WE DELIVER
 
 ABOUT THE FREE ENTRY POINT AND THE PAID PILOT
 - The instant self-serve check at check.neverranked.com. A visitor
-  pastes a URL and sees, in seconds, what the 6 AI tools plus a Bing organic control can read
-  from that site. Free, no signup, automated. This is the primary
+  pastes a URL and sees, in seconds, what AI tools can read from that
+  site. It READS THE SITE: it does not ask any AI tool about the
+  business, so it never shows what an AI tool says or whether one names
+  them. It is free and automated. The score shows right away with no
+  email, and the full result comes by email. This is the primary
   call-to-action across the site ("See what AI sees", "Run the AI
   search check"). Referencing it, linking it, or describing it as an
   instant free URL check is CORRECT and is NOT a violation.
