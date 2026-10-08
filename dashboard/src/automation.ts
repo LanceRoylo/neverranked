@@ -287,7 +287,9 @@ export async function maybeSendAutomationDigest(env: Env): Promise<void> {
   try {
     const { loadFreeCheckRows } = await import("./lib/free-check-load");
     const { freeCheckCounts, renderFreeCheckText, renderFreeCheckHtml } = await import("./lib/free-check-counts");
-    const rows = await loadFreeCheckRows(env, now - 7 * 86400);
+    // One loader for the briefing, the admin page and the cockpit, so the
+    // three can never disagree.
+    const rows = await loadFreeCheckRows(env, { sinceSec: now - 7 * 86400 });
     const fc = freeCheckCounts(rows.events, rows.leads, now, rows.countingFrom);
     newLeadCount = fc.newLeads.length;
     freeCheckLines = renderFreeCheckText(fc);
@@ -339,7 +341,16 @@ export async function maybeSendAutomationDigest(env: Env): Promise<void> {
   const { getPendingInbox, getInboxStats } = await import("./admin-inbox");
   const inboxItems = await getPendingInbox(env, 10).catch(() => []);
   const inboxPending = (await getInboxStats(env).catch(() => null))?.pending_total ?? inboxItems.length;
-  const totalNeedsYou = needsYouCount + inboxPending;
+  // A new free-check lead also has a pending inbox item. Report it once, as a
+  // new lead, not again as something that needs you.
+  let pendingNewLeadItems = 0;
+  try {
+    pendingNewLeadItems = (await env.DB.prepare(
+      "SELECT COUNT(*) AS n FROM admin_inbox WHERE status = 'pending' AND kind = 'free_check_lead' AND created_at >= ?",
+    ).bind(now - 86400).first<{ n: number }>())?.n ?? 0;
+  } catch { /* inbox unavailable: count as before */ }
+  const { needsYouExcludingNewLeads } = await import("./lib/free-check-counts");
+  const totalNeedsYou = needsYouExcludingNewLeads(needsYouCount + inboxPending, pendingNewLeadItems, newLeadCount);
 
   // No short-circuit any more. As the only daily email it is also the
   // heartbeat: a quiet day says "nothing needs you", and silence means the

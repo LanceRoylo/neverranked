@@ -32,6 +32,11 @@ export const PAGE_COPY = {
   gateButtonBusy: "Sending...",
   gateConsent: CONSENT_VERSIONS[CURRENT_CONSENT_VERSION].text,
   gateSent: "Sent. Check your inbox for your full result.",
+  /** Returning visitor (their email is remembered in this browser): one
+   *  click sends this result, instead of a gate they already passed. */
+  resendButton: "Email me this result",
+  resendTo: "It goes to",
+  resendChange: "Use a different email",
 
   insight80: "Your site reads cleanly to AI crawlers. Whether AI tools say your name when someone asks about your kind of business is a separate question.",
   insight65: "Your site is mostly readable to AI crawlers, with a few gaps. Whether AI tools say your name is a separate question.",

@@ -29,6 +29,9 @@
  *     them out of the people counts, which start at the first page-tagged
  *     row, while the admin page can still show them as history.
  *
+ * No IP-derived value is written: the old KV scan events carried an
+ * unsalted sha256 of the visitor IP, and it is dropped here.
+ *
  * Internal rule (the plan's): test@example.com, any address whose local part
  * starts with "lance", and any hellomomentum.co or neverranked.com address
  * (subdomains included) are is_internal=1. Reserved example.* domains too.
@@ -155,7 +158,9 @@ for (const key of keyNames.filter((k) => k.startsWith("event:scan:"))) {
   const utm = v.utm && typeof v.utm === "object" ? v.utm : {};
   eventInsert({
     type: "scan", domain: v.domain ? String(v.domain).toLowerCase() : null, ...c,
-    ip_hash: v.ip_hash || null, user_agent: v.ua ? String(v.ua).slice(0, 300) : null, referrer: v.referrer ? String(v.referrer).slice(0, 500) : null,
+    // ip_hash is never carried into D1 (see the privacy note in
+    // src/free-check-store.ts): an unsalted IP hash is reversible.
+    ip_hash: null, user_agent: v.ua ? String(v.ua).slice(0, 300) : null, referrer: v.referrer ? String(v.referrer).slice(0, 500) : null,
     utm_source: utm.utm_source ?? utm.source ?? null, utm_campaign: utm.utm_campaign ?? utm.campaign ?? null, utm_content: utm.utm_content ?? utm.content ?? null,
     created_at: created,
   });

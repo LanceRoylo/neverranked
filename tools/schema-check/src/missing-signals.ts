@@ -134,18 +134,26 @@ export const TECHNICAL_SIGNALS: Record<string, { key: string; name: string; what
 /** Crawlers an AI tool sends to READ a page when it answers. Mirrors
  *  CITATION_BOTS in index.ts. Everything else in the robots.txt list is
  *  mainly a training crawler. */
+/** Compared lowercased on both sides: robots.txt user-agent names are
+ *  case-insensitive, and a file that says "claudebot" blocks ClaudeBot. A
+ *  case-sensitive match once described a reading crawler as a training
+ *  crawler, which is a false statement in the emailed result. */
 const READING_CRAWLERS = new Set([
   "OAI-SearchBot", "ChatGPT-User", "ClaudeBot", "Claude-Web", "anthropic-ai",
   "PerplexityBot", "Perplexity-User",
-]);
-const ALL_CRAWLERS = "all crawlers (User-agent: *)";
+].map((b) => b.toLowerCase()));
+const ALL_CRAWLERS = "all crawlers (user-agent: *)";
+
+export function isReadingCrawler(name: string): boolean {
+  return READING_CRAWLERS.has(name.trim().toLowerCase());
+}
 
 function crawlerAccessText(blocked: string[]): string {
-  if (blocked.includes(ALL_CRAWLERS)) {
+  if (blocked.some((b) => b.trim().toLowerCase() === ALL_CRAWLERS)) {
     return "The site's robots.txt file tells every crawler to stay out, so no crawler that respects it reads any page.";
   }
-  const reading = blocked.filter((b) => READING_CRAWLERS.has(b));
-  const training = blocked.filter((b) => !READING_CRAWLERS.has(b));
+  const reading = blocked.filter((b) => isReadingCrawler(b));
+  const training = blocked.filter((b) => !isReadingCrawler(b));
   const parts: string[] = [];
   if (reading.length) {
     parts.push(`The site's robots.txt file blocks ${reading.join(", ")}. ${reading.length === 1 ? "That is a crawler" : "Those are crawlers"} an AI tool sends to read a page when it answers a question.`);

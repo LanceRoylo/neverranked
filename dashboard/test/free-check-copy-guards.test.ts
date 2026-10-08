@@ -162,3 +162,15 @@ test("Appendix A strings are used verbatim", () => {
   assert.equal(`13 ${PAGE_COPY.comparisonSuffix}`, "13 points below the top quarter of sites we have checked.");
   assert.equal(`7 ${PAGE_COPY.gateTitleMany}`, "7 things on your site AI tools may not read");
 });
+
+test("robots.txt names are matched case-insensitively in the emailed description", async () => {
+  const { isReadingCrawler } = await import("../../tools/schema-check/src/missing-signals.ts");
+  for (const n of ["ClaudeBot", "claudebot", "PERPLEXITYBOT", "perplexity-user", "oai-searchbot"]) assert.equal(isReadingCrawler(n), true, n);
+  for (const n of ["GPTBot", "ccbot", "Google-Extended"]) assert.equal(isReadingCrawler(n), false, n);
+  const lower = missingSignals({ ...EVERYTHING_MISSING, crawl: { noindex: false, nofollow: false, blocked: ["claudebot", "perplexitybot"] } })[0];
+  assert.equal(lower.key, "robots");
+  assert.match(lower.what, /Those are crawlers an AI tool sends to read a page/);
+  assert.doesNotMatch(lower.what, /training/);
+  const all = missingSignals({ ...EVERYTHING_MISSING, crawl: { noindex: false, nofollow: false, blocked: ["ALL CRAWLERS (User-agent: *)"] } })[0];
+  assert.match(all.what, /every crawler to stay out/);
+});

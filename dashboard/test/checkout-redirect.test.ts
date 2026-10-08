@@ -44,18 +44,26 @@ test("no retired price or free pilot is left in the checkout responses", () => {
   assert.doesNotMatch(waitlist.slice(0, 600), /\$4,500|\$1,500/);
 });
 
-test("in-app buttons link the pricing page, not a checkout route", () => {
+test("in-app links never point at a checkout route", () => {
   for (const f of ["../src/routes/demo.ts", "../src/routes/drafts.ts", "../src/routes/voice.ts"]) {
     assert.doesNotMatch(src(f), /app\.neverranked\.com\/checkout\//, f);
-    assert.match(src(f), /https:\/\/neverranked\.com\/pricing\//, f);
   }
+  assert.match(src("../src/routes/demo.ts"), /https:\/\/neverranked\.com\/pricing\//);
 });
 
-test("no retired tier name or price in the in-app upsell", () => {
+test("the router no longer logs checkout_view for the redirect routes", () => {
+  const index = src("../src/index.ts");
+  const block = index.slice(index.indexOf("const checkoutMatch ="), index.indexOf('if (path === "/checkout/success"'));
+  assert.doesNotMatch(block, /checkout_view|logEvent/);
+});
+
+test("no retired tier, price or dead-end upsell where drafting used to be sold", () => {
   for (const f of ["../src/routes/drafts.ts", "../src/routes/voice.ts"]) {
     const s = src(f);
     const nudge = s.slice(s.indexOf("function renderUpgradeNudge"), s.indexOf("\n}\n", s.indexOf("function renderUpgradeNudge")));
-    assert.doesNotMatch(nudge, /Amplify|Signal|Pulse|\$\d/, f);
-    assert.match(nudge, /See what Audit includes/, f);
+    assert.doesNotMatch(nudge, /Amplify|Signal|Pulse|\$\d|pricing|checkout/, f);
+    // The only link left is the breadcrumb back to the dashboard.
+    assert.deepEqual([...nudge.matchAll(/href="([^"]*)"/g)].map((m) => m[1]), ["/"], f);
+    assert.match(nudge, /Drafting is not part of current plans\./, f);
   }
 });

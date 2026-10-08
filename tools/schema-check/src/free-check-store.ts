@@ -5,6 +5,12 @@
  *
  * Every timestamp is unix SECONDS, the same unit as admin_inbox and the rest
  * of neverranked-app.
+ *
+ * PRIVACY. No IP-derived value is written to these tables. ip_hash exists in
+ * the schema but is always NULL: an unsalted hash of an IP is reversible by
+ * brute force over the IPv4 space, and it would sit forever next to an
+ * email. Nothing this week needs it. When the live AI check needs a per-IP
+ * limit, it should use a daily-rotating keyed hash, never this column.
  */
 
 import type { ScanSummary } from "./missing-signals";
@@ -161,19 +167,29 @@ export async function insertLead(db: D1Database, l: LeadRow): Promise<number> {
  */
 export function inboxStatement(
   db: D1Database,
-  p: { leadId: number; title: string; body: string; urgency: "high" | "normal" | "low"; now: number },
+  p: {
+    leadId: number; title: string; body: string; urgency: "high" | "normal" | "low"; now: number;
+    /** 'resolved' for an internal test capture: recorded, never left pending. */
+    status?: "pending" | "resolved";
+    resolutionNote?: string;
+  },
 ): D1PreparedStatement {
+  const status = p.status ?? "pending";
   return db.prepare(
     `INSERT INTO admin_inbox
-       (kind, title, body, action_url, target_type, target_id, target_slug, urgency, status, created_at, last_seen_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)
+       (kind, title, body, action_url, target_type, target_id, target_slug, urgency, status, resolved_at, resolution_note,
+        created_at, last_seen_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(kind, target_type, target_id) DO UPDATE SET
        title = excluded.title,
        body = excluded.body,
        action_url = excluded.action_url,
        urgency = excluded.urgency,
        last_seen_at = excluded.last_seen_at`,
-  ).bind("free_check_lead", p.title, p.body, "/admin/free-check", "free_check_lead", p.leadId, null, p.urgency, p.now, p.now);
+  ).bind(
+    "free_check_lead", p.title, p.body, "/admin/free-check", "free_check_lead", p.leadId, null, p.urgency, status,
+    status === "resolved" ? p.now : null, status === "resolved" ? (p.resolutionNote ?? null) : null, p.now, p.now,
+  );
 }
 
 export async function recordReportResult(

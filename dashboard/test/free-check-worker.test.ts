@@ -109,7 +109,7 @@ const SITE_HTML = `<!doctype html><html><head><title>Example Family Dental | Fam
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Dentist","name":"Example Family Dental","address":{"@type":"PostalAddress","addressLocality":"Honolulu"}}</script>
 </head><body><h1>Family dentistry</h1><p>${"word ".repeat(400)}</p></body></html>`;
 
-function installFetch() {
+function installFetch(robots = "User-agent: *\nAllow: /\n") {
   const calls: { url: string; body: any }[] = [];
   const real = globalThis.fetch;
   globalThis.fetch = (async (input: any, init?: any) => {
@@ -118,7 +118,7 @@ function installFetch() {
       calls.push({ url, body: JSON.parse(init.body) });
       return new Response(JSON.stringify({ id: `resend-${calls.length}` }), { status: 200, headers: { "content-type": "application/json" } });
     }
-    if (url.startsWith("https://example-dental.test/robots.txt")) return new Response("User-agent: *\nAllow: /\n", { status: 200 });
+    if (url.startsWith("https://example-dental.test/robots.txt")) return new Response(robots, { status: 200 });
     if (url.startsWith("https://example-dental.test")) return new Response(SITE_HTML, { status: 200, headers: { "content-type": "text/html" } });
     return new Response("not found", { status: 404 });
   }) as typeof fetch;
@@ -159,6 +159,7 @@ test("page scan, then capture: stored copy, server-side consent, no TTL, alert",
     }), env, ctx);
     const scan = await scanResp.json();
     assert.equal(scanResp.status, 200);
+    await settle(); // the funnel event is written in ctx.waitUntil
     assert.match(scan.scan_id, /^[0-9a-f-]{36}$/);
     assert.deepEqual(scan.identity, { category: "dentist", town: "Honolulu" });
     assert.ok(Array.isArray(scan.missing_signals) && scan.missing_signals.length > 0);
@@ -233,9 +234,11 @@ test("an internal capture is stored and flagged, and sends no alert", async (t) 
     const lead = fake.db.prepare("SELECT is_internal, internal_reason, consent_version, followup_ok FROM free_check_leads").get();
     // No consent_version from the browser means an old cached page: legacy words.
     assert.deepEqual({ ...lead as object }, { is_internal: 1, internal_reason: "internal_emails", consent_version: "legacy-2026-05", followup_ok: 0 });
-    const inbox = fake.db.prepare("SELECT urgency, title FROM admin_inbox").get() as any;
+    const inbox = fake.db.prepare("SELECT urgency, title, status, resolved_at FROM admin_inbox").get() as any;
     assert.equal(inbox.urgency, "low");
     assert.match(inbox.title, /^Internal test capture/);
+    assert.equal(inbox.status, "resolved", "an internal capture never leaves a pending inbox item");
+    assert.ok(inbox.resolved_at > 0);
     assert.equal(net.calls.length, 1, "the result email only, no alert");
   } finally {
     net.restore();
@@ -311,13 +314,14 @@ test("our MCP tool, Montaic and scripts are classified, not counted as people", 
   const net = installFetch();
   try {
     const env = { DB: fake.d1, LEADS: kv, MONTAIC_API_KEY: "k" };
-    const { ctx } = ctxFake();
+    const { ctx, settle } = ctxFake();
     const u = { url: "https://example-dental.test/" };
     const mcp = await (await worker.fetch(post("/api/check", u, { "User-Agent": "neverranked-mcp/0.1.4" }), env, ctx)).json();
     assert.equal(mcp.scan_id, undefined, "only page scans get a stored copy");
     await worker.fetch(post("/api/check", u, { "User-Agent": "node", "X-API-Key": "k" }), env, ctx);
     await worker.fetch(post("/api/check", u, { "User-Agent": "node" }), env, ctx);
     await worker.fetch(post("/api/check", u, { "X-Internal-Source": "audit-template" }), env, ctx);
+    await settle();
     const rows = fake.db.prepare("SELECT source, is_internal, is_bot FROM free_check_events ORDER BY id").all().map((r: any) => ({ ...r }));
     assert.deepEqual(rows, [
       { source: "mcp", is_internal: 0, is_bot: 1 },
@@ -379,4 +383,115 @@ test("the drip refuses without POSTAL_ADDRESS, and sends a compliant email with 
 
 test("the loading steps only describe what the scan does", () => {
   assert.doesNotMatch(WORKER_SRC, /Testing agent-readiness and llms\.txt/);
+});
+
+test("a bot capture is stored flagged, with no alert and no pending inbox item", async (t) => {
+  const fake = await d1Fake();
+  if (!fake) { t.skip("needs node:sqlite and migration 0131 on this branch"); return; }
+  const worker = (await import("../../tools/schema-check/src/index.ts")).default as any;
+  const { kv } = kvFake();
+  const net = installFetch();
+  try {
+    const env = { DB: fake.d1, LEADS: kv, RESEND_API_KEY: "k", LEAD_ALERT_TO: "alerts@owner.test" };
+    const { ctx, settle } = ctxFake();
+    for (const ua of ["curl/8.7.1", "Mozilla/5.0 HeadlessChrome/120.0"]) {
+      await worker.fetch(post("/api/send-report", {
+        email: `someone-${ua.length}@shop.test`, session_id: "3f1c2b9e-8d7a-4c6b-9e5f-1a2b3c4d5e6f", client: "page",
+        consent_version: "gate-2026-10a", report: { domain: "shop.test", aeo_score: 50, grade: "D" },
+      }, { "User-Agent": ua }), env, ctx);
+    }
+    await settle();
+    const leads = fake.db.prepare("SELECT is_internal, internal_reason FROM free_check_leads").all().map((r: any) => ({ ...r }));
+    assert.deepEqual(leads, [{ is_internal: 1, internal_reason: "bot" }, { is_internal: 1, internal_reason: "bot" }]);
+    const inbox = fake.db.prepare("SELECT status, title FROM admin_inbox").all().map((r: any) => ({ ...r }));
+    assert.ok(inbox.every((r: any) => r.status === "resolved" && /^Bot capture/.test(r.title)));
+    assert.ok(net.calls.every((c) => !(c.body.to || []).includes("alerts@owner.test")), "no alert for a bot");
+  } finally {
+    net.restore();
+  }
+});
+
+test("a browser capture with no page session stays a lead, flagged as unverified", async (t) => {
+  const fake = await d1Fake();
+  if (!fake) { t.skip("needs node:sqlite and migration 0131 on this branch"); return; }
+  const worker = (await import("../../tools/schema-check/src/index.ts")).default as any;
+  const { kv } = kvFake();
+  const net = installFetch();
+  try {
+    const env = { DB: fake.d1, LEADS: kv, RESEND_API_KEY: "k", LEAD_ALERT_TO: "alerts@owner.test" };
+    const { ctx, settle } = ctxFake();
+    await worker.fetch(post("/api/send-report", {
+      email: "owner@shop.test", report: { domain: "shop.test", aeo_score: 50, grade: "D" },
+    }), env, ctx);
+    await settle();
+    const lead = fake.db.prepare("SELECT is_internal, session_id, ip_hash FROM free_check_leads").get() as any;
+    assert.equal(lead.is_internal, 0);
+    assert.equal(lead.session_id, null);
+    const inbox = fake.db.prepare("SELECT status, title FROM admin_inbox").get() as any;
+    assert.equal(inbox.status, "pending");
+    assert.match(inbox.title, /\(unverified source\)$/);
+    assert.equal(net.calls.filter((c) => (c.body.to || []).includes("alerts@owner.test")).length, 1);
+  } finally {
+    net.restore();
+  }
+});
+
+test("no IP-derived value is written to D1", async (t) => {
+  const fake = await d1Fake();
+  if (!fake) { t.skip("needs node:sqlite and migration 0131 on this branch"); return; }
+  const worker = (await import("../../tools/schema-check/src/index.ts")).default as any;
+  const { kv, store } = kvFake();
+  const net = installFetch();
+  try {
+    const env = { DB: fake.d1, LEADS: kv, RESEND_API_KEY: "k" };
+    const { ctx, settle } = ctxFake();
+    const session = "3f1c2b9e-8d7a-4c6b-9e5f-1a2b3c4d5e6f";
+    const scan = await (await worker.fetch(post("/api/check", { url: "https://example-dental.test/", session_id: session, client: "page" }), env, ctx)).json();
+    await worker.fetch(post("/api/gate-impression", { session_id: session, client: "page", domain: "example-dental.test" }), env, ctx);
+    await worker.fetch(post("/api/send-report", { email: "owner@shop.test", scan_id: scan.scan_id, session_id: session, client: "page", consent_version: "gate-2026-10a" }), env, ctx);
+    await settle();
+    assert.equal((fake.db.prepare("SELECT COUNT(*) AS n FROM free_check_events WHERE ip_hash IS NOT NULL").get() as any).n, 0);
+    assert.equal((fake.db.prepare("SELECT COUNT(*) AS n FROM free_check_events").get() as any).n, 3);
+    assert.equal((fake.db.prepare("SELECT COUNT(*) AS n FROM free_check_leads WHERE ip_hash IS NOT NULL").get() as any).n, 0);
+    for (const [k, v] of store) {
+      if (k.startsWith("lead") || k.startsWith("unsub")) assert.doesNotMatch(v.value, /ip_hash/, k);
+    }
+  } finally {
+    net.restore();
+  }
+});
+
+test("a lowercase robots.txt agent is named and described as a reading crawler", async (t) => {
+  const fake = await d1Fake();
+  if (!fake) { t.skip("needs node:sqlite and migration 0131 on this branch"); return; }
+  const worker = (await import("../../tools/schema-check/src/index.ts")).default as any;
+  const { kv } = kvFake();
+  const net = installFetch("User-agent: claudebot\nUser-agent: perplexitybot\nDisallow: /\n");
+  try {
+    const env = { DB: fake.d1, LEADS: kv };
+    const { ctx } = ctxFake();
+    const scan = await (await worker.fetch(post("/api/check", {
+      url: "https://example-dental.test/", session_id: "3f1c2b9e-8d7a-4c6b-9e5f-1a2b3c4d5e6f", client: "page",
+    }), env, ctx)).json();
+    const summary = JSON.parse((fake.db.prepare("SELECT summary_json FROM free_check_scans").get() as any).summary_json);
+    assert.deepEqual(summary.crawl.blocked, ["ClaudeBot", "PerplexityBot"]);
+    assert.ok(scan.missing_signals.some((m: any) => m.key === "robots"));
+    const { missingSignals } = await import("../../tools/schema-check/src/missing-signals.ts");
+    const robots = missingSignals(summary).find((m) => m.key === "robots")!;
+    assert.match(robots.what, /AI tool sends to read a page/);
+    assert.doesNotMatch(robots.what, /training/);
+    assert.match(scan.red_flags[0], /crawlers AI engines use to READ pages/);
+  } finally {
+    net.restore();
+  }
+});
+
+test("agency mode never logs a gate impression, and a returning visitor gets a send button", () => {
+  const gate = WORKER_SRC.slice(WORKER_SRC.indexOf("function updateEmailGate(data){"), WORKER_SRC.indexOf("function fallbackReport(d){"));
+  assert.match(gate, /var agencyMode = document\.body\.classList\.contains\('agency-mode'\);/);
+  assert.match(gate, /if\(!agencyMode\) logGateImpression\(data\);/);
+  assert.doesNotMatch(gate.replace("if(!agencyMode) logGateImpression(data);", ""), /logGateImpression\(/);
+  assert.match(gate, /resendEl\.style\.display = 'block'/);
+  assert.match(WORKER_SRC, /id="email-resend-btn"/);
+  assert.match(WORKER_SRC, /resendBtn\.addEventListener\('click', resendResult\)/);
 });

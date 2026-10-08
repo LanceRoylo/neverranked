@@ -23,35 +23,13 @@
 import type { Env, User } from "../types";
 import { layout, html, esc } from "../render";
 import {
-  countWindow, isPersonEvent, excludedBucket, attribution, conversionPhrase, hst, ymdHst,
+  countWindow, isPersonEvent, excludedBucket, attribution, conversionPhrase, hst, ymdHst, unverifiedSource,
   DAY, type FcEventRow,
 } from "../lib/free-check-counts";
+import { loadFreeCheckRows, type FcLeadDetail } from "../lib/free-check-load";
+import { BOT_UA_RE } from "../lib/bot-ua";
 
-interface LeadDetail {
-  id: number;
-  email: string;
-  domain: string;
-  score: number | null;
-  grade: string | null;
-  source: string;
-  is_internal: number;
-  internal_reason: string | null;
-  utm_source: string | null;
-  utm_medium: string | null;
-  utm_campaign: string | null;
-  utm_content: string | null;
-  referrer: string | null;
-  consent_version: string;
-  followup_ok: number;
-  ai_run_id: number | null;
-  outreach_prospect_id: number | null;
-  followup_hold_reason: string | null;
-  unsubscribed_at: number | null;
-  report_email_status: string | null;
-  created_at: number;
-}
-
-function outreachStatus(l: LeadDetail): string {
+function outreachStatus(l: FcLeadDetail): string {
   if (l.unsubscribed_at) return "unsubscribed";
   if (l.outreach_prospect_id) return `prospect #${l.outreach_prospect_id}`;
   if (l.followup_hold_reason) return `held: ${l.followup_hold_reason}`;
@@ -65,33 +43,24 @@ export async function handleAdminFreeCheckStats(user: User | null, env: Env, _ur
   const now = Math.floor(Date.now() / 1000);
   const since30 = now - 30 * DAY;
 
+  // The same loader the briefing uses, so the two can never disagree. All
+  // leads ever (capped), events for the last 30 days.
   let events: FcEventRow[] = [];
-  let leads: LeadDetail[] = [];
+  let leads: FcLeadDetail[] = [];
   let countingFrom: number | null = null;
+  let truncated = false;
   let loadError: string | null = null;
   try {
-    const [first, ev, ld] = await env.DB.batch([
-      env.DB.prepare("SELECT MIN(created_at) AS t FROM free_check_events WHERE source = 'page' AND session_id IS NOT NULL"),
-      env.DB.prepare(
-        `SELECT type, source, is_internal, is_bot, session_id, ip_hash, domain, utm_source, utm_campaign, referrer, created_at
-           FROM free_check_events WHERE created_at >= ? ORDER BY created_at DESC LIMIT 20000`,
-      ).bind(since30),
-      env.DB.prepare(
-        `SELECT id, email, domain, score, grade, source, is_internal, internal_reason, utm_source, utm_medium,
-                utm_campaign, utm_content, referrer, consent_version, followup_ok, ai_run_id, outreach_prospect_id,
-                followup_hold_reason, unsubscribed_at, report_email_status, created_at
-           FROM free_check_leads ORDER BY created_at DESC LIMIT 300`,
-      ),
-    ]);
-    const t = (first.results?.[0] as { t: number | null } | undefined)?.t;
-    countingFrom = typeof t === "number" ? t : null;
-    events = (ev.results ?? []) as unknown as FcEventRow[];
-    leads = (ld.results ?? []) as unknown as LeadDetail[];
+    const rows = await loadFreeCheckRows(env, { sinceSec: since30, leadsSinceSec: 0, leadLimit: 300 });
+    events = rows.events;
+    leads = rows.leads;
+    countingFrom = rows.countingFrom;
+    truncated = rows.eventsTruncated;
   } catch (e) {
     loadError = e instanceof Error ? e.message : String(e);
   }
 
-  const leadRowsForCounts = leads.map((l) => ({ ...l }));
+  const leadRowsForCounts = leads;
   const windowFrom = (secs: number) => Math.max(now - secs, countingFrom ?? now + 1);
   const windows = [
     { label: "Last 24 hours", c: countWindow(events, leadRowsForCounts, windowFrom(DAY), now) },
@@ -107,6 +76,7 @@ export async function handleAdminFreeCheckStats(user: User | null, env: Env, _ur
         <div>Saw the email ask</div><div style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600">${c.sawAsk}</div>
         <div>Gave an email</div><div style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600">${c.gaveEmail}</div>
         <div class="muted" style="grid-column:1 / -1;font-size:11px">${esc(conversionPhrase(c.gaveEmail, c.sawAsk))}</div>
+        <div class="muted">Other captures</div><div class="muted" style="text-align:right;font-variant-numeric:tabular-nums">${c.otherCaptures}</div>
         <div class="muted">Excluded calls</div><div class="muted" style="text-align:right;font-variant-numeric:tabular-nums">${c.excluded}</div>
       </div>
     </div>`).join("");
@@ -116,7 +86,7 @@ export async function handleAdminFreeCheckStats(user: User | null, env: Env, _ur
   const attributionCounts = new Map<string, number>();
   const recentPeople: { domain: string; at: number }[] = [];
   const from30 = windowFrom(30 * DAY);
-  for (const e of events as (FcEventRow & { utm_source?: string | null; utm_campaign?: string | null; referrer?: string | null })[]) {
+  for (const e of events) {
     if (e.created_at < from30) continue;
     if (!isPersonEvent(e)) {
       const b = excludedBucket(e);
@@ -146,7 +116,7 @@ export async function handleAdminFreeCheckStats(user: User | null, env: Env, _ur
 
   const leadRows = leads.map((l) => `<tr>
       <td style="white-space:nowrap">${esc(hst(l.created_at))}</td>
-      <td>${esc(l.email)}${l.is_internal ? ` <span class="muted" style="font-size:10px">internal${l.internal_reason ? `: ${esc(l.internal_reason)}` : ""}</span>` : ""}</td>
+      <td>${esc(l.email)}${l.is_internal ? ` <span class="muted" style="font-size:10px">internal${l.internal_reason ? `: ${esc(l.internal_reason)}` : ""}</span>` : ""}${!l.is_internal && l.source === "check_page" && unverifiedSource(l) ? ` <span class="muted" style="font-size:10px">unverified source: no page session</span>` : ""}</td>
       <td><a href="https://${esc(l.domain)}" target="_blank" rel="noopener" style="color:var(--text)">${esc(l.domain)}</a></td>
       <td style="text-align:right;font-variant-numeric:tabular-nums">${l.score ?? "?"}${l.grade ? ` ${esc(l.grade)}` : ""}</td>
       <td>${esc(attribution(l))}</td>
@@ -166,6 +136,7 @@ export async function handleAdminFreeCheckStats(user: User | null, env: Env, _ur
   const basis = countingFrom === null
     ? "No page-tagged rows yet. Counting starts with the first check-page visit after the scan Worker deploy."
     : `Counting from ${ymdHst(countingFrom)}. Rows before that (including backfilled history) are not in these counts.`;
+  const botNote = `A page row also counts as a bot when its user agent matches the current pattern: /${BOT_UA_RE.source}/${BOT_UA_RE.flags}.`;
 
   const body = `
     <div class="section-header">
@@ -178,7 +149,8 @@ export async function handleAdminFreeCheckStats(user: User | null, env: Env, _ur
     </div>
 
     ${loadError ? `<div class="card" style="padding:16px;margin-bottom:20px;border-left:3px solid var(--red)">Could not read the free-check tables: ${esc(loadError)}</div>` : ""}
-    <div class="muted" style="font-size:12px;margin-bottom:16px">${esc(basis)}</div>
+    <div class="muted" style="font-size:12px;margin-bottom:6px">${esc(basis)}</div>
+    <div class="muted" style="font-size:11px;margin-bottom:16px">${esc(botNote)}${truncated ? " The event cap was reached, so the oldest days of the 30-day window are incomplete. The newest rows are all present." : ""}</div>
 
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:24px">
       ${funnelCards}

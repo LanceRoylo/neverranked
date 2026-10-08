@@ -100,10 +100,9 @@ import { isPublicHttpUrl } from "./url-safety";
 import { PAGE_COPY, KIT_QUESTIONS, UNSUB_COPY } from "./copy";
 import { CURRENT_CONSENT_VERSION, consentFor } from "./consent";
 import { classifyRequest, cleanSessionId, internalEmail } from "./free-check-classify";
-import { isBotUserAgent } from "./bot-ua";
 import { extractIdentity } from "./identity";
 import { missingSignals, summaryFromClient, type ScanSummary } from "./missing-signals";
-import { buildReportEmail, buildLeadAlert, REPLY_TO } from "./report-email";
+import { buildReportEmail, buildLeadAlert, REPLY_TO, escHtml } from "./report-email";
 import { buildDripDay3Email, buildDripDay7Email, dripDay3Subject, dripDay7Subject } from "./drip-email";
 import {
   cleanUtm, cleanReferrer, cleanUa, nowSeconds, eventStatement, scanStatement, cleanScanId, loadScan,
@@ -114,10 +113,6 @@ import {
 // LinkedIn card showed no image. og.jpg is the site's own card and returns 200.
 const OG_IMAGE = "https://neverranked.com/og.jpg";
 
-/** Escape a string for an HTML attribute or text node. */
-function attr(s: string): string {
-  return s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
 
 // ---------- HTML UI ----------
 
@@ -128,11 +123,11 @@ const HTML_PAGE = `<!doctype html>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#121212">
 <title>AI Search Check: see how AI tools read your site | Never Ranked</title>
-<meta name="description" content="${attr(PAGE_COPY.metaDescription)}">
+<meta name="description" content="${escHtml(PAGE_COPY.metaDescription)}">
 <link rel="canonical" href="https://check.neverranked.com/">
 <meta name="robots" content="index, follow">
 <meta property="og:title" content="AI Search Check: see how AI tools read your site">
-<meta property="og:description" content="${attr(PAGE_COPY.ogDescription)}">
+<meta property="og:description" content="${escHtml(PAGE_COPY.ogDescription)}">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://check.neverranked.com/">
 <meta property="og:site_name" content="Never Ranked">
@@ -457,76 +452,6 @@ body::before{
   text-align:center;
   padding:40px 0;
   animation:fadeUp .6s var(--ease) both;
-}
-/* directional band — shown above the gate before email capture */
-.grade-band-domain{
-  font-family:var(--mono);
-  font-size:12px;
-  color:var(--text-faint);
-  text-transform:uppercase;
-  letter-spacing:.12em;
-  margin-bottom:24px;
-}
-.grade-band-headline{
-  font-family:var(--serif);
-  font-size:42px;
-  color:var(--text);
-  line-height:1.2;
-  margin-bottom:16px;
-}
-.grade-band-headline strong{
-  color:var(--gold);
-  font-weight:400;
-}
-.grade-band-sub{
-  font-size:15px;
-  color:var(--text-mute);
-  max-width:480px;
-  margin:0 auto;
-  line-height:1.5;
-}
-/* above-gate comparison: shows the gap visually before the email ask,
-   exact score still withheld */
-.grade-band-compare{
-  max-width:420px;
-  margin:28px auto 0;
-  text-align:left;
-}
-.gbc-bar{
-  display:flex;align-items:center;gap:12px;
-  margin-bottom:10px;
-}
-.gbc-label{
-  font-family:var(--mono);
-  font-size:11px;
-  color:var(--text-faint);
-  width:118px;
-  flex-shrink:0;
-  text-align:right;
-}
-.gbc-track{
-  flex:1;height:8px;
-  background:var(--bg-lift);
-  border-radius:4px;overflow:hidden;
-}
-.gbc-fill{
-  height:100%;width:0;border-radius:4px;
-  transition:width .9s var(--ease);
-}
-.gbc-you{background:var(--gold)}
-.gbc-bench{background:var(--gold-dim);opacity:.5}
-.gbc-caption{
-  font-family:var(--mono);
-  font-size:12px;
-  color:var(--text-faint);
-  line-height:1.6;
-  margin-top:14px;
-  text-align:center;
-}
-@media (max-width:640px){
-  .grade-band-headline{font-size:32px}
-  .grade-band-sub{font-size:14px;padding:0 20px}
-  .gbc-label{width:92px;font-size:10px}
 }
 .grade-circle{
   display:inline-flex;
@@ -1000,6 +925,10 @@ body.channel-mode #channel-cta-card{display:block}
   margin:24px auto;max-width:560px;text-align:center;
   font-family:var(--mono);font-size:13px;color:var(--gold);
 }
+.email-resend{padding:24px 28px}
+.email-resend-to{font-family:var(--mono);font-size:12px;color:var(--text-mute);margin:4px 0 6px}
+.email-resend-to strong{color:var(--text);font-weight:400;overflow-wrap:anywhere}
+.email-resend-to a{color:var(--gold);border-bottom:1px solid var(--gold-dim)}
 
 /* "Ask it yourself" kit */
 .ask-kit{margin:40px 0 8px;animation:fadeUp .5s var(--ease) .15s both}
@@ -1031,70 +960,6 @@ body.channel-mode #channel-cta-card{display:block}
 .ask-kit-after{font-family:var(--mono);font-size:12px;color:var(--text-faint);line-height:1.7;margin:0}
 @media (max-width:640px){
   .ask-kit-questions li{flex-direction:column;align-items:flex-start}
-}
-
-.email-capture{
-  margin:32px 0 0;
-  padding:24px 28px;
-  background:var(--bg-lift);
-  border:1px solid var(--line);
-  border-radius:4px;
-  animation:fadeUp .5s var(--ease) .2s both;
-}
-.email-capture-inner{
-  display:flex;align-items:center;gap:20px;
-}
-.email-capture-icon{
-  font-size:24px;flex-shrink:0;
-  opacity:.6;
-}
-.email-capture-title{
-  font-family:var(--mono);
-  font-size:14px;color:var(--text);
-}
-.email-capture-sub{
-  font-family:var(--mono);
-  font-size:11px;color:var(--text-faint);
-  margin-top:2px;
-}
-.email-capture-form{
-  display:flex;gap:8px;margin-left:auto;flex-shrink:0;
-}
-.email-capture-form input{
-  background:var(--bg-edge);
-  border:1px solid var(--line);
-  border-radius:4px;
-  padding:10px 14px;
-  font-family:var(--mono);
-  font-size:13px;
-  color:var(--text);
-  outline:none;
-  width:200px;
-  transition:border-color .3s var(--ease);
-}
-.email-capture-form input:focus{border-color:var(--gold)}
-.email-capture-form input::placeholder{color:var(--text-faint)}
-.email-capture-form button{
-  background:var(--gold);
-  color:var(--bg);
-  border:none;
-  padding:10px 20px;
-  font-family:var(--label);
-  text-transform:uppercase;
-  letter-spacing:.15em;
-  font-size:11px;
-  font-weight:600;
-  border-radius:4px;
-  cursor:pointer;
-  white-space:nowrap;
-  transition:opacity .2s;
-}
-.email-capture-form button:disabled{opacity:.4;cursor:not-allowed}
-.email-success{
-  font-family:var(--mono);
-  font-size:13px;
-  color:var(--text-faint);
-  margin-top:12px;
 }
 
 /* competitor teaser */
@@ -1398,9 +1263,6 @@ body.channel-mode #channel-cta-card{display:block}
   .tech-row{flex-direction:column;gap:6px}
   .tech-row .label{min-width:unset}
   .cta-section{padding:28px 20px}
-  .email-capture-inner{flex-direction:column;align-items:flex-start;gap:12px}
-  .email-capture-form{margin-left:0;width:100%}
-  .email-capture-form input{flex:1;width:auto}
   .cta-buttons{flex-direction:column;align-items:center}
   .comp-bar-label{min-width:70px;font-size:10px}
   .dash-mock-row{flex-direction:column;gap:8px}
@@ -1438,7 +1300,7 @@ body.channel-mode #channel-cta-card{display:block}
 
   <section class="hero">
     <h1>See what AI tools can read from <em>your site</em>.</h1>
-    <p class="sub">${attr(PAGE_COPY.heroSub)}</p>
+    <p class="sub">${escHtml(PAGE_COPY.heroSub)}</p>
     <div class="input-area">
       <label for="url-input" class="sr-only">Your website URL</label>
       <input type="url" id="url-input" placeholder="https://example.com" autocomplete="url" spellcheck="false">
@@ -1476,34 +1338,46 @@ body.channel-mode #channel-cta-card{display:block}
     <div class="email-gate" id="email-gate" style="display:none">
       <div class="email-gate-head">
         <div class="email-gate-count" id="email-gate-count">-</div>
-        <div class="email-gate-title" id="email-gate-title">${attr(PAGE_COPY.gateTitleMany)}</div>
+        <div class="email-gate-title" id="email-gate-title">${escHtml(PAGE_COPY.gateTitleMany)}</div>
       </div>
       <div class="email-gate-teaser" id="email-gate-teaser"></div>
       <div class="email-gate-body">
-        <p id="email-gate-body-text">${attr(PAGE_COPY.gateBody)}</p>
+        <p id="email-gate-body-text">${escHtml(PAGE_COPY.gateBody)}</p>
         <div class="email-gate-form">
           <label for="gate-email-input" class="sr-only">Your work email</label>
           <input type="email" id="gate-email-input" placeholder="you@company.com" autocomplete="email">
-          <button type="button" id="gate-email-btn">${attr(PAGE_COPY.gateButton)}</button>
+          <button type="button" id="gate-email-btn">${escHtml(PAGE_COPY.gateButton)}</button>
         </div>
-        <div class="email-gate-privacy">${attr(PAGE_COPY.gateConsent)}</div>
+        <div class="email-gate-privacy">${escHtml(PAGE_COPY.gateConsent)}</div>
       </div>
     </div>
-    <div class="email-gate-sent" id="email-gate-sent" role="status" aria-live="polite" style="display:none">${attr(PAGE_COPY.gateSent)}</div>
+    <div class="email-gate-sent" id="email-gate-sent" role="status" aria-live="polite" style="display:none">${escHtml(PAGE_COPY.gateSent)}</div>
+
+    <!-- Returning visitor: the email they gave before is remembered in this
+         browser, so the gate is skipped. The result they are looking at was
+         never emailed, so one click sends it (a new capture for this scan).
+         The consent line is shown again because a new capture is made. -->
+    <div class="email-gate email-resend" id="email-resend" style="display:none">
+      <div class="email-gate-form">
+        <button type="button" id="email-resend-btn">${escHtml(PAGE_COPY.resendButton)}</button>
+      </div>
+      <div class="email-resend-to">${escHtml(PAGE_COPY.resendTo)} <strong id="email-resend-address"></strong>. <a href="#" id="email-resend-change">${escHtml(PAGE_COPY.resendChange)}</a></div>
+      <div class="email-gate-privacy">${escHtml(PAGE_COPY.gateConsent)}</div>
+    </div>
 
     <!-- "Ask it yourself" kit (plan section 4 fallback, 2026-10-07). No
          email needed and no API cost. Three fixed question templates,
          prefilled with the category and town the scanned page states in its
          own JSON-LD, editable, each with a copy button. -->
     <div class="ask-kit" id="ask-kit" style="display:none">
-      <div class="section-label"><span class="num">&sect;</span> ${attr(PAGE_COPY.kitLabel)} <span class="rule"></span></div>
-      <p class="ask-kit-lead">${attr(PAGE_COPY.kitLead)}</p>
+      <div class="section-label"><span class="num">&sect;</span> ${escHtml(PAGE_COPY.kitLabel)} <span class="rule"></span></div>
+      <p class="ask-kit-lead">${escHtml(PAGE_COPY.kitLead)}</p>
       <div class="ask-kit-fields">
-        <label class="ask-kit-field"><span>${attr(PAGE_COPY.kitCategoryLabel)}</span><input type="text" id="ask-kit-category" maxlength="40" placeholder="${attr(PAGE_COPY.kitCategoryPlaceholder)}" autocomplete="off" spellcheck="false"></label>
-        <label class="ask-kit-field"><span>${attr(PAGE_COPY.kitTownLabel)}</span><input type="text" id="ask-kit-town" maxlength="40" placeholder="${attr(PAGE_COPY.kitTownPlaceholder)}" autocomplete="off" spellcheck="false"></label>
+        <label class="ask-kit-field"><span>${escHtml(PAGE_COPY.kitCategoryLabel)}</span><input type="text" id="ask-kit-category" maxlength="40" placeholder="${escHtml(PAGE_COPY.kitCategoryPlaceholder)}" autocomplete="off" spellcheck="false"></label>
+        <label class="ask-kit-field"><span>${escHtml(PAGE_COPY.kitTownLabel)}</span><input type="text" id="ask-kit-town" maxlength="40" placeholder="${escHtml(PAGE_COPY.kitTownPlaceholder)}" autocomplete="off" spellcheck="false"></label>
       </div>
       <ol class="ask-kit-questions" id="ask-kit-questions"></ol>
-      <p class="ask-kit-after">${attr(PAGE_COPY.kitAfter)}</p>
+      <p class="ask-kit-after">${escHtml(PAGE_COPY.kitAfter)}</p>
     </div>
 
     <!-- Gated details: hidden until email captured -->
@@ -2003,6 +1877,10 @@ body.channel-mode #channel-cta-card{display:block}
   var gateTeaser = document.getElementById('email-gate-teaser');
   var gateTitle = document.getElementById('email-gate-title');
   var gateSent = document.getElementById('email-gate-sent');
+  var resendEl = document.getElementById('email-resend');
+  var resendBtn = document.getElementById('email-resend-btn');
+  var resendAddress = document.getElementById('email-resend-address');
+  var resendChange = document.getElementById('email-resend-change');
   var gatedDetails = document.getElementById('gated-details');
   var GATE_IMPRESSION_KEY = 'nr_gate_impression_logged';
 
@@ -2102,6 +1980,7 @@ body.channel-mode #channel-cta-card{display:block}
     if(gateCount) gateCount.textContent = total > 0 ? String(total) : '';
     if(gateTitle) gateTitle.textContent = total === 1 ? NR_COPY.gateTitleOne : (total > 1 ? NR_COPY.gateTitleMany : NR_COPY.gateTitleNone);
     if(gateSent) gateSent.style.display = 'none';
+    if(resendEl) resendEl.style.display = 'none';
 
     // Teaser: the first two names. What each one is comes in the email.
     if(gateTeaser){
@@ -2111,8 +1990,20 @@ body.channel-mode #channel-cta-card{display:block}
         : '';
     }
 
-    if(getCapturedEmail()){
+    // Agency pitch-link mode hides the gate and the email ask entirely (CSS),
+    // so there is no ask to count and no resend to offer.
+    var agencyMode = document.body.classList.contains('agency-mode');
+
+    var remembered = getCapturedEmail();
+    if(remembered){
+      // A returning visitor skips the gate, but THIS result was never sent
+      // to them, so offer it in one click.
       revealGatedDetails(false);
+      if(resendEl && !agencyMode){
+        if(resendAddress) resendAddress.textContent = remembered;
+        if(resendBtn){ resendBtn.disabled = false; resendBtn.textContent = NR_COPY.resendButton; }
+        resendEl.style.display = 'block';
+      }
     } else {
       emailGateEl.style.display = 'block';
       gatedDetails.style.display = 'none';
@@ -2121,7 +2012,7 @@ body.channel-mode #channel-cta-card{display:block}
         gateEmailBtn.textContent = NR_COPY.gateButton;
       }
       if(gateEmailInput) gateEmailInput.value = '';
-      logGateImpression(data);
+      if(!agencyMode) logGateImpression(data);
     }
   }
 
@@ -2137,6 +2028,30 @@ body.channel-mode #channel-cta-card{display:block}
     };
   }
 
+  // One capture of the current result. Used by the gate and by the
+  // returning-visitor button, so both send exactly the same request.
+  async function sendResult(email){
+    var resp = await fetch('/api/send-report', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        email: email,
+        scan_id: lastReportData.scan_id || null,
+        session_id: sessionId,
+        client: 'page',
+        consent_version: NR_CONSENT_VERSION,
+        referrer: _ref || null,
+        utm: Object.keys(_utm).length ? _utm : null,
+        report: fallbackReport(lastReportData)
+      })
+    });
+    if(!resp.ok) throw new Error('Failed');
+    setCapturedEmail(email);
+    // Retargeting events
+    if(typeof fbq === 'function') fbq('track', 'Lead');
+    if(typeof lintrk === 'function') lintrk('track', {conversion_id: 0});
+  }
+
   async function submitGateEmail(){
     if(!gateEmailInput || !gateEmailBtn) return;
     var email = gateEmailInput.value.trim();
@@ -2147,35 +2062,39 @@ body.channel-mode #channel-cta-card{display:block}
     gateEmailBtn.textContent = NR_COPY.gateButtonBusy;
 
     try{
-      var resp = await fetch('/api/send-report', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          email: email,
-          scan_id: lastReportData.scan_id || null,
-          session_id: sessionId,
-          client: 'page',
-          consent_version: NR_CONSENT_VERSION,
-          referrer: _ref || null,
-          utm: Object.keys(_utm).length ? _utm : null,
-          report: fallbackReport(lastReportData)
-        })
-      });
-      if(!resp.ok) throw new Error('Failed');
-      setCapturedEmail(email);
+      await sendResult(email);
       revealGatedDetails(true);
-      // Retargeting events
-      if(typeof fbq === 'function') fbq('track', 'Lead');
-      if(typeof lintrk === 'function') lintrk('track', {conversion_id: 0});
     } catch(e) {
       gateEmailBtn.textContent = 'Try again';
       gateEmailBtn.disabled = false;
     }
   }
 
+  async function resendResult(){
+    var email = getCapturedEmail();
+    if(!email || !lastReportData || !resendBtn) return;
+    resendBtn.disabled = true;
+    resendBtn.textContent = NR_COPY.gateButtonBusy;
+    try{
+      await sendResult(email);
+      if(resendEl) resendEl.style.display = 'none';
+      if(gateSent) gateSent.style.display = 'block';
+    } catch(e) {
+      resendBtn.textContent = 'Try again';
+      resendBtn.disabled = false;
+    }
+  }
+
   if(gateEmailBtn) gateEmailBtn.addEventListener('click', submitGateEmail);
   if(gateEmailInput) gateEmailInput.addEventListener('keydown', function(e){
     if(e.key === 'Enter') submitGateEmail();
+  });
+  if(resendBtn) resendBtn.addEventListener('click', resendResult);
+  if(resendChange) resendChange.addEventListener('click', function(e){
+    e.preventDefault();
+    try { localStorage.removeItem(CAPTURED_EMAIL_KEY); } catch(err){}
+    if(lastReportData) updateEmailGate(lastReportData);
+    if(gateEmailInput) { try { gateEmailInput.focus(); } catch(err){} }
   });
 
   // ---------- "Ask it yourself" kit ----------
@@ -2480,9 +2399,6 @@ body.channel-mode #channel-cta-card{display:block}
 
 // ---------- Report email builder ----------
 
-function escHtml(s: string): string {
-  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-}
 
 // Parse robots.txt for AI crawlers that are fully disallowed (Disallow: /).
 // CITATION crawlers vs TRAINING crawlers. Blocking these is NOT the same thing,
@@ -2577,7 +2493,14 @@ function blockedAiBots(robotsTxt: string): string[] {
     if (g.allow.includes("/")) continue; // explicit site-wide Allow wins
     for (const a of g.agents) {
       if (a === "*") blocked.add("all crawlers (User-agent: *)");
-      else if (AI_BOTS.some((b) => b.toLowerCase() === a.toLowerCase())) blocked.add(a);
+      else {
+        // Report the CANONICAL name. robots.txt user agents are
+        // case-insensitive, and CITATION_BOTS (and the emailed result) match
+        // on the canonical spelling, so "claudebot" must come back as
+        // "ClaudeBot" or it would be described as a training crawler.
+        const canon = AI_BOTS.find((b) => b.toLowerCase() === a.toLowerCase());
+        if (canon) blocked.add(canon);
+      }
     }
   }
   return [...blocked];
@@ -3190,6 +3113,8 @@ export default {
       const internalSource = request.headers.get("X-Internal-Source") || "";
       const ua = request.headers.get("User-Agent") || "";
       const cls = classifyRequest({ userAgent: ua, internalSource, keyed, client: body.client, sessionId });
+      // ipHash feeds ONLY the legacy KV 60-second dedup key below. It is
+      // never written to D1 (see the privacy note in free-check-store.ts).
       const rawIp = request.headers.get("CF-Connecting-IP") || request.headers.get("X-Forwarded-For") || "";
       const ipHash = rawIp ? await sha256Hex(rawIp) : "";
       const country = ((request as any).cf?.country as string | undefined) || null;
@@ -3203,7 +3128,7 @@ export default {
         source: cls.source,
         is_internal: cls.is_internal,
         is_bot: cls.is_bot,
-        ip_hash: ipHash || null,
+        ip_hash: null,
         user_agent: cleanUa(ua),
         country,
         referrer: cleanReferrer(referrer),
@@ -3213,10 +3138,18 @@ export default {
 
       // Page-originated scans get a scan_id and a stored summary, so the
       // email endpoint builds the result from OUR copy, not the browser's.
+      // That one insert is awaited, because send-report needs the row. The
+      // funnel event is not on the visitor's critical path: it is written in
+      // ctx.waitUntil after the response.
       let pageExtras: Record<string, unknown> = {};
       const isPage = cls.source === "page";
-      const statements: D1PreparedStatement[] = [];
       if (env.DB) {
+        const db = env.DB;
+        ctx.waitUntil(
+          eventStatement(db, eventRow).run().catch((e) => {
+            console.error("free-check-d1-event-failed", e instanceof Error ? e.message : String(e));
+          }),
+        );
         try {
           if (isPage) {
             const scanId = crypto.randomUUID();
@@ -3236,18 +3169,16 @@ export default {
               schema_types: report.signals.schema_types.slice(0, 30).map((t) => String(t).slice(0, 80)),
               identity,
             };
-            statements.push(scanStatement(env.DB, {
+            await scanStatement(db, {
               scan_id: scanId, session_id: sessionId, url: targetUrl, domain: report.domain,
               score: report.aeo_score, grade: report.grade, summary, created_at: createdAt,
-            }));
+            }).run();
             pageExtras = {
               scan_id: scanId,
               missing_signals: missingSignals(summary).map((m) => ({ key: m.key, name: m.name })),
               identity: { category: identity.category, town: identity.town },
             };
           }
-          statements.push(eventStatement(env.DB, eventRow));
-          await env.DB.batch(statements);
         } catch (e) {
           // The scan result still goes back to the visitor. Without a stored
           // row, send-report falls back to the whitelisted client copy.
@@ -3348,7 +3279,6 @@ export default {
             client: imp.client,
             sessionId,
           });
-          const rawIp = request.headers.get("CF-Connecting-IP") || request.headers.get("X-Forwarded-For") || "";
           await eventStatement(env.DB, {
             type: "gate_impression",
             session_id: sessionId,
@@ -3356,7 +3286,7 @@ export default {
             source: cls.source,
             is_internal: cls.is_internal,
             is_bot: cls.is_bot,
-            ip_hash: rawIp ? await sha256Hex(rawIp) : null,
+            ip_hash: null,
             user_agent: cleanUa(ua),
             country: ((request as any).cf?.country as string | undefined) || null,
             referrer: null,
@@ -3431,11 +3361,19 @@ export default {
         client: typeof body.client === "string" ? body.client : null,
         sessionId,
       });
+      // Who gave this email. Three outcomes:
+      //   - one of us (INTERNAL_EMAILS, our domains, reserved test domains, or
+      //     an internal caller): stored, flagged internal, no alert
+      //   - a bot user agent (curl, a headless browser, a script): stored,
+      //     flagged internal with reason 'bot', no alert. A script that can
+      //     POST an address is not a person who asked for a result
+      //   - anyone else: a real lead. If it carries no page session (an old
+      //     cached page, or a direct API call from a browser), it stays a lead
+      //     and the briefing marks its source as unverified
       const internal = internalEmail(email, env.INTERNAL_EMAILS);
-      const isInternal = internal.internal || cls.is_internal === 1;
-      const internalReason = internal.reason ?? (cls.is_internal ? `source:${cls.source}` : null);
-      const rawIp = request.headers.get("CF-Connecting-IP") || request.headers.get("X-Forwarded-For") || "";
-      const ipHash = rawIp ? await sha256Hex(rawIp) : null;
+      const isBotCapture = cls.is_bot === 1;
+      const isInternal = internal.internal || cls.is_internal === 1 || isBotCapture;
+      const internalReason = internal.reason ?? (cls.is_internal ? `source:${cls.source}` : isBotCapture ? "bot" : null);
       const country = ((request as any).cf?.country as string | undefined) || null;
       const utm = cleanUtm(body.utm);
       const referrer = cleanReferrer(body.referrer);
@@ -3469,7 +3407,7 @@ export default {
             session_id: sessionId,
             referrer,
             utm,
-            ip_hash: ipHash,
+            ip_hash: null,
             user_agent: cleanUa(ua),
             country,
             is_internal: isInternal ? 1 : 0,
@@ -3513,7 +3451,7 @@ export default {
             error: d1Error,
             email, scan_id: scanId, session_id: sessionId, url: scanUrl, domain: summary.domain,
             score: summary.score, grade: summary.grade, consent_version: consent.version,
-            followup_ok: consent.followup_ok, referrer, utm, ip_hash: ipHash, user_agent: cleanUa(ua), country,
+            followup_ok: consent.followup_ok, referrer, utm, user_agent: cleanUa(ua), country,
             is_internal: isInternal ? 1 : 0, internal_reason: internalReason, created_at: createdAt,
           }));
         }
@@ -3532,7 +3470,7 @@ export default {
               source: cls.source,
               is_internal: isInternal ? 1 : 0,
               is_bot: cls.is_bot,
-              ip_hash: ipHash,
+              ip_hash: null,
               user_agent: cleanUa(ua),
               country,
               referrer,
@@ -3544,7 +3482,9 @@ export default {
             const attribution = [utm.utm_source, utm.utm_campaign, utm.utm_content].filter(Boolean).join(" / ") || (referrer ? `referrer ${referrer}` : "direct");
             statements.push(inboxStatement(env.DB, {
               leadId,
-              title: isInternal ? `Internal test capture: ${summary.domain}` : `New free-check lead: ${summary.domain}`,
+              title: isInternal
+                ? `${internalReason === "bot" ? "Bot capture" : "Internal test capture"}: ${summary.domain}`
+                : `New free-check lead: ${summary.domain}${sessionId ? "" : " (unverified source)"}`,
               body: [
                 `Email: ${email}`,
                 `Score: ${summary.score}/100 (${summary.grade})`,
@@ -3554,6 +3494,10 @@ export default {
               ].filter(Boolean).join("\n"),
               urgency: isInternal ? "low" : "high",
               now: createdAt,
+              // An internal or bot capture is recorded (so a test capture can
+              // be verified) but never left pending in the inbox.
+              status: isInternal ? "resolved" : "pending",
+              resolutionNote: isInternal ? `auto-resolved: ${internalReason}` : undefined,
             }));
           }
           await env.DB.batch(statements);

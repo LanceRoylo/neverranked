@@ -22,14 +22,15 @@ import { canUseDraftingFeature } from "../gating";
 
 /** Shown to clients without the drafting feature who land on /drafts. The
  *  retired-tier upsell card was removed 2026-10-07: it named a tier that is no
- *  longer sold. One line now points at the current pricing page. */
+ *  longer sold, and no current plan includes drafting. One plain line says so,
+ *  with no link and no upsell. */
 function renderUpgradeNudge(clientSlug: string, user: User): string {
   const body = `
     <div style="margin-bottom:24px">
       <div class="label" style="margin-bottom:8px"><a href="/" style="color:var(--text-mute)">Dashboard</a> / ${esc(clientSlug)}</div>
       <h1>Drafts</h1>
     </div>
-    <p style="font-size:13px;line-height:1.7;margin:0 0 24px"><a href="https://neverranked.com/pricing/" style="color:var(--gold)">See what Audit includes &rarr;</a></p>
+    <p style="font-size:13px;line-height:1.7;color:var(--text-soft);margin:0 0 24px">Drafting is not part of current plans.</p>
     ${buildGlossary()}
   `;
   return layout("Drafts", body, user, clientSlug);
