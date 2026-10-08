@@ -20,22 +20,17 @@ import { generateDraftInVoice, scoreDraftAgainstProfile } from "../voice-engine"
 import { runContentQa } from "../content-qa";
 import { canUseDraftingFeature } from "../gating";
 
-/** Upgrade nudge for non-Amplify clients landing on /drafts. */
+/** Shown to clients without the drafting feature who land on /drafts. The
+ *  retired-tier upsell card was removed 2026-10-07: it named a tier that is no
+ *  longer sold, and no current plan includes drafting. One plain line says so,
+ *  with no link and no upsell. */
 function renderUpgradeNudge(clientSlug: string, user: User): string {
   const body = `
     <div style="margin-bottom:24px">
       <div class="label" style="margin-bottom:8px"><a href="/" style="color:var(--text-mute)">Dashboard</a> / ${esc(clientSlug)}</div>
       <h1>Drafts</h1>
     </div>
-    <div class="card" style="border:1px solid var(--gold-dim);background:linear-gradient(135deg,var(--bg-lift) 0%,rgba(201,168,76,.04) 100%)">
-      <div class="label" style="margin-bottom:8px;color:var(--gold)">\u00a7 Amplify tier feature</div>
-      <h3 style="font-style:italic;margin-bottom:12px">In-dashboard drafting is an <em style="color:var(--gold)">Amplify</em> tier feature</h3>
-      <div style="font-size:13px;color:var(--text-soft);line-height:1.75;max-width:720px;margin-bottom:18px">
-        Voice profile and in-dashboard drafting belong to the Amplify retainer. We learn how you write from samples you upload, then draft articles, FAQs, and landing pages that read like you wrote them. Drafts live in the dashboard with editor, version history, voice score, and export. Nothing leaves your account.
-      </div>
-      <a href="https://app.neverranked.com/checkout/amplify" class="btn">Upgrade to Amplify</a>
-      <a href="mailto:hello@neverranked.com?subject=Amplify%20upgrade%20question" style="margin-left:14px;font-size:12px;color:var(--gold)">Questions first? Email us &rarr;</a>
-    </div>
+    <p style="font-size:13px;line-height:1.7;color:var(--text-soft);margin:0 0 24px">Drafting is not part of current plans.</p>
     ${buildGlossary()}
   `;
   return layout("Drafts", body, user, clientSlug);
