@@ -80,3 +80,7 @@ CREATE TABLE IF NOT EXISTS free_check_events (
   created_at  INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_fc_events_type_time ON free_check_events(type, created_at);
+-- The briefing and admin page read the last 7 to 30 days by time, and find
+-- the first page-tagged row ("counting from") by source and session.
+CREATE INDEX IF NOT EXISTS idx_fc_events_time ON free_check_events(created_at);
+CREATE INDEX IF NOT EXISTS idx_fc_events_source_session ON free_check_events(source, session_id, created_at);
