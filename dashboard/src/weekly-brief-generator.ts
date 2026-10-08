@@ -37,6 +37,11 @@ export interface WeeklyStats {
   perEngine: { engine: string; runs: number; clientCited: number }[];
   totalBotHits: number;
   topBots: { bot: string; hits: number }[];
+  /** Distinct client sites that logged bot rows, and the busiest site's share
+   *  of all rows. Bot rows only arrive from sites that still carry our tag, so
+   *  a week can be one site's traffic. See botBlock. */
+  botSites?: number;
+  botTopSiteShare?: number;
   totalReddit: number;
   topSubreddits: { subreddit: string; hits: number }[];
   /** Distinct subreddits this week. topSubreddits is capped at 8, so without
@@ -91,6 +96,14 @@ export async function aggregateLastWeek(env: Env, weekStartsAt?: number): Promis
   const totalBotHits = (await env.DB.prepare(
     `SELECT COUNT(*) AS n FROM bot_hits WHERE hit_at >= ? AND hit_at < ?`,
   ).bind(start, end).first<{ n: number }>())?.n ?? 0;
+  const botSitesRes = await env.DB.prepare(
+    `SELECT client_slug, COUNT(*) AS n FROM bot_hits
+       WHERE hit_at >= ? AND hit_at < ?
+       GROUP BY client_slug ORDER BY n DESC`,
+  ).bind(start, end).all<{ client_slug: string; n: number }>();
+  const botSites = botSitesRes.results.length;
+  const botTopSiteShare = totalBotHits > 0 && botSitesRes.results[0]
+    ? botSitesRes.results[0].n / totalBotHits : 0;
 
   // Reddit activity
   const subsRes = await env.DB.prepare(
@@ -261,6 +274,8 @@ export async function aggregateLastWeek(env: Env, weekStartsAt?: number): Promis
     perEngine: enginesRes.results,
     totalBotHits,
     topBots: botsRes.results,
+    botSites,
+    botTopSiteShare,
     totalReddit,
     topSubreddits: subsRes.results,
     distinctSubreddits,
@@ -324,7 +339,7 @@ GROUNDING RULES (the stats block in the user message is your ONLY source):
 - Week-over-week movement is stated PER SURFACE, from the per-surface lines. The pooled rate averages surfaces that move in opposite directions and also moves when the balance of runs between them changes, so it may not be the headline. If the per-surface block says no surface moved 2 points, the week's finding is that nothing moved, and you say so.
 - Query volume is ours. We choose how many questions to ask and how often. Any change in it is a fact about our instrument, and writing it as a change in AI behaviour is the same failure as reporting a question-set change as a ranking movement.
 - When the stats block lists more than one instrument change, do not single one out as the reason the weeks are not comparable. Say the window contains that many recorded changes to our own measurement and name them briefly. The block does not say which one mattered most, so neither can you.
-- Every rate in the stats block is how often a TRACKED CLIENT was cited, named or returned. It is never how often a surface "cited sources". Use the verb each engine line gives: cited, named, or (for the control) returned.
+- Every rate in the stats block is how often a TRACKED CLIENT was cited, named or returned. It is never how often a surface "cited sources". Use the verb each engine line gives: "named or linked to", "named", or (for the control) "returned". Never shorten "named or linked to" to "cited".
 - The control is not an AI surface. A range, ranking, "highest" or "lowest" across AI surfaces never includes it, in the title or anywhere else.
 - WITHHELD is not flat. Where movement is withheld, never write held, steady, stable, flat, unchanged or consistent with the prior period, in the title, summary or body. Those are comparisons too.
 - A section marked NOT MEASURED is missing data. Never turn it into a zero, a "none" or a "no activity".
@@ -492,8 +507,25 @@ const NOT_MEASURED = (what: string) =>
   `  data, not zero activity. Do not write that there was none, zero, or no activity.\n` +
   `  Leave this angle out of the brief entirely.`;
 
+/**
+ * Bot rows come only from sites that still carry our tag, so they are not a
+ * sample of tracked clients. Draft #9 (week of 2026-09-28) wrote "Bot fetches
+ * totaled 655 this week" when 649 of the 655 came from ONE site. Below three
+ * sites, or with one site over half the rows, the section is left out.
+ */
+export const BOT_MIN_SITES = 3;
+export const BOT_MAX_TOP_SITE_SHARE = 0.5;
+
 export function botBlock(stats: WeeklyStats): string {
   if (stats.totalBotHits === 0) return NOT_MEASURED("bot logging");
+  const sites = stats.botSites ?? 0;
+  const top = stats.botTopSiteShare ?? 1;
+  if (sites < BOT_MIN_SITES || top > BOT_MAX_TOP_SITE_SHARE) {
+    return `  EXCLUDED this week: bot fetches were logged on ${sites} site(s), and the busiest one\n` +
+      `  accounts for ${Math.round(top * 100)}% of them. That is one site's traffic, not a measure\n` +
+      `  across tracked clients. Leave this angle out of the brief entirely. Do not mention bots,\n` +
+      `  crawlers or fetches, and do not say the section was left out.`;
+  }
   return `  Total bot fetches: ${stats.totalBotHits}\n  Top bots:\n` +
     stats.topBots.map((b) => `    ${b.bot}: ${b.hits} fetches`).join("\n");
 }
@@ -548,9 +580,10 @@ export function engineLine(e: { engine: string; runs: number; client_cited: numb
       `Answers from training: the verb is "named", never "cited".`;
   }
   if (layer === "citation") {
-    return `    ${name} ${e.runs} runs, cited a tracked client in ${e.client_cited} (${pct}).`;
+    return `    ${name} ${e.runs} runs, named or linked to a tracked client in ${e.client_cited} (${pct}). ` +
+      `The count includes answers that named the client without linking, so the verb is "named or linked to", never "cited" alone.`;
   }
-  return `    ${name} ${e.runs} runs, cited or named a tracked client in ${e.client_cited} (${pct}).`;
+  return `    ${name} ${e.runs} runs, named or linked to a tracked client in ${e.client_cited} (${pct}).`;
 }
 
 function buildUserMessage(stats: WeeklyStats): string {
@@ -575,7 +608,7 @@ function buildUserMessage(stats: WeeklyStats): string {
   Never count Bing among the AI tools and never attribute answering behaviour to it.
   Together these are seven measured surfaces.
   Total runs this week:     ${stats.totalCitationRuns}
-  Times an AI surface cited or named a tracked client, over the shared questions only: ${stats.newCitationsThisWeek}
+  Times an AI surface named or linked to a tracked client, over the shared questions only: ${stats.newCitationsThisWeek}
 
 ## Week over week
 ${wow}

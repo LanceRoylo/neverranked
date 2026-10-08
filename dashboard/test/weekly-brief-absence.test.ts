@@ -50,9 +50,20 @@ test("a referral pipe with no rows is NOT MEASURED, never zero visits", () => {
 });
 
 test("a live pipe still reports its numbers", () => {
-  const live = { ...WEEK, totalBotHits: 127, topBots: [{ bot: "GPTBot", hits: 90 }] } as WeeklyStats;
+  const live = { ...WEEK, totalBotHits: 127, topBots: [{ bot: "GPTBot", hits: 90 }], botSites: 4, botTopSiteShare: 0.4 } as WeeklyStats;
   assert.match(botBlock(live), /Total bot fetches: 127/);
   assert.match(botBlock(live), /GPTBot: 90 fetches/);
+});
+
+test("bot fetches from one site are excluded, not reported as a cross-client total", () => {
+  // Draft #9: 649 of 655 rows came from one site.
+  const oneSite = { ...WEEK, totalBotHits: 655, topBots: [{ bot: "meta", hits: 292 }], botSites: 2, botTopSiteShare: 649 / 655 } as WeeklyStats;
+  const b = botBlock(oneSite);
+  assert.match(b, /EXCLUDED/);
+  assert.match(b, /Leave this angle out/);
+  assert.doesNotMatch(b, /Total bot fetches/);
+  const concentrated = { ...oneSite, botSites: 5, botTopSiteShare: 0.7 } as WeeklyStats;
+  assert.match(botBlock(concentrated), /EXCLUDED/);
 });
 
 test("a cut-off subreddit list says it is cut off, with the true totals", () => {
@@ -164,7 +175,8 @@ test("when every surface was compared, 'no surface moved' is still allowed", () 
 import { engineLine } from "../src/weekly-brief-generator";
 
 test("each engine line carries its layer's verb", () => {
-  assert.match(engineLine({ engine: "gemini", runs: 433, client_cited: 120 }, "28%"), /cited a tracked client in 120/);
+  assert.match(engineLine({ engine: "gemini", runs: 433, client_cited: 120 }, "28%"), /named or linked to a tracked client in 120/);
+  assert.match(engineLine({ engine: "gemini", runs: 433, client_cited: 120 }, "28%"), /never "cited" alone/);
   const claude = engineLine({ engine: "anthropic", runs: 433, client_cited: 83 }, "19%");
   assert.match(claude, /named a tracked client in 83/);
   assert.match(claude, /never "cited"/);
