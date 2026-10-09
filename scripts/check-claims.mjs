@@ -377,12 +377,10 @@ const RULES = [
   // LinkedIn link card actually read. The FAQ schema carried "No signup"
   // long after anyone would have spotted it on the rendered page.
   //
-  // pending: the check tool's source is being corrected on its own branch.
-  // It already passes check-six-tools-read, so only check-no-signup carries it.
-  // Until that lands, a hit there reports as a warning instead of failing
-  // the build, so the merge order of the two branches cannot break a deploy.
-  // When the file is clean the checker says so, and the entry is deleted.
-  // Same ratchet as APP_SWEEP_PENDING: the list may only shrink.
+  // Both rules now block on the check tool's source as well. Its pending
+  // entry was removed on 2026-10-08 once the file came back clean. Any new
+  // pending entry follows the APP_SWEEP_PENDING ratchet: the list may only
+  // shrink.
   {
     id: "check-six-tools-read",
     severity: "block",
@@ -403,7 +401,6 @@ const RULES = [
     scope: "site",
     scanStructured: true,
     requires: /check\.neverranked\.com/i,
-    pending: ["tools/schema-check/src/index.ts"],
     re: /\bno[\s-]*sign[\s-]?ups?\b/i,
     why: 'calls the free check "no signup". The score shows without an email, but the full result is emailed. Say "Your score shows in seconds. The full result comes by email."',
   },
