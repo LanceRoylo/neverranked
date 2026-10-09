@@ -4068,7 +4068,10 @@ Once verified working, the user-OAuth path becomes vestigial. The legacy code st
         // it publishes to /weekly/<slug>. Idempotent -- if a draft already
         // exists for this week the generator returns the existing id.
         const day = new Date(event.scheduledTime ?? Date.now()).getUTCDay();
-        if (day === 4) {
+        const { WEEKLY_BRIEF_PAUSED } = await import("./weekly-brief-generator");
+        if (day === 4 && WEEKLY_BRIEF_PAUSED) {
+          console.log("[cron 17:00 Thu] weekly brief: NOT generated, WEEKLY_BRIEF_PAUSED");
+        } else if (day === 4) {
           try {
             const { generateWeeklyBrief } = await import("./weekly-brief-generator");
             const result = await generateWeeklyBrief(env);

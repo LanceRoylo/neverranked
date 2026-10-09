@@ -28,6 +28,15 @@ import { engineLayer, isControlEngine } from "./lib/engine-layer";
 const MODEL = "claude-sonnet-4-5";
 const ANTHROPIC_VERSION = "2023-06-01";
 
+/**
+ * Paused 2026-10-08 by Lance: "We don't need a weekly brief." Nothing was ever
+ * published (three drafts rejected, two skipped), the honest finding in most
+ * weeks is "not comparable", and the drafts added a weekly inbox item. The
+ * Thursday cron checks this and generates nothing. The code, the admin pages
+ * and the /weekly archive stay. Flip to false to resume.
+ */
+export const WEEKLY_BRIEF_PAUSED = true;
+
 // ---------- Aggregation ----------
 
 export interface WeeklyStats {
