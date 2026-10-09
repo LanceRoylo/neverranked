@@ -193,3 +193,12 @@ test("the prompt names the last day of the week, not the exclusive end", () => {
   assert.match(src, /Never present these as shares of that total/);
   assert.match(src, /never how often a surface "cited sources"/);
 });
+
+// Paused 2026-10-08. The Thursday cron must check the switch before generating.
+import { WEEKLY_BRIEF_PAUSED } from "../src/weekly-brief-generator";
+import { readFileSync } from "node:fs";
+test("the weekly brief is paused and the cron honours the switch", () => {
+  assert.equal(WEEKLY_BRIEF_PAUSED, true);
+  const src = readFileSync(new URL("../src/index.ts", import.meta.url), "utf8");
+  assert.match(src, /day === 4 && WEEKLY_BRIEF_PAUSED/);
+});
