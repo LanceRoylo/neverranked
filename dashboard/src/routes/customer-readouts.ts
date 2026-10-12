@@ -1197,8 +1197,33 @@ export function shell(title: string, inner: string): string {
   .cg-leg-q { color:#b7b1a3; }
   @media (prefers-reduced-motion:reduce){ .cg-cell{ transition:none; opacity:1; } }
   /* Print: the forwardable artifact. Black on white, charts intact, chrome gone. */
+  .print-only { display:none; }
+  @page { margin:0.6in; }
   @media print {
-    body { background:#fff; color:#111; }
+    :root { color-scheme: light; }
+    html, body { background:#fff !important; color:#111; }
+    .print-only { display:inline; }
+    div.print-only { display:block; }
+    .no-print { display:none; }
+    .print-brand { font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#7a6a35; margin:0 0 6px; }
+    /* Summary tiles: the first thing a reader sees on paper. Pale gold on
+       cream is unreadable printed, so the numbers and labels go dark. */
+    .sum-card { background:#f7f6f2 !important; border-color:#e2dccb !important; }
+    .sum-big { color:#7a6a35 !important; }
+    .sum-lab { color:#222 !important; }
+    .sum-sub { color:#444 !important; }
+    .body h3 { color:#7a6a35; break-after:avoid; page-break-after:avoid; }
+    .body h2, .nr-h, .nr-ctitle { break-after:avoid; page-break-after:avoid; }
+    .body p, .body li { orphans:3; widows:3; }
+    .nr-cap strong { color:#7a6a35 !important; }
+    .cg-klab b { color:#222 !important; }
+    .cg-klab span { color:#444 !important; }
+    .leg-item.own, .leg-item.own .leg-pct { color:#7a6a35 !important; }
+    .nr-chart a, .nr-lab a { color:#111 !important; text-decoration:none; }
+    /* The grid scrolls sideways on screen (min-width 900px). Paper cannot
+       scroll, so it scales to the page width instead of being cut off. */
+    .cg-scroll { overflow:visible !important; }
+    .cg-svg { min-width:0 !important; width:100% !important; max-width:100% !important; height:auto !important; }
     body::before { display:none; }
     .top, .sel { display:none; }
     .wrap { max-width:100%; padding:0; }
@@ -1345,19 +1370,26 @@ export async function handleReadoutView(request: Request, env: Env, slug: string
   }
 
   const title = r.title || `${monthLabel(monthKey)} readout`;
+  // Printed copies get forwarded, so the page says who it was prepared for.
+  let clientName = slug;
+  try {
+    const c = await env.DB.prepare(`SELECT name FROM customers WHERE client_slug = ? LIMIT 1`).bind(slug).first<{ name: string }>();
+    if (c?.name) clientName = c.name;
+  } catch { /* fall back to the slug */ }
 
   const inner = `
     <div class="top">
       <span class="topnav"><a class="back" href="/c/${esc(slug)}/">&larr; Dashboard</a> &middot; <a class="back" href="/c/${esc(slug)}/plan">The plan</a> &middot; <a class="back" href="/c/${esc(slug)}/atlas">Ask Atlas &rarr;</a></span>
       ${selector}
     </div>
+    <div class="print-only print-brand">NeverRanked &middot; prepared for ${esc(clientName)}</div>
     <div class="meta">Report ${reportNo(idx)} &middot; ${esc(monthLabel(monthKey))} &middot; delivered ${esc(delivered)}</div>
     <h1 class="report-title">${esc(title)}</h1>
     ${renderCharts(r.facts_json)}
     ${crossMapHtml}
     ${r.facts_json ? `<div class="nr-h">The record &middot; full readout</div>` : ""}
     <div class="body">${renderReportMarkdown(r.body_markdown)}</div>
-    <div class="foot">This report is a frozen snapshot of what NeverRanked measured for ${esc(monthLabel(monthKey))}. Numbers do not change after delivery. Newer months appear as separate reports in the selector above.</div>`;
+    <div class="foot">This report is a frozen snapshot of what NeverRanked measured for ${esc(monthLabel(monthKey))}. Numbers do not change after delivery.<span class="print-only"> Printed copy. The current version is always at app.neverranked.com/c/${esc(slug)}/readouts/${esc(monthKey)}.</span><span class="no-print"> Newer months appear as separate reports in the selector above.</span></div>`;
 
   return new Response(shell(`${title} · Report ${reportNo(idx)}`, inner), {
     status: 200,
