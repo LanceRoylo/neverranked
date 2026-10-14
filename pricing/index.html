@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="index, follow">
 <title>Pricing &middot; NeverRanked</title>
-<meta name="description" content="What it costs to know whether AI answer engines name your business. Monitor is $199 a month per category. Audit is $750 a month per category after a $950 baseline month. The check is free.">
+<meta name="description" content="What it costs to know whether AI answer engines name your business. Monitor is $199 a month per category. Audit is $750 a month per category after a $950 baseline month. A one-time written AI answer check is $249. The check is free.">
 <link rel="canonical" href="https://neverranked.com/pricing/">
 <meta property="og:title" content="Pricing &middot; NeverRanked">
-<meta property="og:description" content="Monitor $199 a month per category. Audit $750 a month after a $950 baseline. The check is free.">
+<meta property="og:description" content="Monitor $199 a month per category. Audit $750 a month after a $950 baseline. A one-time written AI answer check is $249. The check is free.">
 <meta property="og:url" content="https://neverranked.com/pricing/">
 <meta property="og:image" content="https://neverranked.com/og.jpg">
 <meta name="twitter:card" content="summary_large_image">
@@ -64,6 +64,9 @@
 
   /* Tiers */
   .tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin: 52px 0 0; align-items: start; }
+  .one-time { margin: 18px 0 0; }
+  .one-time-card { display: grid; grid-template-columns: 1fr 1.4fr; gap: 28px; align-items: start; }
+  .one-time-card .ot-right .feat { margin-top: 0; }
   .tier { background: var(--panel); border: 1px solid var(--line-soft); border-radius: 10px; padding: 28px 26px; display: flex; flex-direction: column; height: 100%; }
   .tier.is-featured { background: var(--panel-2); border-color: var(--gold-deep); box-shadow: 0 0 0 1px color-mix(in oklab, var(--gold) 18%, transparent); }
   .tier-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
@@ -115,6 +118,7 @@
 
   @media (max-width: 900px) {
     .tiers { grid-template-columns: 1fr; gap: 16px; }
+    .one-time-card { grid-template-columns: 1fr; gap: 8px; }
     .price-note { min-height: 0; }
     .nav-links { display: none; }
   }
@@ -272,6 +276,31 @@
     </article>
 
   </section>
+  <section class="one-time" aria-labelledby="ot-name">
+    <article class="tier one-time-card">
+      <div class="ot-left">
+        <div class="tier-head"><p class="tier-name" id="ot-name">Written AI answer check</p><span class="badge">One time</span></div>
+        <p class="price">$249<span class="per"> once</span></p>
+        <p class="price-note">Back to you in writing within two business days.</p>
+        <p class="tier-line">Not ready for a monthly plan? Get a real answer to one question first.</p>
+      </div>
+      <div class="ot-right">
+        <ul class="feat">
+          <li>The question your best customer would ask, plus up to nine like it, each asked three times</li>
+          <li>Six AI tools, with plain Bing search run alongside as a control</li>
+          <li>Which tools said your name, and how often, as counts</li>
+          <li>The sites the AI drew on when it named someone else</li>
+          <li>A dated record, with the questions saved so it can be run again</li>
+        </ul>
+        <p class="fineprint">Measurement only. No fixes, and no promise about what AI tools will say. If you start an Audit within 60 days, the $249 comes off your first invoice.</p>
+        <div class="tier-cta">
+          <a class="btn btn-primary" href="https://buy.stripe.com/28EeVc6dMaId5cj08Je3e01">Buy the check</a>
+          <p class="cta-sub">Pay by card. Lance emails you within one business day to confirm your question.</p>
+        </div>
+      </div>
+    </article>
+  </section>
+
 
   <div class="rule"></div>
 
@@ -404,6 +433,15 @@
     "@type": "OfferCatalog",
     "name": "Measurement tiers",
     "itemListElement": [
+      {
+        "@type": "Offer",
+        "name": "Written AI answer check",
+        "description": "One-time written check: the customer's question plus up to nine like it, each asked three times across six AI tools with a Bing search control, delivered in writing within two business days. Measurement only.",
+        "price": "249",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock",
+        "url": "https://neverranked.com/pricing/"
+      },
       {
         "@type": "Offer",
         "name": "Monitor",

@@ -66,10 +66,25 @@ control is not an AI tool, does not "cite" or "answer" (it "returns"), and
 no copy may attribute behavior to Copilot: there is no Copilot data.
 
 Published percentages exist in TWO scopes and every figure must name its
-scope: pooled web-searching (banking 51, dental 43, law 35, hotels 11) vs
-all-surface (53, 44, 39, 17). Wealth is 47 in both. The reference table is
-in teardowns/cross-category/. Unlabeled figures are how the 2026-08 drift
-happened.
+scope. BOTH scopes include the Bing control, so neither is an AI-only figure:
+
+- Five-surface pool: four AI tools that search the web plus the Bing search
+  control, pooled by citation volume (banking 51, dental 43, law 35, hotels
+  11). Defined by WEB in neverranked-outreach/dryrun/forensic/teardown-data.mjs,
+  which includes bing. Its reference table is in teardowns/cross-category/.
+  Prose form: "four AI tools that search the web plus a Bing search control".
+  Never label a pooled figure "web-searching engines" or "the live-web AI
+  tools": the control is inside the number. (The phrase is fine for the four
+  AI engines read one at a time.)
+- All-surface: the same plus Claude and Gemma, seven measured surfaces
+  (53, 44, 39, 17). Prose form: "seven measured surfaces: six AI tools plus a
+  Bing search control". Never "across 6 AI tools" for a pooled figure: every
+  teardown whose per-tool table carries counts sums to its pooled total only
+  with the Bing row.
+
+Wealth is 47 in both. A figure for the four AI tools alone (control excluded)
+exists only where a page computes it, and must say so. Unlabeled figures are
+how the 2026-08 drift happened.
 
 All non-customer cohorts are anonymized, banking included ("named in full"
 applies only to 1:1 paid deliverables). scripts/check-claims.mjs blocks the

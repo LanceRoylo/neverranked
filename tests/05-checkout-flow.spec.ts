@@ -1,55 +1,28 @@
 /**
  * Test 05 — Checkout flow
  *
- * Verifies: checkout pages redirect to Stripe or show plan info,
- * success page renders after payment.
- *
- * Note: /checkout/{plan} redirects to checkout.stripe.com,
- * so we verify the redirect rather than page content.
+ * The /checkout/{plan} pages sold retired plans. Since 2026-10-07 every
+ * /checkout/<plan> route 302s to the public pricing page, which is where
+ * the current ladder is sold. These tests pin that redirect.
  */
 
 import { test, expect } from "@playwright/test";
 import { URLS } from "./helpers";
 
+const PRICING = "neverranked.com/pricing";
+
 test.describe("Checkout flow", () => {
-  test("audit checkout redirects to Stripe", async ({ page }) => {
-    await page.goto(URLS.checkoutAudit, { waitUntil: "commit" });
-
-    // Wait for navigation — should end up at Stripe
-    await page.waitForLoadState("domcontentloaded");
-    const url = page.url();
-
-    // Either stays on our domain (showing plan info) or redirects to Stripe
-    expect(
-      url.includes("checkout.stripe.com") ||
-        url.includes("/checkout/audit") ||
-        url.includes("stripe.com")
-    ).toBeTruthy();
-  });
-
-  test("signal checkout redirects to Stripe", async ({ page }) => {
-    await page.goto(URLS.checkoutSignal, { waitUntil: "commit" });
-    await page.waitForLoadState("domcontentloaded");
-    const url = page.url();
-
-    expect(
-      url.includes("checkout.stripe.com") ||
-        url.includes("/checkout/signal") ||
-        url.includes("stripe.com")
-    ).toBeTruthy();
-  });
-
-  test("amplify checkout redirects to Stripe", async ({ page }) => {
-    await page.goto(URLS.checkoutAmplify, { waitUntil: "commit" });
-    await page.waitForLoadState("domcontentloaded");
-    const url = page.url();
-
-    expect(
-      url.includes("checkout.stripe.com") ||
-        url.includes("/checkout/amplify") ||
-        url.includes("stripe.com")
-    ).toBeTruthy();
-  });
+  for (const [name, url] of [
+    ["audit", URLS.checkoutAudit],
+    ["signal", URLS.checkoutSignal],
+    ["amplify", URLS.checkoutAmplify],
+  ] as const) {
+    test(`retired ${name} checkout redirects to the pricing page`, async ({ page }) => {
+      await page.goto(url, { waitUntil: "commit" });
+      await page.waitForLoadState("domcontentloaded");
+      expect(page.url()).toContain(PRICING);
+    });
+  }
 
   test("checkout success page loads with plan param", async ({ page }) => {
     await page.goto(URLS.checkoutSuccess);

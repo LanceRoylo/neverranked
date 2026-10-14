@@ -18,9 +18,11 @@ import { extractVoiceProfile } from "../voice-engine";
 import { canUseDraftingFeature } from "../gating";
 
 /**
- * Render the "Amplify-only" upgrade nudge. Shown to clients on Signal or
- * Audit when they land on /voice or /drafts. Admins and agency_admins
- * bypass this entirely because they do the work on clients' behalf.
+ * Shown to clients without the drafting feature when they land on /voice or
+ * /drafts. Admins and agency_admins bypass this entirely because they do the
+ * work on clients' behalf. The retired-tier upsell card was removed
+ * 2026-10-07: it named tiers that are no longer sold, and no current plan
+ * includes drafting. One plain line says so, with no link and no upsell.
  */
 function renderUpgradeNudge(title: string, clientSlug: string, user: User): string {
   const body = `
@@ -29,18 +31,7 @@ function renderUpgradeNudge(title: string, clientSlug: string, user: User): stri
       <h1>${title}</h1>
     </div>
 
-    <div class="card" style="border:1px solid var(--gold-dim);background:linear-gradient(135deg,var(--bg-lift) 0%,rgba(201,168,76,.04) 100%)">
-      <div class="label" style="margin-bottom:8px;color:var(--gold)">\u00a7 Amplify tier feature</div>
-      <h3 style="font-style:italic;margin-bottom:12px">In-dashboard drafting is an <em style="color:var(--gold)">Amplify</em> tier feature</h3>
-      <div style="font-size:13px;color:var(--text-soft);line-height:1.75;max-width:720px;margin-bottom:18px">
-        Voice profile and in-dashboard drafting belong to the Amplify retainer. We learn how you write from samples you upload, then draft articles, FAQs, and landing pages that read like you wrote them. Drafts live in the dashboard with editor, version history, voice score, and export. Nothing leaves your account.
-      </div>
-      <div style="font-size:12px;color:var(--text-faint);line-height:1.6;margin-bottom:20px;max-width:720px">
-        Signal clients get the citation tracking, schema work, monthly brief, and roadmap -- everything that identifies where to write. Amplify adds the drafting that turns the roadmap into finished content.
-      </div>
-      <a href="https://app.neverranked.com/checkout/amplify" class="btn">Upgrade to Amplify</a>
-      <a href="mailto:hello@neverranked.com?subject=Amplify%20upgrade%20question" style="margin-left:14px;font-size:12px;color:var(--gold)">Questions first? Email us &rarr;</a>
-    </div>
+    <p style="font-size:13px;line-height:1.7;color:var(--text-soft);margin:0 0 24px">Drafting is not part of current plans.</p>
 
     ${buildGlossary()}
   `;

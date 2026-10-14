@@ -172,192 +172,30 @@ async function verifyWebhookSignature(
 
 // ---------- Route handlers ----------
 
+/** Where every retired checkout link now lands. */
+export const PRICING_URL = "https://neverranked.com/pricing/";
+
 /**
- * GET /checkout/:plan — Create Stripe Checkout Session and redirect
- * Can be accessed without auth (for pricing page links)
+ * GET /checkout/:plan: a 302 to the pricing page, for every plan.
+ *
+ * Rewritten 2026-10-07. Every SKU this handler sold is gone: audit, pulse,
+ * signal and amplify were retracted in May, and the kickoff / retainer pair
+ * was replaced by the two-tier ladder (Monitor, Audit) in August. The old
+ * handler still answered with those retired prices in its 404 and 410 text,
+ * and its kickoff / retainer page offered a free five-query pilot that was
+ * retired in July. Nothing here creates a Stripe session any more. The
+ * pricing page is the one place a price is stated, and checkout belongs
+ * there if it comes back.
  */
-// Rewritten 2026-05-21. The PLANS table now distinguishes retired
-// SKUs (audit/pulse/signal/amplify -- handler returns 410) from
-// current SKUs (kickoff/retainer -- handler renders waitlist or
-// real Stripe session depending on comingSoon flag). When the new
-// Stripe Price IDs are minted, set comingSoon=false on kickoff
-// and retainer and the existing Stripe-session flow takes over
-// with no further code changes.
 export async function handleCheckout(
-  plan: string,
-  request: Request,
-  env: Env
+  _plan: string,
+  _request: Request,
+  _env: Env,
 ): Promise<Response> {
-  const config = PLANS[plan];
-
-  // Unknown plan -> 404 (with a pointer at the live current SKUs).
-  if (!config) {
-    return new Response(
-      `Plan "${plan}" not recognized. Current SKUs: kickoff ($4,500 per category), retainer ($1,500/month per category). See https://neverranked.com for the research engagement details.`,
-      { status: 404, headers: { "content-type": "text/plain; charset=utf-8" } },
-    );
-  }
-
-  // Retired SKU -> 410 with the retraction message.
-  if (config.retired) {
-    return new Response(
-      `Checkout for "${plan}" is closed. NeverRanked has retracted the Pulse, Signal, Amplify, and $750 audit tiers and rebuilt around a research engagement ($4,500 kickoff + $1,500/month per category). See https://neverranked.com/retraction/ for the full story or email lance@neverranked.com to scope an engagement under the current product.`,
-      { status: 410, headers: { "content-type": "text/plain; charset=utf-8" } },
-    );
-  }
-
-  // Coming-soon (current SKU but no Stripe Price ID yet) -> waitlist
-  // capture page. Existing waitlist handler below renders it via the
-  // existing PLANS[plan].comingSoon branch.
-
-  // eslint-disable-next-line no-unreachable
-  if (!env.STRIPE_SECRET_KEY) {
-    return html(layout("Error", `
-      <div class="empty">
-        <h3>Payments not configured</h3>
-        <p>Stripe is not set up yet. Please contact <a href="mailto:hello@neverranked.com" style="color:var(--gold)">hello@neverranked.com</a></p>
-      </div>
-    `), 500);
-  }
-
-  // Plan config was already validated above (404 + 410 dispatch).
-  // Coming-soon tiers (current SKUs without Stripe Price ID yet):
-  // capture interest, point at scoping email. The kickoff and
-  // retainer flow through here until Lance mints the Price IDs.
-  if (config.comingSoon) {
-    return html(layout(`${config.name} — scoping`, `
-      <div style="max-width:560px;margin:80px auto;padding:0 24px">
-        <div style="font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:16px">
-          ${config.name} &middot; ${config.priceLabel}
-        </div>
-        <h1 style="font-family:var(--serif);font-weight:400;font-size:38px;line-height:1.15;margin:0 0 20px 0;letter-spacing:-.01em">
-          Scope your <em>research engagement.</em>
-        </h1>
-        <p style="font-size:15px;line-height:1.7;color:var(--text-mute);margin:0 0 32px 0">
-          The research engagement is scoped, not self-serve. Email Lance directly with the category you want to measure and 3-5 competitors you want on the cohort. A five-query pilot for that category runs at no cost so you see the shape of the deliverable on your data. The full ${config.name.toLowerCase().includes('kickoff') ? 'kickoff lands three weeks after the query set is locked' : 'engagement starts month two of the kickoff window'}.
-        </p>
-        <a href="mailto:lance@neverranked.com?subject=Scope%20${encodeURIComponent(config.name)}%20engagement&body=Category%20I%20want%20to%20measure%3A%20%0A%0ACompetitors%20I%20want%20on%20the%20cohort%20(3-5)%3A%20%0A%0AAnything%20else%20useful%20to%20know%3A%20"
-          style="display:inline-block;font-family:var(--label);text-transform:uppercase;letter-spacing:.2em;font-size:11px;padding:14px 28px;background:var(--gold);color:var(--bg);border:1px solid var(--gold);text-decoration:none;border-radius:2px">
-          Email Lance to scope &rarr;
-        </a>
-        <p style="font-family:var(--mono);font-size:11px;color:var(--text-faint);margin:24px 0 0 0;line-height:1.6">
-          The mailto pre-fills the subject and a short body template. Edit it before sending if you have specifics in mind.
-        </p>
-        <p style="font-family:var(--mono);font-size:11px;color:var(--text-faint);margin:14px 0 0 0;line-height:1.6">
-          Or see <a href="https://neverranked.com/example-engagement/" style="color:var(--gold)">/example-engagement/</a> for what the kickoff actually produces, <a href="https://neverranked.com/first-30-days/" style="color:var(--gold)">/first-30-days/</a> for day-by-day from signing.
-        </p>
-      </div>
-    `), 200);
-  }
-
-  // For Amplify, check seat cap
-  if (plan === "amplify") {
-    const activeAmplify = await env.DB.prepare(
-      "SELECT COUNT(*) as count FROM users WHERE plan = 'amplify' AND stripe_subscription_id IS NOT NULL"
-    ).first<{ count: number }>();
-    // Amplify capacity gate. Bumped from 2 -> 6 (2026-04-29):
-    // 2 read as "we're at capacity, don't bother" and dampened
-    // top-of-funnel inbound. 6 reads as deliberate selectivity
-    // while leaving room for the next several customers.
-    if (activeAmplify && activeAmplify.count >= 6) {
-      return html(layout("Amplify", `
-        <div class="empty">
-          <h3>Amplify is at capacity</h3>
-          <p style="max-width:440px">Amplify is a hands-on engagement. We cap the roster to keep quality high. Join the waitlist and we will reach out when a spot opens, or start with Signal in the meantime.</p>
-          <div style="margin-top:24px;display:flex;gap:12px">
-            <a href="https://neverranked.com/#intake" class="btn">Join waitlist</a>
-            <a href="/checkout/signal" class="btn btn-ghost">Start with Signal</a>
-          </div>
-        </div>
-      `), 200);
-    }
-  }
-
-  const url = new URL(request.url);
-  const origin = url.origin;
-
-  // Pre-fill email and domain from query params if provided.
-  //
-  // Defensive validation: URL-decoding turns `+` into a space, so a
-  // gmail-style alias like `lance+test@x.com` arrives here as
-  // `lance test@x.com` and breaks Stripe's customer_email validation.
-  // Rather than try to guess the user's intent, we validate the
-  // email shape and SKIP the prefill if it looks malformed -- Stripe
-  // will collect it from the user instead, which is preferable to
-  // failing the entire checkout creation.
-  const rawEmail = url.searchParams.get("email") || "";
-  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const prefillEmail = EMAIL_RE.test(rawEmail) ? rawEmail : "";
-
-  // Domain prefill: similar defensive check. Strip protocol/path,
-  // require something that looks like a domain. Bad value = no prefill.
-  const rawDomain = (url.searchParams.get("domain") || "").trim().toLowerCase()
-    .replace(/^https?:\/\//, "").replace(/\/.*$/, "");
-  const DOMAIN_RE = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/;
-  const prefillDomain = DOMAIN_RE.test(rawDomain) ? rawDomain : "";
-
-  // Build checkout session params using pre-created Stripe Price IDs
-  const params: Record<string, string> = {
-    "success_url": `${origin}/checkout/success?plan=${plan}&session_id={CHECKOUT_SESSION_ID}`,
-    "cancel_url": `https://neverranked.com/#pricing`,
-    "mode": config.mode,
-    "line_items[0][price]": config.priceId,
-    "line_items[0][quantity]": "1",
-    "payment_method_types[0]": "card",
-    "allow_promotion_codes": "true",
-    "metadata[plan]": plan,
-    // Ask for the domain to monitor during checkout. M1 fix: marked
-    // as required so a gmail user can't pay for an audit without
-    // telling us which site to scan -- previously they'd end up with
-    // an audit run against "gmail.com" which is meaningless.
-    "custom_fields[0][key]": "domain",
-    "custom_fields[0][label][type]": "custom",
-    "custom_fields[0][label][custom]": "Domain to monitor (e.g. yourbusiness.com)",
-    "custom_fields[0][type]": "text",
-    "custom_fields[0][optional]": "false",
-  };
-
-  // Skip payment method collection when the initial invoice is $0 (e.g.
-  // a 100%-off comp coupon on a subscription). Paying customers still
-  // have amount_due > 0 and are always required to enter a card. If the
-  // comp expires and a renewal invoice hits, Stripe fails the charge
-  // and eventually cancels the sub, which the webhook handles.
-  //
-  // Stripe only allows `payment_method_collection` on subscription-mode
-  // sessions. Setting it on a one-time `payment` session (audit) is a
-  // hard 400. So we gate it behind the mode.
-  if (config.mode === "subscription") {
-    params["payment_method_collection"] = "if_required";
-  }
-
-  if (prefillDomain) {
-    params["custom_fields[0][text][default_value]"] = prefillDomain;
-  }
-
-  if (prefillEmail) {
-    params["customer_email"] = prefillEmail;
-  }
-
-  const session = await stripeRequest("/checkout/sessions", env.STRIPE_SECRET_KEY, params);
-
-  if (session.error) {
-    console.log(`Stripe error: ${JSON.stringify(session.error)}`);
-    // Diagnostic mode: append ?debug=1 to surface the actual Stripe
-    // error message in the response. Without this we can only see the
-    // failure via wrangler tail, which is unreliable in production
-    // when checkouts fail intermittently. The diagnostic does NOT
-    // leak the secret key -- it only echoes Stripe's error payload.
-    const debug = url.searchParams.get("debug") === "1";
-    return html(layout("Error", `
-      <div class="empty">
-        <h3>Something went wrong</h3>
-        <p>Could not create checkout session. Please try again or contact <a href="mailto:hello@neverranked.com" style="color:var(--gold)">hello@neverranked.com</a></p>
-        ${debug ? `<pre style="margin-top:24px;padding:16px;background:var(--bg-edge);border:1px solid var(--line);border-radius:4px;font-size:11px;color:var(--text-mute);text-align:left;overflow:auto">${JSON.stringify(session.error, null, 2)}</pre>` : ""}
-      </div>
-    `), 500);
-  }
-
-  return redirect(session.url);
+  return new Response(null, {
+    status: 302,
+    headers: { Location: PRICING_URL, "Cache-Control": "no-store" },
+  });
 }
 
 /**
@@ -1353,10 +1191,8 @@ export async function handlePulseWaitlist(
   request: Request,
   env: Env
 ): Promise<Response> {
-  return new Response("Pulse waitlist closed. The Pulse tier has been retracted. Current research engagement is $4,500 kickoff + $1,500/mo per category. Email lance@neverranked.com.", {
-    status: 410,
-    headers: { "content-type": "text/plain; charset=utf-8" },
-  });
+  // A form POST: 303 so the browser follows with a GET to the pricing page.
+  return new Response(null, { status: 303, headers: { Location: PRICING_URL, "Cache-Control": "no-store" } });
   // eslint-disable-next-line no-unreachable
   if (request.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });

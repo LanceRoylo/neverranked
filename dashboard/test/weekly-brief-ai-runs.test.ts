@@ -33,7 +33,7 @@ test("the stats block the writer reads carries 2,391 and 416, and never 2,807", 
     CREATE TABLE citation_runs (id INTEGER PRIMARY KEY, keyword_id INTEGER, engine TEXT, client_cited INTEGER, run_at INTEGER, sentiment TEXT);
     CREATE TABLE citation_keywords (id INTEGER PRIMARY KEY, client_slug TEXT, keyword TEXT, active INTEGER);
     CREATE TABLE domains (id INTEGER PRIMARY KEY, client_slug TEXT, domain TEXT, is_competitor INTEGER, active INTEGER);
-    CREATE TABLE bot_hits (id INTEGER PRIMARY KEY, bot_pattern TEXT, hit_at INTEGER);
+    CREATE TABLE bot_hits (id INTEGER PRIMARY KEY, client_slug TEXT, bot_pattern TEXT, hit_at INTEGER);
     CREATE TABLE reddit_citations (id INTEGER PRIMARY KEY, subreddit TEXT, run_at INTEGER);
     CREATE TABLE referrer_hits (id INTEGER PRIMARY KEY, engine TEXT, hit_at INTEGER);
     CREATE TABLE instrument_events (id INTEGER PRIMARY KEY, occurred_at INTEGER, kind TEXT, scope TEXT, engine TEXT, client_slug TEXT, detail TEXT);`);

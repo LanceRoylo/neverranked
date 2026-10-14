@@ -122,32 +122,33 @@ export async function handleCockpit(user: User, env: Env): Promise<Response> {
     u.onboarding_drip_start && (!u.onboarding_drip_day3 || !u.onboarding_drip_day7)
   );
 
-  // --- Leads from KV ---
-
+  // --- Free check (D1, people only) ---
+  // REWRITTEN 2026-10-07. These tiles used to count every KV key under
+  // event:scan: and event:capture:, which is every API call from every caller
+  // (our MCP tool, Montaic, scripts), and the "Free leads" tile read a
+  // first_seen field the lead records never had, so its week and month were
+  // always 0. Now the cockpit reads the same loader and counts as the
+  // morning briefing and /admin/free-check.
+  let fcWeek = { ranCheck: 0, sawAsk: 0, gaveEmail: 0, otherCaptures: 0, excluded: 0 };
+  let fcExcludedSummary = "";
   let totalLeads = 0;
   let leads7d = 0;
   let leads30d = 0;
-  let freeScansTotal = 0;
-  let freeCaptures = 0;
+  let fcError: string | null = null;
   try {
-    const { listAllKeys, countKeys } = await import("../lib/kv-paginate");
-    const leadKeys = await listAllKeys(env.LEADS, "lead:");
-    totalLeads = leadKeys.length;
-    for (const key of leadKeys) {
-      const raw = await env.LEADS.get(key.name);
-      if (raw) {
-        const data = JSON.parse(raw);
-        const ts = data.first_seen || 0;
-        if (ts > sevenDaysAgo) leads7d++;
-        if (ts > thirtyDaysAgo) leads30d++;
-      }
-    }
-    // Count free scan and capture events from KV. countKeys paginates
-    // through every page so we see the real totals, not just the
-    // alphabetically-first 1000. See lib/kv-paginate.ts.
-    freeScansTotal = await countKeys(env.LEADS, "event:scan:");
-    freeCaptures = await countKeys(env.LEADS, "event:capture:");
-  } catch {}
+    const { loadFreeCheckRows } = await import("../lib/free-check-load");
+    const { freeCheckCounts, excludedSummary, isRealLead } = await import("../lib/free-check-counts");
+    const rows = await loadFreeCheckRows(env, { sinceSec: sevenDaysAgo, leadsSinceSec: 0, leadLimit: 5000 });
+    const fc = freeCheckCounts(rows.events, rows.leads, now, rows.countingFrom);
+    fcWeek = fc.week;
+    fcExcludedSummary = excludedSummary(fc.week);
+    const real = rows.leads.filter(isRealLead);
+    totalLeads = real.length;
+    leads7d = real.filter((l) => l.created_at > sevenDaysAgo).length;
+    leads30d = real.filter((l) => l.created_at > thirtyDaysAgo).length;
+  } catch (e) {
+    fcError = e instanceof Error ? e.message : String(e);
+  }
 
   // --- Build HTML ---
 
@@ -444,13 +445,13 @@ export async function handleCockpit(user: User, env: Env): Promise<Response> {
           <div style="font-family:var(--serif);font-size:24px;font-style:italic;color:var(--text)">${pulse.visits30d}</div>
           <div class="label" style="margin-top:4px;font-size:9px">Visits (30d)</div>
         </div>
-        <div style="text-align:center;padding:12px;background:var(--bg-edge);border-radius:4px">
-          <div style="font-family:var(--serif);font-size:24px;font-style:italic;color:var(--gold)">${freeScansTotal + pulse.scans30d}</div>
-          <div class="label" style="margin-top:4px;font-size:9px">Scans (all)</div>
+        <div style="text-align:center;padding:12px;background:var(--bg-edge);border-radius:4px" title="Distinct check-page sessions in the last 7 days. Internal callers and bots excluded.">
+          <div style="font-family:var(--serif);font-size:24px;font-style:italic;color:var(--gold)">${fcWeek.ranCheck}</div>
+          <div class="label" style="margin-top:4px;font-size:9px">Free checks by people (7d)</div>
         </div>
-        <div style="text-align:center;padding:12px;background:var(--bg-edge);border-radius:4px">
-          <div style="font-family:var(--serif);font-size:24px;font-style:italic;color:var(--gold)">${freeCaptures + pulse.captures30d}</div>
-          <div class="label" style="margin-top:4px;font-size:9px">Captures</div>
+        <div style="text-align:center;padding:12px;background:var(--bg-edge);border-radius:4px" title="People who saw the email ask and gave an email, last 7 days.">
+          <div style="font-family:var(--serif);font-size:24px;font-style:italic;color:var(--gold)">${fcWeek.gaveEmail}<span style="font-size:13px;color:var(--text-faint)"> of ${fcWeek.sawAsk}</span></div>
+          <div class="label" style="margin-top:4px;font-size:9px">Gave an email (7d)</div>
         </div>
         <div style="text-align:center;padding:12px;background:var(--bg-edge);border-radius:4px">
           <div style="font-family:var(--serif);font-size:24px;font-style:italic;color:var(--text)">${pulse.checkoutStarts7d}</div>
@@ -461,6 +462,7 @@ export async function handleCockpit(user: User, env: Env): Promise<Response> {
           <div class="label" style="margin-top:4px;font-size:9px">Logins (7d)</div>
         </div>
       </div>
+      <div style="font-size:11px;color:var(--text-faint);margin-top:12px">${fcError ? `Free check not counted: ${esc(fcError)}` : `Free check, last 7 days: ${fcWeek.excluded} calls excluded ${esc(fcExcludedSummary)}${fcWeek.otherCaptures ? `, ${fcWeek.otherCaptures} other capture${fcWeek.otherCaptures === 1 ? "" : "s"} (unverified source)` : ""}. <a href="/admin/free-check" style="color:var(--gold)">Details &rarr;</a>`}</div>
     </div>
 
     <!-- Revenue pulse -->

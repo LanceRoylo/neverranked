@@ -186,7 +186,8 @@ interface DigestRow {
  * Build and send the daily morning ops briefing. Includes:
  *   - Automation actions in the last 24h (counts + top 10)
  *   - Unread admin alerts (count + top 5)
- *   - New free-scan leads from LEADS KV (count)
+ *   - The free check in PEOPLE (D1 free_check_events / free_check_leads),
+ *     plus every new lead from the last 24h
  *   - Scan failures in last 24h (count)
  *   - Active agency subscriptions + MRR
  *
@@ -272,20 +273,31 @@ export async function maybeSendAutomationDigest(env: Env): Promise<void> {
        WHERE error IS NOT NULL AND scanned_at > ?`
   ).bind(since).first<{ n: number }>())?.n ?? 0;
 
-  // --- Free-scan leads (LEADS KV) ------------------------------------
-  // KV shared with schema-check Worker. Event keys prefixed with
-  // event:scan: or event:capture:. Paginate via lib/kv-paginate so
-  // counts reflect ALL un-expired keys, not just the oldest 1000.
-  // KV TTL (90d) already culls old events. The single-page-list bug
-  // that caused stale numbers here is documented in lib/kv-paginate.ts.
-  let newLeads = 0;
-  let newCaptures = 0;
+  // --- Free check (D1, people only) -----------------------------------
+  // REWRITTEN 2026-10-07. This block used to count every KV key under
+  // event:scan: and event:capture:, which is every API call over 90 days
+  // (our MCP tool, Montaic, the audit template, curl, scripts) and printed
+  // it as "Free-scan events recorded". The scan Worker now classifies each
+  // call at write time into free_check_events, and free-check-counts.ts
+  // counts distinct page sessions with internal callers and bots excluded
+  // and shown by source.
+  let freeCheckLines: string[] = [];
+  let freeCheckHtml = "";
+  let newLeadCount = 0;
   try {
-    const { countKeys } = await import("./lib/kv-paginate");
-    newLeads = await countKeys(env.LEADS, "event:scan:");
-    newCaptures = await countKeys(env.LEADS, "event:capture:");
-  } catch {
-    /* LEADS unavailable -- skip gracefully */
+    const { loadFreeCheckRows } = await import("./lib/free-check-load");
+    const { freeCheckCounts, renderFreeCheckText, renderFreeCheckHtml } = await import("./lib/free-check-counts");
+    // One loader for the briefing, the admin page and the cockpit, so the
+    // three can never disagree.
+    const rows = await loadFreeCheckRows(env, { sinceSec: now - 7 * 86400 });
+    const fc = freeCheckCounts(rows.events, rows.leads, now, rows.countingFrom);
+    newLeadCount = fc.newLeads.length;
+    freeCheckLines = renderFreeCheckText(fc);
+    freeCheckHtml = renderFreeCheckHtml(fc);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    freeCheckLines = [`FREE CHECK`, `  not counted (${msg})`];
+    freeCheckHtml = `<h3 style="font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:#555;margin:24px 0 8px">Free check</h3><p style="font-family:'SF Mono',Menlo,monospace;font-size:12px;color:#888">not counted (${escapeHtml(msg)})</p>`;
   }
 
   // --- Revenue snapshot -----------------------------------------------
@@ -329,7 +341,16 @@ export async function maybeSendAutomationDigest(env: Env): Promise<void> {
   const { getPendingInbox, getInboxStats } = await import("./admin-inbox");
   const inboxItems = await getPendingInbox(env, 10).catch(() => []);
   const inboxPending = (await getInboxStats(env).catch(() => null))?.pending_total ?? inboxItems.length;
-  const totalNeedsYou = needsYouCount + inboxPending;
+  // A new free-check lead also has a pending inbox item. Report it once, as a
+  // new lead, not again as something that needs you.
+  let pendingNewLeadItems = 0;
+  try {
+    pendingNewLeadItems = (await env.DB.prepare(
+      "SELECT COUNT(*) AS n FROM admin_inbox WHERE status = 'pending' AND kind = 'free_check_lead' AND created_at >= ?",
+    ).bind(now - 86400).first<{ n: number }>())?.n ?? 0;
+  } catch { /* inbox unavailable: count as before */ }
+  const { needsYouExcludingNewLeads } = await import("./lib/free-check-counts");
+  const totalNeedsYou = needsYouExcludingNewLeads(needsYouCount + inboxPending, pendingNewLeadItems, newLeadCount);
 
   // No short-circuit any more. As the only daily email it is also the
   // heartbeat: a quiet day says "nothing needs you", and silence means the
@@ -339,7 +360,10 @@ export async function maybeSendAutomationDigest(env: Env): Promise<void> {
   // The subject counts what NEEDS YOU (alerts plus inbox), not every unread
   // row. It used to say "20 alerts" when two needed a human and eighteen were
   // notices, which is how a real one gets skimmed past.
+  // A new free-check lead is always worth the subject line: while volume is
+  // low, each one is a person to follow up with.
   const subject = `Briefing: ${totalNeedsYou === 0 ? "nothing needs you" : `${totalNeedsYou} need${totalNeedsYou === 1 ? "s" : ""} you`}` +
+    (newLeadCount > 0 ? `, ${newLeadCount} new lead${newLeadCount === 1 ? "" : "s"}` : "") +
     (scanFailures > 0 ? `, ${scanFailures} scan fail${scanFailures === 1 ? "" : "s"}` : "");
 
   const lines: string[] = [`NeverRanked morning briefing (last 24h).`, ``];
@@ -390,9 +414,7 @@ export async function maybeSendAutomationDigest(env: Env): Promise<void> {
     console.log(`[automation-digest] stability section failed: ${e instanceof Error ? e.message : String(e)}`);
   }
 
-  lines.push(`TRAFFIC`);
-  lines.push(`  Free-scan events recorded:   ${newLeads}`);
-  lines.push(`  Email captures recorded:     ${newCaptures}`);
+  for (const l of freeCheckLines) lines.push(l);
   lines.push(``);
 
   lines.push(`AUTOMATION (${automationTotal} action${automationTotal === 1 ? "" : "s"})`);
@@ -480,11 +502,7 @@ export async function maybeSendAutomationDigest(env: Env): Promise<void> {
   <div>Paying clients: <strong>${payingClients}</strong>${unpaidClients > 0 ? ` &middot; unpaid pilots: <strong>${unpaidClients}</strong>` : ""}</div>
 </div>
 
-<h3 style="font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:#555;margin:24px 0 8px">Traffic (KV)</h3>
-<div style="font-family:'SF Mono',Menlo,monospace;font-size:12px;line-height:1.8">
-  <div>Free-scan events: <strong>${newLeads}</strong></div>
-  <div>Email captures: <strong>${newCaptures}</strong></div>
-</div>
+${freeCheckHtml}
 
 <h3 style="font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:#555;margin:24px 0 8px">Automation (${automationTotal} action${automationTotal === 1 ? "" : "s"})</h3>
 ${countsTable}
