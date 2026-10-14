@@ -278,6 +278,13 @@
   .try p:last-child { margin: 0; color: var(--soft); font-size: 16px; }
 
   /* ═══ 3. WHY IT MATTERS ═══ */
+  .outside { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 30px 0 0; }
+  .outside-label { grid-column: 1 / -1; font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--dim); margin: 0 0 -4px; }
+  .stat { border: 1px solid var(--line); border-radius: 18px; padding: 24px 24px 20px; background: var(--bg-deep); margin: 0; }
+  .stat-fig { font-family: var(--serif); font-size: clamp(44px, 5vw, 58px); font-weight: 380; line-height: 1; color: var(--gold-bright); letter-spacing: -0.02em; margin: 0 0 12px; font-variant-numeric: lining-nums; }
+  .stat-text { font-size: 17.5px; color: var(--text); line-height: 1.5; margin: 0 0 14px; }
+  .stat-src { font-family: var(--mono); font-size: 12px; line-height: 1.6; color: var(--dim); margin: 0; padding-top: 12px; border-top: 1px solid var(--line-soft); }
+  .stat-src a { color: var(--soft); }
   .why { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(28px, 4vw, 56px); margin-top: 30px; align-items: start; }
   .points { list-style: none; margin: 0; padding: 0; }
   .points li { padding: 22px 0; border-top: 1px solid var(--line-soft); }
@@ -364,6 +371,7 @@
     .hero-grid { grid-template-columns: minmax(0, 1fr); gap: 44px; }
     .ask { max-width: 560px; }
     .why { grid-template-columns: 1fr; }
+    .outside { grid-template-columns: 1fr; }
     .proof { grid-template-columns: 1fr; }
   }
   @media (max-width: 860px) {
@@ -575,6 +583,25 @@
     <div class="wrap">
       <div class="sec-label"><span class="n">02</span>Why it matters to your business</div>
       <h2>That answer is the new front page for your business.</h2>
+      <!-- Outside statistics. Fact Bank section "Outside statistics
+           (third-party, verified 2026-10-13, approved by Lance)". These are
+           other people's surveys, never NeverRanked measurements, and each
+           names its source and date in the same sentence. BrightLocal: never
+           "up from 6%" and never "in the past year". Keep this block well
+           away from anything about our retraction. -->
+      <div class="outside">
+        <p class="outside-label">Outside research, not ours</p>
+        <figure class="stat">
+          <p class="stat-fig">6 in 10</p>
+          <p class="stat-text">U.S. adults say they read the AI summaries at the top of search results, in a Pew Research Center survey from February 2026.</p>
+          <figcaption class="stat-src"><a href="https://www.pewresearch.org/internet/2026/06/17/americans-and-ai-2026/">Pew Research Center, &ldquo;Americans and AI 2026&rdquo;, survey of 5,119 U.S. adults, February&nbsp;2026&nbsp;&rarr;</a></figcaption>
+        </figure>
+        <figure class="stat">
+          <p class="stat-fig">45%</p>
+          <p class="stat-text">For local business recommendations, 45% of U.S. consumers say they use AI tools, in BrightLocal&rsquo;s 2026 survey.</p>
+          <figcaption class="stat-src"><a href="https://www.brightlocal.com/research/lcrs-ai-trust/">BrightLocal, Local Consumer Review Survey 2026, 1,002 U.S. adults&nbsp;&rarr;</a></figcaption>
+        </figure>
+      </div>
       <div class="why">
         <ul class="points">
           <li>
