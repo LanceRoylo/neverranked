@@ -58,6 +58,9 @@ DIRS=(
   first-30-days
   first-look
   for-agencies
+  # /for-teams/ added 2026-10-13: the old homepage body, moved intact when the
+  # homepage was rebuilt for newcomers. Method, studies, engagement, Atlas.
+  for-teams
   # Vertical entry pages. for-hospitality is the flagship template the other
   # verticals are cloned from; it is linked from the homepage markets rail.
   # A vertical only ships once it has a published teardown behind it -- a

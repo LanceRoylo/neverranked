@@ -3,34 +3,44 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- Indexable on purpose. This was noindex until 2026-07-16, a leftover from the
-     containment era when named receipt pages were the risk. Those are gone; the
-     tag stayed, so robots.txt invited AI crawlers in and every page then told
-     them to forget what they read. Two of the seven surfaces we measure (Google
-     AI Overviews, and the Bing organic control) sit on indexes that obey noindex, so we were
-     instructing them not to cite us. Private 1:1 pages (/pitch/*, /first-look/*)
-     stay noindex and check-noindex.mjs enforces that. -->
+<!-- Indexable on purpose. Private 1:1 pages (/pitch/*, /first-look/*) stay
+     noindex and check-noindex.mjs enforces that. -->
 <meta name="robots" content="index, follow">
-<title>NeverRanked: what AI answer engines cite for your category</title>
-<meta name="description" content="The independent measurement layer for AI search. We measure what six AI tools actually cite for a business category, in repeated hash-locked runs, and hand your team the evidence and the punch list. We never touch your site.">
+<title>NeverRanked: see what AI tells your customers about your business</title>
+<meta name="description" content="When your customers ask ChatGPT or Google's AI who is best in town, the answer names a few businesses and links to a few pages. NeverRanked checks what six AI tools say about yours, writes it down, and never sells the fix.">
 <link rel="canonical" href="https://neverranked.com/">
+<meta property="og:title" content="See what AI tells your customers about your business">
+<meta property="og:description" content="Your customers are asking AI who is best in town. It answers with a few names. NeverRanked checks whether yours is one of them, and never sells the fix.">
+<meta property="og:url" content="https://neverranked.com/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://neverranked.com/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preload" href="/fonts/fraunces-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
+<script>
+  /* Set before first paint so the hero animation starts from an empty box
+     instead of flashing its final frame. Without JS, or with reduced motion,
+     the page shows the final frame and nothing moves. */
+  (function () {
+    var d = document.documentElement;
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!reduce) d.className += ' anim';
+  })();
+</script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "Organization",
   "name": "NeverRanked",
   "url": "https://neverranked.com",
-  "description": "A founder-led forensic research practice that measures what AI answer engines cite for a business category across six AI tools, then hands the team a prepped punch list. Evidence, not promises.",
+  "description": "An independent research practice in Honolulu that checks what six AI tools say about a business when its customers ask, with plain Bing search run alongside as a control. NeverRanked measures and never sells fixes.",
   "founder": { "@type": "Person", "name": "Lance Roylo" },
   "email": "Lance@hi.neverranked.com",
   "areaServed": "US",
   "knowsAbout": [
     "Answer Engine Optimization",
-    "Generative Engine Optimization",
-    "AI citation measurement",
-    "AI search visibility"
+    "AI search visibility",
+    "Measuring what AI tools say about a business"
   ],
   "address": {
     "@type": "PostalAddress",
@@ -46,7 +56,7 @@
   },
   "potentialAction": {
     "@type": "ContactAction",
-    "name": "Run a free AI visibility check",
+    "name": "Run the free check of whether AI tools can read your website",
     "target": {
       "@type": "EntryPoint",
       "urlTemplate": "https://check.neverranked.com/"
@@ -54,44 +64,60 @@
   }
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Is my business invisible to AI?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Nobody can answer that in one word, including us. It is three separate questions. Can AI tools read your website? Do they say your name when a customer asks about your kind of business? And when they answer, do they point people to your site or to someone else's page? The free check answers the first in about a minute. The other two take asking the AI tools, more than once, and writing down what comes back. That is what the $249 written check and our monthly plans do." }
+    },
+    {
+      "@type": "Question",
+      "name": "What is AEO?",
+      "acceptedAnswer": { "@type": "Answer", "text": "AEO is short for answer engine optimization, the industry's name for showing up when people ask AI tools like ChatGPT about your kind of business. You do not need the term, only the answer to one question: what do those tools say when your customers ask?" }
+    },
+    {
+      "@type": "Question",
+      "name": "How is this different from SEO?",
+      "acceptedAnswer": { "@type": "Answer", "text": "SEO is about where your website lands in a list of search results. An AI answer has no list to climb. It names a few businesses and links to a few pages, and that answer is what we measure." }
+    },
+    {
+      "@type": "Question",
+      "name": "Which AI tools do you check?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Six: ChatGPT search, Perplexity, Google AI Overviews, Gemini, Claude and Gemma. We also run plain Bing search on the same questions as a control. Bing is not an AI tool, and we never count it as one." }
+    },
+    {
+      "@type": "Question",
+      "name": "Do you change my website?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No. We never touch your website, your systems or your accounts. If you want changes made, your own team or anyone you hire makes them. We only measure." }
+    },
+    {
+      "@type": "Question",
+      "name": "Can you promise AI will name my business?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No. Nobody controls what AI tools say, and we do not sell anything meant to change it. What we promise is the measurement. We tell you what they said and when, question by question." }
+    },
+    {
+      "@type": "Question",
+      "name": "Who is behind NeverRanked?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Lance Roylo, in Honolulu. NeverRanked is a small research practice, not a software company. You deal with the person doing the work, and all of it can happen in writing." }
+    }
+  ]
+}
+</script>
 <style>
-  /* ═══════════════════════════════════════════════════════════════════
-     NEVERRANKED — "The Scorekeeper" design system, 2026-07.
-     The named idea: an instrument of record. Everything on this page
-     reads as measurement — dated, tabular, calm. The scorekeeper never
-     shouts. Type: Fraunces (editorial serif, display) · Inter (body/UI)
-     · JetBrains Mono (data, labels). Self-hosted variable fonts.
-     Color: OKLCH warm-ink surfaces, two-tone gold, terracotta absence.
-     ═══════════════════════════════════════════════════════════════════ */
+  /* NEVERRANKED homepage, rebuilt 2026-10-13 for people who have never heard
+     of AEO. Same "Scorekeeper" identity (Fraunces, Inter, JetBrains Mono,
+     gold on warm ink). The change is clarity and structure, not a new brand.
+     Named idea: the answer is the new front page. Lever: Hyper-Observation.
+     The deep material that used to live here is intact at /for-teams/. */
 
-  @font-face {
-    font-family: "Fraunces";
-    src: url("/fonts/fraunces-var.woff2") format("woff2");
-    font-weight: 100 900;
-    font-style: normal;
-    font-display: swap;
-  }
-  @font-face {
-    font-family: "Fraunces";
-    src: url("/fonts/fraunces-italic-var.woff2") format("woff2");
-    font-weight: 100 900;
-    font-style: italic;
-    font-display: swap;
-  }
-  @font-face {
-    font-family: "Inter";
-    src: url("/fonts/inter-var.woff2") format("woff2");
-    font-weight: 100 900;
-    font-style: normal;
-    font-display: swap;
-  }
-  @font-face {
-    font-family: "JetBrains Mono";
-    src: url("/fonts/jetbrains-mono-var.woff2") format("woff2");
-    font-weight: 100 800;
-    font-style: normal;
-    font-display: swap;
-  }
+  @font-face { font-family: "Fraunces"; src: url("/fonts/fraunces-var.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: swap; }
+  @font-face { font-family: "Fraunces"; src: url("/fonts/fraunces-italic-var.woff2") format("woff2"); font-weight: 100 900; font-style: italic; font-display: swap; }
+  @font-face { font-family: "Inter"; src: url("/fonts/inter-var.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: swap; }
+  @font-face { font-family: "JetBrains Mono"; src: url("/fonts/jetbrains-mono-var.woff2") format("woff2"); font-weight: 100 800; font-style: normal; font-display: swap; }
 
   :root {
     color-scheme: dark;
@@ -100,7 +126,6 @@
     --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
     --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 
-    /* hex fallbacks first, OKLCH refinement after */
     --bg: #121009;        --bg: oklch(0.145 0.012 85);
     --bg-deep: #0d0b07;   --bg-deep: oklch(0.125 0.011 85);
     --panel: #17140c;     --panel: oklch(0.165 0.014 87);
@@ -120,27 +145,18 @@
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
   html, body { margin: 0; padding: 0; background: var(--bg); overflow-x: clip; }
-  /* Wide data (tables) scrolls inside its own container, never the page. */
-  .inner table { display: block; width: 100%; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .inner table thead, .inner table tbody { display: table; width: 100%; min-width: 560px; }
   body {
     font-family: var(--sans);
-    font-size: 16.5px;
+    font-size: 17.5px;
     color: var(--soft);
     line-height: 1.65;
     -webkit-font-smoothing: antialiased;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     position: relative;
   }
-  /* Film grain over everything — the tactile layer that separates an
-     instrument from a template. Static, cheap, pointer-transparent. */
+  /* Film grain: the tactile layer of the identity. Static, pointer-transparent. */
   body::after {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: 2000;
-    pointer-events: none;
-    opacity: 0.05;
+    content: ""; position: fixed; inset: 0; z-index: 2000; pointer-events: none; opacity: 0.05;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     background-size: 160px 160px;
   }
@@ -148,635 +164,238 @@
   @media (hover: hover) { a:hover { color: var(--gold-bright); text-decoration-color: var(--gold-bright); } }
   :focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 2px; border-radius: 2px; }
   ::selection { background: color-mix(in oklab, var(--gold) 30%, transparent); color: var(--text); }
+  strong, b { color: var(--text); font-weight: 600; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
 
-  /* Sticky nav — glass over the record */
-  .nav { position: sticky; top: 0; z-index: 40; background: color-mix(in oklab, var(--bg) 78%, transparent); backdrop-filter: blur(16px) saturate(1.1); -webkit-backdrop-filter: blur(16px) saturate(1.1); border-bottom: 1px solid var(--line-soft); }
-  .nav-inner { max-width: 1120px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 15px 32px; }
-  .wordmark { font-family: var(--serif); font-size: 19px; font-weight: 560; letter-spacing: -0.012em; color: var(--text); text-decoration: none; }
+  /* Nav */
+  .nav { position: sticky; top: 0; z-index: 40; background: color-mix(in oklab, var(--bg) 82%, transparent); backdrop-filter: blur(16px) saturate(1.1); -webkit-backdrop-filter: blur(16px) saturate(1.1); border-bottom: 1px solid var(--line-soft); }
+  .nav-inner { max-width: 1160px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 32px; }
+  .wordmark { font-family: var(--serif); font-size: 20px; font-weight: 560; letter-spacing: -0.012em; color: var(--text); text-decoration: none; }
   .wordmark em { font-style: normal; color: var(--gold); }
   .nav-links { display: flex; gap: 26px; }
-  .nav-links a { font-family: var(--mono); font-size: 11px; font-weight: 420; letter-spacing: 0.14em; text-transform: uppercase; color: var(--soft); text-decoration: none; transition: color 160ms var(--ease-out); }
+  .nav-links a { font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--soft); text-decoration: none; }
   @media (hover: hover) { .nav-links a:hover { color: var(--gold-bright); } }
-  .nav-cta { font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.13em; text-transform: uppercase; color: var(--ink-on-gold); text-decoration: none; background: linear-gradient(180deg, var(--gold-bright), var(--gold)); border: 0; padding: 10px 16px; border-radius: 6px; transition: filter 160ms ease, transform 160ms var(--ease-out), box-shadow 240ms var(--ease-out); box-shadow: 0 0 0 0 rgba(237,213,138,0); }
+  .nav-cta { font-family: var(--mono); font-size: 11.5px; font-weight: 560; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-on-gold); text-decoration: none; background: linear-gradient(180deg, var(--gold-bright), var(--gold)); padding: 11px 16px; border-radius: 7px; white-space: nowrap; }
   .nav-cta:active { transform: scale(0.97); }
-  @media (hover: hover) { .nav-cta:hover { filter: brightness(1.06); box-shadow: 0 4px 18px 0 color-mix(in oklab, var(--gold) 28%, transparent); } }
 
-  /* Section system */
-  .section { padding: clamp(76px, 10vw, 118px) 0; position: relative; }
+  /* Sections */
+  .section { padding: clamp(72px, 9vw, 112px) 0; position: relative; }
   .section.panel { background: linear-gradient(180deg, var(--panel) 0%, var(--bg-deep) 100%); border-top: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft); }
-  .inner { max-width: 660px; margin: 0 auto; padding: 0 32px; }
-  .inner.wide { max-width: 920px; }
-  .inner.wide > p { max-width: 720px; }
-  .sec-label { display: flex; align-items: center; gap: 14px; font-family: var(--mono); font-size: 11px; font-weight: 420; letter-spacing: 0.2em; text-transform: uppercase; color: var(--dim); margin: 0 0 30px; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 32px; }
+  .narrow { max-width: 760px; }
+  .sec-label { display: flex; align-items: center; gap: 14px; font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--dim); margin: 0 0 22px; }
   .sec-label .n { color: var(--gold); }
   .sec-label::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, var(--line), transparent); }
-  h2 { font-family: var(--serif); font-size: clamp(27px, 3.4vw, 38px); font-weight: 420; color: var(--text); margin: 0 0 18px; letter-spacing: -0.015em; line-height: 1.16; text-wrap: balance; font-variant-numeric: lining-nums; }
-  p { font-size: 16.5px; color: var(--soft); margin: 0 0 16px; }
-  strong { color: var(--text); font-weight: 600; }
-  .lead { font-size: clamp(18px, 1.55vw, 20.5px); color: var(--text); line-height: 1.55; font-weight: 380; letter-spacing: -0.004em; }
+  h2 { font-family: var(--serif); font-size: clamp(30px, 4.2vw, 46px); font-weight: 420; color: var(--text); margin: 0 0 18px; letter-spacing: -0.018em; line-height: 1.14; text-wrap: balance; max-width: 22ch; }
+  h3 { font-family: var(--serif); font-weight: 460; color: var(--text); letter-spacing: -0.01em; line-height: 1.25; text-wrap: balance; }
+  p { margin: 0 0 16px; }
+  .lead { font-size: clamp(19px, 1.7vw, 21px); color: var(--text); line-height: 1.55; font-weight: 380; max-width: 40em; }
 
-  /* Scroll-reveal motion */
-  .reveal { opacity: 0; transform: translateY(20px); transition: opacity 700ms var(--ease-out), transform 700ms var(--ease-out); }
-  .reveal.in { opacity: 1; transform: translateY(0); }
+  /* Buttons */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; font-family: var(--mono); font-size: 13px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none; border-radius: 9px; padding: 18px 28px; min-height: 52px; transition: transform 160ms var(--ease-out), filter 200ms ease, box-shadow 260ms var(--ease-out), border-color 200ms ease; }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { color: var(--ink-on-gold); background: linear-gradient(180deg, var(--gold-bright), var(--gold)); box-shadow: 0 1px 0 rgba(255,255,255,0.25) inset; }
+  @media (hover: hover) { .btn-primary:hover { color: var(--ink-on-gold); filter: brightness(1.05); box-shadow: 0 1px 0 rgba(255,255,255,0.25) inset, 0 6px 28px 0 color-mix(in oklab, var(--gold) 30%, transparent); } }
+  .btn-ghost { color: var(--gold); border: 1px solid color-mix(in oklab, var(--gold) 50%, transparent); background: transparent; }
+  @media (hover: hover) { .btn-ghost:hover { border-color: var(--gold); color: var(--gold-bright); } }
+  .text-link { font-family: var(--mono); font-size: 13px; letter-spacing: 0.04em; }
 
-  /* Correction slip. Reads as an errata note in the record, not as a
-     legal disclaimer: terracotta rule (the same hue the map uses for
-     absence), mono label, quieter than body copy but not hidden. */
-  .retract-note { border-left: 2px solid var(--terra); background: linear-gradient(90deg, color-mix(in oklab, var(--terra) 5%, transparent), transparent 60%); border-radius: 0 8px 8px 0; padding: 18px 22px; margin: 30px 0 8px; }
-  .retract-note p { font-size: 14px; color: var(--dim); margin: 0; line-height: 1.7; }
-  .retract-note strong { color: var(--terra); font-weight: 560; }
-
-  /* WordsPullUp — slide-up entrance on the H1 + select headlines. */
-  .wpu-word {
-    display: inline-block;
-    opacity: 0;
-    transform: translateY(22px);
-    transition: opacity 620ms cubic-bezier(0.22, 1, 0.36, 1) var(--wpu-delay, 0ms),
-                transform 620ms cubic-bezier(0.22, 1, 0.36, 1) var(--wpu-delay, 0ms);
-  }
-  .wpu.in .wpu-word { opacity: 1; transform: translateY(0); }
-  .wpu-word + .wpu-word::before { content: " "; white-space: pre; }
-
-  /* Scroll-linked character opacity */
-  .schar { display: inline; opacity: var(--char-opacity, 0.85); transition: opacity 60ms linear; }
-
-  /* Hero — the reading room of the instrument */
-  .hero { padding: clamp(84px, 11vw, 138px) 0 clamp(64px, 8vw, 96px); position: relative; overflow: hidden; }
-  .hero::before {
-    content: ""; position: absolute; inset: -20% -10% auto -10%; height: 130%;
-    pointer-events: none;
-    background:
-      radial-gradient(900px 520px at 18% 8%, color-mix(in oklab, var(--gold) 7%, transparent), transparent 68%),
-      radial-gradient(720px 480px at 88% 30%, color-mix(in oklab, var(--terra) 4%, transparent), transparent 70%);
-  }
-  .hero .inner { max-width: 1180px; position: relative; }
-  /* Two columns from 2026-09-11. The page argued well and showed nothing.
-     An external audit put it plainly: the service was abstract above the
-     fold. The right column is a published artifact, not a mocked dashboard,
-     because the strongest proof this practice owns is a measurement it ran
-     on itself and published with its own line reading zero. */
-  .hero-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.85fr);
-    gap: clamp(36px, 4.4vw, 68px); align-items: start; }
-  .hero-copy { min-width: 0; }
-
-  .finding { min-width: 0; border: 1px solid var(--line); border-radius: 3px;
-    background: linear-gradient(180deg, var(--panel) 0%, var(--bg-deep) 100%);
-    padding: 26px 28px 24px; position: relative; }
-  .finding .f-top { display: flex; justify-content: space-between; align-items: baseline;
-    font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase;
-    color: var(--dim); padding-bottom: 13px; border-bottom: 1px solid var(--line); }
-  .finding .f-top .f-no { color: var(--gold); font-weight: 600; }
-  .finding .f-eyebrow { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.16em;
-    text-transform: uppercase; color: var(--gold); margin: 20px 0 9px; }
-  .finding h3 { font-family: var(--serif); font-weight: 400; font-size: clamp(23px, 2.3vw, 29px);
-    line-height: 1.2; letter-spacing: -0.014em; color: var(--text); margin: 0 0 20px; text-wrap: balance; }
-  .finding .f-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em;
-    text-transform: uppercase; color: var(--dim); margin: 17px 0 6px; }
-  .finding .f-body { font-size: 14.5px; line-height: 1.62; color: var(--soft); margin: 0; }
-  .finding .f-body strong { color: var(--text); font-weight: 600; }
-  .finding .f-limit { margin-top: 17px; padding: 12px 14px; border-left: 2px solid var(--gold-deep, #8f7c46);
-    background: rgba(255,255,255,0.018); }
-  .finding .f-limit .f-body { font-size: 13.5px; color: var(--dim); }
-  .finding .f-foot { margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--line);
-    font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.08em; color: var(--dim); line-height: 1.75; }
-  .finding .f-foot a { color: var(--gold); text-decoration: underline; text-underline-offset: 3px; }
-
-  @media (max-width: 980px) {
-    .hero .inner { max-width: 860px; }
-    .hero-grid { grid-template-columns: 1fr; gap: 44px; }
-    .finding { padding: 22px 22px 20px; }
-  }
-  .kicker { display: inline-flex; align-items: center; gap: 10px; font-family: var(--mono); font-size: 11.5px; font-weight: 440; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin: 0 0 30px; }
+  /* ═══ 1. HERO ═══ */
+  .hero { padding: clamp(40px, 6vw, 84px) 0 clamp(64px, 8vw, 104px); position: relative; overflow: hidden; }
+  .hero::before { content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(900px 520px at 18% 8%, color-mix(in oklab, var(--gold) 7%, transparent), transparent 68%),
+                radial-gradient(720px 480px at 88% 30%, color-mix(in oklab, var(--terra) 4%, transparent), transparent 70%); }
+  .hero-grid { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 0.92fr); gap: clamp(36px, 5vw, 72px); align-items: center; }
+  .kicker { display: inline-flex; align-items: center; gap: 10px; font-family: var(--mono); font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin: 0 0 22px; }
   .kicker::before { content: ""; width: 26px; height: 1px; background: var(--gold-deep); }
-  .hero h1 { font-family: var(--serif); font-size: clamp(40px, 6.2vw, 66px); font-weight: 400; line-height: 1.08; letter-spacing: -0.024em; margin: 0 0 30px; color: var(--text); text-wrap: balance; }
-  /* In the two-column hero the headline lives in roughly half the width, so
-     the single-column size ran to five lines and pushed the form below the
-     fold. That is the audit's actual complaint, and making it worse while
-     adding the panel would have been a net loss. */
-  .hero-grid .hero-copy h1 { font-size: clamp(34px, 3.4vw, 47px); line-height: 1.1; margin: 0 0 20px; }
-  /* The single-column hero could afford 138px of air above it. The two-column
-     one cannot: at the 1280x720 viewport the audit inspected, that padding
-     put the form 61px below the fold. Reclaimed here rather than by cutting
-     the subhead, which is the sentence that stops a reader concluding the
-     control failure was an AI failure. */
-  .hero:has(.hero-grid) { padding-top: clamp(52px, 5vw, 76px); }
-  .hero-grid .kicker { margin-bottom: 18px; }
-  .hero-grid .hero-copy .turn { font-size: clamp(17px, 1.42vw, 19.5px); margin: 0 0 26px; max-width: 34em; }
-  .hero .turn { font-family: var(--serif); font-style: italic; font-weight: 420; font-size: clamp(19px, 2vw, 23px); color: var(--gold); line-height: 1.52; letter-spacing: -0.004em; margin: 0 0 38px; max-width: 46em; }
+  .hero h1 { font-family: var(--serif); font-size: clamp(38px, 5.2vw, 62px); font-weight: 400; line-height: 1.07; letter-spacing: -0.026em; margin: 0 0 18px; color: var(--text); text-wrap: balance; }
+  .hero .turn { font-family: var(--serif); font-style: italic; font-weight: 420; font-size: clamp(26px, 3vw, 36px); color: var(--gold-bright); line-height: 1.2; margin: 0 0 22px; letter-spacing: -0.01em; }
+  .hero .body { font-size: clamp(17.5px, 1.5vw, 19.5px); color: var(--soft); max-width: 33em; margin: 0 0 30px; }
+  .hero .body strong { color: var(--text); }
+  .hero-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
+  .hero-note { font-family: var(--mono); font-size: 12.5px; color: var(--dim); line-height: 1.65; margin: 2px 0 0; max-width: 36em; }
+  .hero-secondary { margin-top: 10px; font-size: 16px; color: var(--soft); }
 
-  /* CTA — the scorekeeper's one loud element */
-  .cta { display: inline-block; font-family: var(--mono); font-size: 12.5px; font-weight: 560; letter-spacing: 0.11em; text-transform: uppercase; color: var(--ink-on-gold); text-decoration: none; background: linear-gradient(180deg, var(--gold-bright), var(--gold)); border: 0; padding: 17px 32px; border-radius: 8px; transition: transform 160ms var(--ease-out), filter 200ms ease, box-shadow 280ms var(--ease-out); box-shadow: 0 1px 0 rgba(255,255,255,0.25) inset, 0 0 0 0 rgba(237,213,138,0); }
-  .cta:active { transform: scale(0.97); }
-  @media (hover: hover) { .cta:hover { filter: brightness(1.05); box-shadow: 0 1px 0 rgba(255,255,255,0.25) inset, 0 6px 28px 0 color-mix(in oklab, var(--gold) 30%, transparent); } }
-  .cta-note { font-family: var(--mono); font-size: 12px; letter-spacing: 0.03em; color: var(--dim); margin-top: 18px; line-height: 1.7; }
+  /* The Ask AI box. Every element is in the DOM from the start and only its
+     opacity changes, so the animation causes no layout shift. The three
+     categories sit stacked in one grid cell, so the box is always the height
+     of the tallest one. */
+  .ask { margin: 0; min-width: 0; }
+  .ask-card { border: 1px solid var(--line); border-radius: 20px; background: linear-gradient(180deg, var(--panel-2) 0%, var(--bg-deep) 100%);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.04) inset, 0 30px 70px -28px rgba(0,0,0,0.6); overflow: hidden; }
+  .ask-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--line-soft); }
+  .ask-title { display: inline-flex; align-items: center; gap: 9px; font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--soft); }
+  .ask-title svg { width: 16px; height: 16px; }
+  .ask-tag { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim); border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; }
+  .ask-sets { display: grid; }
+  .ask-set { grid-area: 1 / 1; padding: 20px 20px 22px; visibility: hidden; }
+  .ask-set.on { visibility: visible; }
+  .ask-input { display: grid; border: 1px solid color-mix(in oklab, var(--gold) 40%, transparent); border-radius: 12px; padding: 13px 15px; background: var(--bg-deep); margin-bottom: 18px; }
+  .ask-input > span { grid-area: 1 / 1; font-size: 16.5px; color: var(--text); line-height: 1.45; }
+  .ask-ghost { visibility: hidden; }
+  .ask-live::after { content: ""; display: inline-block; width: 2px; height: 1.05em; background: var(--gold-bright); vertical-align: -0.15em; margin-left: 2px; opacity: 0; }
+  .anim .ask-set.typing .ask-live::after { opacity: 1; animation: askBlink 0.9s steps(2) infinite; }
+  @keyframes askBlink { 50% { opacity: 0; } }
+  .ask-thinking { display: flex; gap: 5px; height: 0; overflow: visible; opacity: 0; transition: opacity 200ms ease; }
+  .ask-thinking i { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); opacity: 0.7; animation: askDot 1s ease-in-out infinite; transform: translateY(-6px); }
+  .ask-thinking i:nth-child(2) { animation-delay: 0.15s; } .ask-thinking i:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes askDot { 0%, 100% { opacity: 0.25; } 50% { opacity: 0.9; } }
+  .anim .ask-set.thinking .ask-thinking { opacity: 1; }
+  .ask-lead { font-size: 15px; color: var(--soft); margin: 0 0 10px; }
+  .ask-names { list-style: none; margin: 0 0 18px; padding: 0; counter-reset: n; }
+  .ask-names li { counter-increment: n; display: grid; grid-template-columns: 26px 1fr; padding: 9px 0; border-top: 1px solid var(--line-soft); font-size: 15px; line-height: 1.45; }
+  .ask-names li:first-child { border-top: 0; }
+  .ask-names li::before { content: counter(n); font-family: var(--mono); font-size: 12px; color: var(--gold); padding-top: 2px; }
+  .ask-names b { display: block; color: var(--text); font-weight: 600; font-size: 16px; }
+  .ask-names span { color: var(--soft); }
+  .ask-src-label { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--dim); margin: 0 0 9px; }
+  .ask-srcs { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  .ask-srcs li { display: inline-flex; align-items: center; gap: 7px; font-size: 13.5px; color: var(--soft); border: 1px solid var(--line); border-radius: 999px; padding: 7px 12px; transition: color 350ms ease, border-color 350ms ease, background 350ms ease, box-shadow 350ms ease; }
+  .ask-srcs li svg { width: 13px; height: 13px; flex: none; }
+  .ask-srcs li.lit { color: var(--text); border-color: color-mix(in oklab, var(--gold) 60%, transparent); background: color-mix(in oklab, var(--gold) 10%, transparent); box-shadow: 0 0 18px -6px color-mix(in oklab, var(--gold) 60%, transparent); }
+  .ask-srcs li.yours { border-style: dashed; border-color: color-mix(in oklab, var(--terra) 70%, transparent); color: var(--terra); background: transparent; box-shadow: none; }
+  .ask-caption { font-family: var(--mono); font-size: 11.5px; color: var(--dim); line-height: 1.6; margin: 12px 4px 0; }
 
-  .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0; }
+  /* Animation states. With the .anim class (JS on, motion allowed) each step
+     is hidden until the script reaches it. Without it, everything shows:
+     that is the final frame, used for reduced motion and no-JS. */
+  .ask-step { transition: opacity 420ms var(--ease-out); }
+  .anim .ask-set .ask-step { opacity: 0; }
+  .anim .ask-set.s1 .ask-step.st1, .anim .ask-set.s2 .ask-step.st2, .anim .ask-set.s3 .ask-step.st3,
+  .anim .ask-set.s4 .ask-step.st4, .anim .ask-set.s5 .ask-step.st5 { opacity: 1; }
+  html:not(.anim) .ask-srcs li.lit-final { color: var(--text); border-color: color-mix(in oklab, var(--gold) 60%, transparent); background: color-mix(in oklab, var(--gold) 10%, transparent); }
 
-  /* ═══ 01 THE BLIND SPOT — the live citation map. REAL DATA. ═══
-     The page's proprietary mechanism: a measured market, drawn live.
-     Instrument styling: blueprint dot-grid, vignette, gold subject. */
-  .cmap-inner { max-width: 1020px; }
-  .cmap { margin-top: 30px; }
-  .cmap-queries { display: flex; flex-wrap: wrap; gap: 9px; margin-bottom: 20px; }
-  .cmap-q {
-    font-family: var(--sans); font-size: 13.5px; font-weight: 440; color: var(--soft);
-    background: transparent; border: 1px solid var(--line); border-radius: 999px;
-    padding: 9px 16px; cursor: pointer; text-align: left;
-    transition: border-color 480ms var(--ease-out), background 480ms ease, color 480ms ease, transform 120ms var(--ease-out);
-  }
-  @media (hover: hover) { .cmap-q:hover { border-color: color-mix(in oklab, var(--gold) 45%, transparent); color: var(--text); } }
-  .cmap-q:active { transform: scale(0.98); }
-  .cmap-q[aria-selected="true"] { color: var(--ink-on-gold); font-weight: 560; background: linear-gradient(180deg, var(--gold-bright), var(--gold)); border-color: transparent; }
-  .cmap-q:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 2px; }
+  /* ═══ 2. WHAT IS HAPPENING ═══ */
+  .steps { list-style: none; margin: 34px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .step { border: 1px solid var(--line); border-radius: 18px; padding: 26px 24px 24px; background: linear-gradient(180deg, var(--panel-2), var(--panel)); box-shadow: 0 1px 0 rgba(255,255,255,0.03) inset; }
+  .step-art { display: block; width: 100%; max-width: 220px; height: auto; margin: 0 0 18px; }
+  .step-num { font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold); margin: 0 0 8px; }
+  .step h3 { font-size: clamp(22px, 2.2vw, 25px); margin: 0 0 8px; }
+  .step p { font-size: 16.5px; margin: 0; }
+  .try { margin: 22px 0 0; border: 1px solid color-mix(in oklab, var(--gold) 34%, transparent); border-left: 3px solid var(--gold); border-radius: 12px; padding: 22px 24px; background: color-mix(in oklab, var(--gold) 5%, transparent); }
+  .try .try-label { font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold); margin: 0 0 8px; }
+  .try p:not(.try-label) { color: var(--text); font-size: 17.5px; margin: 0 0 8px; max-width: 46em; }
+  .try p:last-child { margin: 0; color: var(--soft); font-size: 16px; }
 
-  .cmap-stage {
-    position: relative; border: 1px solid var(--line); border-radius: 18px;
-    padding: 12px;
-    background:
-      radial-gradient(1px 1px at 50% 50%, color-mix(in oklab, var(--text) 7%, transparent) 1px, transparent 1px) 0 0 / 26px 26px,
-      linear-gradient(180deg, var(--panel-2), var(--bg-deep));
-    box-shadow: 0 1px 0 rgba(255,255,255,0.035) inset, 0 24px 60px -20px rgba(0,0,0,0.5);
-    overflow: hidden;
-  }
-  .cmap-stage::after {
-    content: ""; position: absolute; inset: 0; pointer-events: none;
-    background:
-      radial-gradient(520px 280px at 76% 48%, color-mix(in oklab, var(--gold-deep) 12%, transparent), transparent 70%),
-      radial-gradient(140% 120% at 50% 50%, transparent 55%, rgba(0,0,0,0.32) 100%);
-  }
-  .cmap-tilt { perspective: 1400px; }
-  #cmap-svg { display: block; width: 100%; height: auto; transition: transform 500ms var(--ease-out); will-change: transform; }
+  /* ═══ 3. WHY IT MATTERS ═══ */
+  .why { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(28px, 4vw, 56px); margin-top: 30px; align-items: start; }
+  .points { list-style: none; margin: 0; padding: 0; }
+  .points li { padding: 22px 0; border-top: 1px solid var(--line-soft); }
+  .points li:first-child { border-top: 0; padding-top: 0; }
+  .points h3 { font-size: clamp(22px, 2.1vw, 25px); margin: 0 0 6px; }
+  .points p { margin: 0; font-size: 17px; }
+  .tally-card { border: 1px solid var(--line); border-radius: 18px; padding: 26px 24px; background: linear-gradient(180deg, var(--panel-2), var(--panel)); }
+  .tally-kicker { font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold); margin: 0 0 12px; }
+  .tally-claim { font-family: var(--serif); font-size: clamp(22px, 2.3vw, 27px); color: var(--text); line-height: 1.25; margin: 0 0 18px; letter-spacing: -0.01em; }
+  .tally-claim .fig { color: var(--gold-bright); }
+  .tally { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; margin: 0 0 16px; max-width: 360px; }
+  .tally i { aspect-ratio: 1; border-radius: 3px; background: color-mix(in oklab, var(--soft) 12%, transparent); }
+  .tally i.own { background: var(--gold-bright); }
+  .tally i.agg { background: color-mix(in oklab, var(--soft) 42%, transparent); }
+  .legend { list-style: none; margin: 0 0 16px; padding: 0; font-size: 15px; }
+  .legend li { display: flex; align-items: baseline; gap: 10px; padding: 4px 0; }
+  .legend .sw { width: 12px; height: 12px; border-radius: 3px; flex: none; transform: translateY(1px); }
+  .legend .sw.own { background: var(--gold-bright); } .legend .sw.agg { background: color-mix(in oklab, var(--soft) 42%, transparent); } .legend .sw.rest { background: color-mix(in oklab, var(--soft) 12%, transparent); }
+  .legend b { font-family: var(--mono); font-weight: 600; color: var(--text); min-width: 3ch; }
+  .tally-scope { font-size: 15px; color: var(--soft); margin: -6px 0 18px; }
+  .tally-limit { font-size: 15px; color: var(--text); margin: 0; }
 
-  .cmap-colcap { font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; fill: var(--gold-deep); }
-  .cmap-elabel { font-family: var(--mono); font-size: 12px; fill: var(--dim); letter-spacing: 0.02em; transition: fill 400ms ease; }
-  .cmap-elabel.on { fill: var(--soft); }
-  .cmap-etag { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.05em; fill: color-mix(in oklab, var(--dim) 72%, transparent); }
-  .cmap-blabel { font-family: var(--serif); font-size: 15.5px; font-weight: 440; fill: #ddd5c2; }
-  .cmap-blabel.you { fill: var(--gold-bright); }
-  .cmap-tag-absent { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; fill: var(--terra); }
-  .cmap-en { fill: #201c10; stroke: #55503c; stroke-width: 1.5; transition: fill 400ms ease, stroke 400ms ease; }
-  .cmap-en.on { fill: #322b16; stroke: var(--gold-deep); }
-  .cmap-bn { fill: #262012; stroke: #55503c; stroke-width: 1.5; }
-  .cmap-bn.you { fill: color-mix(in oklab, var(--gold) 15%, transparent); stroke: var(--gold); stroke-width: 2; }
-  .cmap-bn.you.absent { fill: transparent; stroke: var(--terra); stroke-dasharray: 3 4; }
-  .cmap-pulse { fill: none; stroke: var(--gold-bright); stroke-width: 1.5; opacity: 0; }
-  .cmap-edge { fill: none; stroke: #55503c; stroke-width: 1.4; opacity: 0.55; }
-  .cmap-edge.you { stroke: url(#cmapEdgeYou); stroke-width: 2.4; opacity: 1; }
-  .cmap-flow { fill: none; stroke: #c4b783; stroke-width: 2; stroke-linecap: round;
-    stroke-dasharray: 2.5 13; stroke-dashoffset: 0; opacity: 0; pointer-events: none;
-    transition: opacity 0.7s ease; }
-  .cmap-flow.you { stroke: #fff1c2; stroke-width: 3; stroke-dasharray: 3 12.5; }
-  #cmap-edges.flowing .cmap-flow { opacity: 0.6; animation: cmapFlow 1.9s linear infinite; }
-  #cmap-edges.flowing .cmap-flow.you { opacity: 1; animation-duration: 1.25s; }
-  @keyframes cmapFlow { to { stroke-dashoffset: -15.5; } }
-
-  .cmap-verdict { display: flex; align-items: center; gap: 26px; flex-wrap: wrap; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line-soft); }
-  .cmap-count { font-family: var(--serif); font-size: clamp(46px, 7vw, 72px); font-weight: 380; line-height: 1; color: var(--gold-bright); font-variant-numeric: lining-nums; letter-spacing: -0.03em; min-width: 2ch; }
-  .cmap-count.absent { color: var(--terra); }
-  .cmap-den { font-size: 0.4em; color: var(--dim); margin-left: 2px; font-family: var(--mono); font-weight: 400; letter-spacing: 0; }
-  .cmap-vtext { flex: 1 1 280px; }
-  .cmap-vline { font-size: 18px; color: var(--text); line-height: 1.4; font-weight: 460; letter-spacing: -0.006em; }
-  .cmap-vnote { font-size: 14px; color: var(--dim); margin-top: 6px; max-width: 62ch; }
-
-  .cmap-foot { margin: 24px 2px 0; font-family: var(--mono); font-size: 11.5px; font-weight: 400; letter-spacing: 0.01em; color: var(--dim); line-height: 1.75; max-width: 88ch; }
-  .cmap-followon { margin-top: 22px; font-size: 15px; }
-
-  @media (max-width: 680px) {
-    .cmap-q { font-size: 12.5px; padding: 8px 13px; }
-    .cmap-vline { font-size: 16px; }
-    .cmap-verdict { gap: 16px; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    #cmap-svg { transition: none !important; transform: none !important; }
-    .cmap-edge, .cmap-en, .cmap-elabel, .cmap-q { transition: none; }
-    .cmap-flow { display: none; }
-  }
-
-  /* ═══ The scorekeeper — the argument, side by side ═══ */
-  .keeper { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 30px 0 8px; }
-  .keeper-col { padding: 26px 26px 22px; border-radius: 14px; }
-  .keeper-col h3 { font-family: var(--mono); font-size: 11px; font-weight: 480; letter-spacing: 0.18em; text-transform: uppercase; margin: 0 0 16px; }
+  /* ═══ 4. WHAT WE DO ═══ */
+  .keeper { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 30px 0 0; }
+  .keeper-col { padding: 26px 26px 20px; border-radius: 18px; }
+  .keeper-col h3 { font-family: var(--mono); font-size: 12px; font-weight: 520; letter-spacing: 0.16em; text-transform: uppercase; margin: 0 0 12px; }
   .keeper-col ul { margin: 0; padding: 0; list-style: none; }
-  .keeper-col li { padding: 11px 0; font-size: 15px; line-height: 1.55; border-top: 1px solid var(--line-soft); }
+  .keeper-col li { padding: 13px 0; font-size: 17px; line-height: 1.5; border-top: 1px solid var(--line-soft); }
   .keeper-col li:first-of-type { border-top: 0; padding-top: 0; }
-  .keeper-them { background: var(--bg-deep); border: 1px solid var(--line-soft); }
-  .keeper-them h3 { color: var(--dim); }
-  .keeper-them li { color: var(--soft); }
-  .keeper-us { background: linear-gradient(180deg, color-mix(in oklab, var(--gold) 9%, var(--panel)), var(--panel)); border: 1px solid color-mix(in oklab, var(--gold) 34%, transparent); box-shadow: 0 1px 0 rgba(255,255,255,0.04) inset, 0 18px 44px -18px rgba(0,0,0,0.45); }
+  .keeper-col li b { display: block; }
+  .keeper-us { background: linear-gradient(180deg, color-mix(in oklab, var(--gold) 9%, var(--panel)), var(--panel)); border: 1px solid color-mix(in oklab, var(--gold) 34%, transparent); }
   .keeper-us h3 { color: var(--gold); }
-  .keeper-us li { color: var(--text); border-top-color: color-mix(in oklab, var(--gold) 14%, transparent); }
-  .keeper-verdict { font-family: var(--serif); font-style: italic; font-size: clamp(19px, 2vw, 23px); font-weight: 420; color: var(--text); margin: 26px 0 6px; letter-spacing: -0.005em; }
-  .keeper-verdict b { color: var(--gold-bright); font-weight: 480; }
+  .keeper-us li { color: var(--soft); border-top-color: color-mix(in oklab, var(--gold) 14%, transparent); }
+  .keeper-not { background: var(--bg-deep); border: 1px solid var(--line); }
+  .keeper-not h3 { color: var(--soft); }
+  .keeper-not li { color: var(--soft); }
+  .confess { margin: 22px 0 0; border-left: 3px solid var(--terra); border-radius: 0 12px 12px 0; padding: 20px 24px; background: linear-gradient(90deg, color-mix(in oklab, var(--terra) 7%, transparent), transparent 70%); }
+  .confess p { margin: 0; font-size: 17.5px; color: var(--text); max-width: 46em; }
+  .more { margin: 22px 0 0; font-size: 16px; }
 
-  /* The check-list. Reads as a list of verifiable facts, not a feature grid:
-     each item is something a reader can go and confirm, so the marker is a
-     hairline gold rule rather than a tick. A tick is a vendor asserting; a
-     rule is an entry in a record. */
-  .check-list { margin: 24px 0 0; }
-  .check-list ul { list-style: none; margin: 0; padding: 0; }
-  .check-list li {
-    position: relative; padding: 14px 0 14px 26px; border-bottom: 1px solid var(--line-soft);
-    font-size: 15.5px; color: var(--soft); line-height: 1.6;
-  }
-  .check-list li:last-child { border-bottom: 0; }
-  .check-list li::before {
-    content: ""; position: absolute; left: 0; top: 23px;
-    width: 13px; height: 1px; background: var(--gold-deep);
-  }
-  .check-list li b { color: var(--text); font-weight: 600; }
-  @media (max-width: 680px) { .keeper { grid-template-columns: 1fr; } }
+  /* ═══ 5. WAYS IN ═══ */
+  .offers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 30px 0 0; }
+  .offer { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 18px; padding: 26px 26px 24px; background: linear-gradient(180deg, var(--panel-2), var(--panel)); scroll-margin-top: 90px; }
+  .offer.key { border-color: color-mix(in oklab, var(--gold) 45%, transparent); background: linear-gradient(180deg, color-mix(in oklab, var(--gold) 10%, var(--panel)), var(--panel)); }
+  .offer .offer-name { font-family: var(--mono); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold); margin: 0 0 12px; }
+  .offer .offer-price { font-family: var(--serif); font-size: 44px; font-weight: 380; color: var(--text); line-height: 1; letter-spacing: -0.02em; margin: 0 0 6px; font-variant-numeric: lining-nums; }
+  .offer.key .offer-price { color: var(--gold-bright); }
+  .offer .offer-unit { font-family: var(--mono); font-size: 12px; letter-spacing: 0.04em; color: var(--dim); margin: 0 0 16px; line-height: 1.55; }
+  .offer .offer-q { font-family: var(--serif); font-size: 21px; color: var(--text); line-height: 1.3; margin: 0 0 10px; letter-spacing: -0.006em; }
+  .offer > p { font-size: 16px; }
+  .offer > p.small { font-size: 14.5px; color: var(--dim); }
+  .offer .btn { margin-top: auto; align-self: flex-start; }
+  .offers-foot { margin: 22px 0 0; font-size: 16px; }
 
-  /* ═══ Verticals — who we measure for ═══ */
-  .verticals { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin: 28px 0 4px; }
-  /* Five cards in a two-column grid orphans the last one. "Your category"
-     becomes a full-width closing strip instead: it is the catch-all, so
-     reading order (specific verticals, then the open door) improves too. */
-  .vertical-card.wide { grid-column: 1 / -1; }
-  .vertical-card { display: block; padding: 26px 24px 22px; background: linear-gradient(180deg, var(--panel-2), var(--panel)); border: 1px solid var(--line); border-radius: 14px; text-decoration: none; color: inherit; transition: transform 220ms var(--ease-out), border-color 220ms ease, box-shadow 260ms var(--ease-out); box-shadow: 0 1px 0 rgba(255,255,255,0.03) inset; }
-  @media (hover: hover) { .vertical-card:hover { transform: translateY(-3px); border-color: color-mix(in oklab, var(--gold) 45%, transparent); box-shadow: 0 1px 0 rgba(255,255,255,0.03) inset, 0 18px 40px -16px rgba(0,0,0,0.5); } .vertical-card:hover .vc-arrow { transform: translateX(3px); color: var(--gold-bright); } }
-  .vertical-card:active { transform: scale(0.99); }
-  .vc-cat { font-family: var(--mono); font-size: 10.5px; font-weight: 460; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin-bottom: 12px; }
-  .vc-line { font-family: var(--serif); font-size: 19px; font-weight: 440; color: var(--text); line-height: 1.3; letter-spacing: -0.008em; margin: 0 0 10px; }
-  .vc-sub { font-size: 13.5px; color: var(--soft); line-height: 1.55; margin: 0 0 16px; }
-  .vc-arrow { font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.08em; color: var(--dim); transition: transform 200ms var(--ease-out), color 200ms ease; display: inline-block; }
-  @media (max-width: 780px) { .verticals { grid-template-columns: 1fr; } }
-
-  /* Engine diagram */
-  .engines { margin: 26px 0 4px; }
-  .engine-group + .engine-group { margin-top: 18px; }
-  .engine-group-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.13em; text-transform: uppercase; color: var(--dim); margin-bottom: 10px; }
-  .engine-group-label b { color: var(--gold); font-weight: 500; }
-  .engine-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-  .chip { font-family: var(--mono); font-size: 12px; color: var(--soft); background: transparent; border: 1px solid var(--line); border-radius: 999px; padding: 8px 15px; }
-  .chip.grade { border-color: color-mix(in oklab, var(--gold) 50%, transparent); background: color-mix(in oklab, var(--gold) 7%, transparent); color: var(--text); }
-  /* Bing organic is a classic-search control, not an AI answer engine. Styled
-     apart from both grades so the group cannot be read as a seventh AI tool. */
-  .chip.control { border-style: dashed; border-color: color-mix(in oklab, var(--soft) 45%, transparent); color: var(--soft); }
-
-  /* Rigor points */
-  .points { margin: 22px 0 0; }
-  .point { padding: 20px 0; border-top: 1px solid var(--line-soft); }
-  .point:last-child { border-bottom: 1px solid var(--line-soft); }
-  .point h3 { font-family: var(--mono); font-size: 11.5px; font-weight: 480; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); margin: 0 0 7px; }
-  .point p { margin: 0; font-size: 15.5px; }
-
-  /* Proof readout */
-  .readout { margin: 24px 0 8px; }
-  .readout-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); margin-bottom: 18px; }
-  .readout-row { display: grid; grid-template-columns: 190px 1fr; gap: 16px; align-items: center; margin-bottom: 13px; }
-  .readout-name { font-family: var(--mono); font-size: 12px; color: var(--soft); }
-  .readout-track { height: 13px; background: var(--line-soft); border-radius: 5px; overflow: hidden; }
-  .readout-fill { height: 100%; background: linear-gradient(90deg, var(--gold-deep), var(--gold)); border-radius: 5px; }
-  .readout-fill.faint { background: #4d483a; }
-  .readout-note { font-size: 14px; font-style: italic; color: var(--dim); margin-top: 16px; }
-
-  /* Pricing */
-  .prices { display: flex; gap: 16px; margin: 26px 0 20px; }
-  .price { flex: 1; border: 1px solid var(--line); border-radius: 14px; padding: 28px 26px; background: linear-gradient(180deg, var(--panel-2), var(--panel)); box-shadow: 0 1px 0 rgba(255,255,255,0.03) inset; }
-  .price .amt { font-family: var(--serif); font-size: 40px; font-weight: 380; color: var(--gold); line-height: 1.05; letter-spacing: -0.02em; font-variant-numeric: lining-nums; }
-  .price .unit { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--dim); margin-top: 10px; }
-
-  /* Principal */
-  .principal { border-left: 2px solid var(--gold); padding-left: 28px; }
-  .principal .sign { font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-top: 24px; }
-
-  /* Closing */
-  .close { text-align: center; }
-  .close h2 { font-size: clamp(30px, 4vw, 44px); margin-bottom: 26px; line-height: 1.16; }
-
-  /* Links block */
-  .links { border: 1px solid var(--line); border-radius: 14px; padding: 10px 28px; background: linear-gradient(180deg, var(--panel-2), var(--panel)); }
-  .links a { display: block; padding: 14px 0; font-size: 15px; }
-  .links a + a { border-top: 1px solid var(--line-soft); }
-  .links .sub { color: var(--dim); font-size: 13px; }
+  /* ═══ 6. PROOF + FAQ ═══ */
+  .proof { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 16px; margin: 30px 0 0; }
+  .proof-card { border: 1px solid var(--line); border-radius: 18px; padding: 26px 26px 24px; background: linear-gradient(180deg, var(--panel-2), var(--panel)); }
+  .proof-card .proof-kicker { font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold); margin: 0 0 12px; }
+  .proof-card h3 { font-size: clamp(22px, 2.2vw, 26px); margin: 0 0 12px; }
+  .proof-card p { font-size: 16.5px; }
+  .proof-card p.src { font-family: var(--mono); font-size: 12px; color: var(--dim); margin: 0; }
+  .faq { margin: 56px 0 0; max-width: 780px; }
+  .faq h3 { font-family: var(--mono); font-size: 12px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: var(--dim); margin: 0 0 8px; }
+  details.q { border-top: 1px solid var(--line-soft); }
+  details.q:last-of-type { border-bottom: 1px solid var(--line-soft); }
+  details.q summary { font-family: var(--serif); font-size: clamp(19px, 1.9vw, 22px); color: var(--text); cursor: pointer; list-style: none; padding: 20px 40px 20px 0; position: relative; line-height: 1.35; }
+  details.q summary::-webkit-details-marker { display: none; }
+  details.q summary::after { content: "+"; position: absolute; right: 4px; top: 16px; font-family: var(--mono); font-size: 24px; color: var(--gold); font-weight: 300; }
+  details.q[open] summary::after { content: "\2212"; }
+  details.q[open] summary { color: var(--gold-bright); }
+  details.q .a { padding: 0 0 22px; }
+  details.q .a p { font-size: 17px; margin: 0 0 12px; }
+  details.q .a p:last-child { margin: 0; }
+  .close { text-align: center; margin: 72px auto 0; max-width: 640px; }
+  .close h2 { margin: 0 auto 14px; }
+  .close p { margin: 0 auto 26px; max-width: 32em; }
 
   /* Footer */
-  .footer { border-top: 1px solid var(--line-soft); color: var(--dim); font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.05em; text-align: center; padding: 44px 32px 68px; line-height: 2; }
-  .footer a { color: var(--dim); }
+  .footer { border-top: 1px solid var(--line-soft); color: var(--dim); font-family: var(--mono); font-size: 12px; letter-spacing: 0.04em; text-align: center; padding: 44px 24px 64px; line-height: 2.1; }
+  .footer a { color: var(--soft); }
+  .footer .row { max-width: 820px; margin: 0 auto 10px; }
 
+  @media (max-width: 980px) {
+    .hero-grid { grid-template-columns: minmax(0, 1fr); gap: 44px; }
+    .ask { max-width: 560px; }
+    .why { grid-template-columns: 1fr; }
+    .proof { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 860px) {
+    .steps { grid-template-columns: 1fr; }
+    .step { display: grid; grid-template-columns: 112px 1fr; gap: 0 18px; align-items: start; padding: 22px 20px; }
+    .step-art { grid-row: 1 / span 3; margin: 0; max-width: 112px; }
+    .offers { grid-template-columns: 1fr; }
+    .keeper { grid-template-columns: 1fr; }
+  }
   @media (max-width: 680px) {
     .nav-links { display: none; }
-    .nav-inner { padding: 13px 20px; }
-    .nav-cta { padding: 9px 13px; font-size: 10px; white-space: nowrap; }
-    .inner { padding: 0 22px; }
+    .nav-inner { padding: 12px 16px; }
+    .wrap { padding: 0 16px; }
     .section { padding: 64px 0; }
-    .prices { flex-direction: column; }
-    .readout-row { grid-template-columns: 124px 1fr; }
+    .hero { padding-top: 32px; }
+    .hero h1 { font-size: clamp(34px, 9.4vw, 42px); }
+    .hero .turn { font-size: 28px; }
+    .btn { width: 100%; }
+    .hero-actions { align-items: stretch; }
+    .offer .btn { align-self: stretch; }
+    .ask-set { padding: 16px 16px 18px; }
+    .ask-head { padding: 12px 16px; }
+    .keeper-col, .offer, .proof-card, .tally-card { padding: 22px 20px; }
+    .step { display: block; }
+    .step-art { max-width: 168px; margin: 0 0 14px; }
+    .step h3 { font-size: 21px; }
   }
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
-    .reveal { opacity: 1; transform: none; transition: none; }
-    .readout-fill { transition: none; width: var(--target-width, 0) !important; }
-    .wpu-word { opacity: 1; transform: none; transition: none; }
-    .cta:hover { box-shadow: none; }
+    .ask-step, .ask-srcs li, .btn { transition: none; }
+    .ask-thinking { display: none; }
   }
-
-  /* Cohort readout bars animate on viewport entry */
-  .readout-fill { width: 0; transition: width 1100ms var(--ease-out); }
-  .readout.in .readout-fill { width: var(--target-width, 0); }
-  .readout.in .readout-row:nth-child(2) .readout-fill { transition-delay: 60ms; }
-  .readout.in .readout-row:nth-child(3) .readout-fill { transition-delay: 180ms; }
-  .readout.in .readout-row:nth-child(4) .readout-fill { transition-delay: 300ms; }
-  .readout.in .readout-row:nth-child(5) .readout-fill { transition-delay: 420ms; }
-
-  /* Pricing visual hierarchy */
-  .price { position: relative; transition: transform 220ms var(--ease-out), border-color 220ms ease; }
-  .price-primary {
-    background: linear-gradient(180deg, color-mix(in oklab, var(--gold) 11%, var(--panel)), var(--panel));
-    border-color: color-mix(in oklab, var(--gold) 40%, transparent);
-  }
-  .price-primary .amt { color: var(--gold-bright); font-size: 46px; }
-  .price-secondary .amt { font-size: 34px; color: var(--text); }
-  .price .role {
-    font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em;
-    text-transform: uppercase; color: var(--gold);
-    margin-top: 18px; padding-top: 14px;
-    border-top: 1px solid color-mix(in oklab, var(--gold) 18%, transparent);
-  }
-  .price-secondary .role { color: var(--dim); border-top-color: var(--line-soft); }
-  @media (hover: hover) {
-    .price:hover { transform: translateY(-2px); }
-    .price-primary:hover { border-color: color-mix(in oklab, var(--gold) 60%, transparent); }
-  }
-  @media (max-width: 680px) {
-    .price-primary .amt { font-size: 38px; }
-    .price-secondary .amt { font-size: 30px; }
-  }
-
-  /* Hero URL form — the instrument's intake slot */
-  .hero-form {
-    display: flex; margin: 24px 0 12px; max-width: 560px;
-    border: 1px solid color-mix(in oklab, var(--gold) 55%, transparent); border-radius: 10px;
-    background: color-mix(in oklab, var(--bg-deep) 88%, transparent); overflow: hidden;
-    box-shadow: 0 1px 0 rgba(255,255,255,0.03) inset, 0 14px 38px -14px rgba(0,0,0,0.5);
-    transition: box-shadow 260ms var(--ease-out), border-color 200ms ease;
-  }
-  .hero-form:focus-within {
-    box-shadow: 0 1px 0 rgba(255,255,255,0.03) inset, 0 0 30px 0 color-mix(in oklab, var(--gold) 22%, transparent);
-    border-color: var(--gold);
-  }
-  .hero-form input {
-    flex: 1; min-width: 0; padding: 17px 19px;
-    background: transparent; border: 0; outline: none;
-    font-family: var(--mono); font-size: 14px;
-    color: var(--text); letter-spacing: 0.02em;
-  }
-  .hero-form input::placeholder { color: var(--dim); }
-  .hero-form button {
-    padding: 17px 26px; border: 0; cursor: pointer;
-    font-family: var(--mono); font-size: 12px; letter-spacing: 0.13em;
-    text-transform: uppercase; color: var(--ink-on-gold); font-weight: 600;
-    background: linear-gradient(180deg, var(--gold-bright), var(--gold));
-    transition: transform 160ms var(--ease-out), filter 200ms ease;
-  }
-  .hero-form button:hover { filter: brightness(1.06); }
-  .hero-form button:active { transform: scale(0.97); }
-  .hero-price-line { font-family: var(--mono); font-size: 12px; letter-spacing: 0.03em; color: var(--soft); margin: 14px 0 0; line-height: 1.6; }
-  .hero-price-line strong { color: var(--text); font-weight: 600; }
-  .hero-price-line a { color: var(--gold); text-decoration: underline; text-underline-offset: 3px; }
-  .hero-form-note {
-    font-family: var(--mono); font-size: 12px; letter-spacing: 0.02em;
-    color: var(--dim); margin: 0 0 34px; max-width: 560px; line-height: 1.7;
-  }
-  .hero-secondary {
-    display: inline-block; margin-top: 16px;
-    font-family: var(--mono); font-size: 12px; letter-spacing: 0.06em;
-    color: var(--gold); text-decoration: none;
-    border-bottom: 1px solid color-mix(in oklab, var(--gold) 34%, transparent); padding-bottom: 2px;
-    transition: border-color 200ms ease;
-  }
-  @media (hover: hover) { .hero-secondary:hover { border-bottom-color: var(--gold); } }
-  @media (max-width: 560px) {
-    .hero-form { flex-direction: column; }
-    .hero-form input { padding: 14px 16px; }
-    .hero-form button { padding: 14px 16px; }
-  }
-
-  /* Engagement flow steps */
-  .flow { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin: 30px 0 18px; }
-  .flow-step {
-    padding: 24px 20px; border: 1px solid var(--line); border-radius: 12px;
-    background: linear-gradient(180deg, var(--panel-2), var(--panel)); position: relative;
-    box-shadow: 0 1px 0 rgba(255,255,255,0.03) inset;
-    transition: transform 220ms var(--ease-out), border-color 220ms ease;
-  }
-  @media (hover: hover) { .flow-step:hover { transform: translateY(-2px); border-color: color-mix(in oklab, var(--gold) 34%, transparent); } }
-  .flow-num { font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold); margin-bottom: 12px; }
-  .flow-step h3 { font-family: var(--serif); font-size: 17px; font-weight: 460; color: var(--text); margin: 0 0 8px; line-height: 1.3; letter-spacing: -0.006em; }
-  .flow-step p { font-size: 13px; color: var(--soft); line-height: 1.55; margin: 0; }
-  .flow-link {
-    display: inline-block; margin-top: 12px;
-    font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em;
-    color: var(--gold); text-decoration: none;
-    border-bottom: 1px solid color-mix(in oklab, var(--gold) 34%, transparent);
-    padding-bottom: 1px;
-    transition: border-color 220ms ease;
-  }
-  @media (hover: hover) { .flow-link:hover { border-bottom-color: var(--gold); } }
-  .flow-note { font-family: var(--mono); font-size: 12px; color: var(--dim); text-align: center; margin: 22px 0 0; letter-spacing: 0.04em; }
-  @media (max-width: 880px) { .flow { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 540px) { .flow { grid-template-columns: 1fr; } }
-
-  /* Atlas demo block */
-  .atlas-section { padding: clamp(76px, 10vw, 118px) 0; }
-  .atlas-card {
-    margin: 30px 0 18px;
-    background: linear-gradient(180deg, var(--panel-2) 0%, var(--bg-deep) 100%);
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    overflow: hidden;
-    box-shadow: 0 1px 0 rgba(255,255,255,0.035) inset, 0 22px 54px -20px rgba(0,0,0,0.5);
-  }
-  .atlas-card-head {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 15px 22px;
-    border-bottom: 1px solid var(--line-soft);
-    background: color-mix(in oklab, var(--bg-deep) 80%, transparent);
-  }
-  .atlas-card-tag { font-family: var(--mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold); }
-  .atlas-card-dot { display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim); }
-  .atlas-card-dot::before {
-    content: ""; display: inline-block; width: 7px; height: 7px;
-    border-radius: 50%; background: var(--gold);
-    animation: atlasPulse 2.4s ease-in-out infinite;
-    box-shadow: 0 0 0 0 color-mix(in oklab, var(--gold) 60%, transparent);
-  }
-  @keyframes atlasPulse {
-    0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--gold) 55%, transparent); }
-    50% { box-shadow: 0 0 0 6px transparent; }
-  }
-  .atlas-chat { padding: 24px 24px 8px; min-height: 240px; }
-  .atlas-msg { margin-bottom: 18px; max-width: 88%; }
-  .atlas-msg.user { margin-left: auto; text-align: right; }
-  .atlas-msg-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.13em; text-transform: uppercase; color: var(--dim); margin-bottom: 6px; }
-  .atlas-msg.user .atlas-msg-label { color: var(--dim); }
-  .atlas-msg.atlas .atlas-msg-label { color: var(--gold); }
-  .atlas-msg-body { display: inline-block; padding: 11px 16px; border-radius: 10px; font-size: 15px; line-height: 1.55; text-align: left; }
-  .atlas-msg.user .atlas-msg-body {
-    font-family: var(--mono); font-size: 13px;
-    background: var(--line-soft); color: var(--text);
-    border: 1px solid var(--line);
-  }
-  .atlas-msg.atlas .atlas-msg-body {
-    background: transparent; color: var(--text);
-    padding-left: 0; padding-right: 0;
-    font-family: var(--sans); font-size: 15.5px;
-  }
-  .atlas-cursor::after {
-    content: ""; display: inline-block; width: 8px; height: 16px;
-    background: var(--gold); vertical-align: -2px; margin-left: 2px;
-    animation: atlasBlink 1s steps(2) infinite;
-  }
-  @keyframes atlasBlink { 0%, 50% { opacity: 1; } 50.01%, 100% { opacity: 0; } }
-  .atlas-caption { font-size: 14px; font-style: italic; color: var(--dim); margin-top: 16px; }
-  .atlas-boundary { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 32px 0 4px; }
-  .atlas-boundary .col { padding: 20px 22px; background: var(--bg-deep); border: 1px solid var(--line); border-radius: 12px; }
-  .atlas-boundary .col h3 { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; margin: 0 0 12px; font-weight: 480; }
-  .atlas-boundary .col.does h3 { color: var(--gold); }
-  .atlas-boundary .col.doesnt h3 { color: var(--dim); }
-  .atlas-boundary .col ul { margin: 0; padding-left: 16px; font-size: 14px; line-height: 1.6; }
-  .atlas-boundary .col li { margin-bottom: 4px; }
-  @media (max-width: 680px) {
-    .atlas-boundary { grid-template-columns: 1fr; }
-    .atlas-chat { min-height: 280px; padding: 18px; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .atlas-card-dot::before { animation: none; }
-    .atlas-cursor::after { animation: none; opacity: 0; }
-  }
-
-  /* Live operating proof strip */
-  .proof-strip {
-    background: var(--bg-deep);
-    border-bottom: 1px solid var(--line-soft);
-    padding: 12px 0;
-    font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: 0.08em;
-    color: var(--dim);
-    overflow: hidden;
-  }
-  .proof-strip-inner {
-    max-width: 1120px; margin: 0 auto; padding: 0 32px;
-    display: flex; align-items: center; gap: 24px;
-    flex-wrap: wrap;
-  }
-  .proof-strip-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); animation: nr-pulse 2.6s ease-in-out infinite; flex-shrink: 0; }
-  .proof-strip span.sep { color: var(--line); }
-  .proof-strip b { color: var(--text); font-weight: 460; }
-  @media (max-width: 680px) {
-    .proof-strip-inner { gap: 14px; font-size: 10px; }
-    .proof-strip-inner > .hide-sm { display: none; }
-  }
-  @media (prefers-reduced-motion: reduce) { .proof-strip-dot { animation: none; } }
-
-  /* Scarcity callout in pricing */
-  .scarcity {
-    margin: 24px 0 10px;
-    padding: 20px 24px;
-    border: 1px solid color-mix(in oklab, var(--gold) 30%, transparent);
-    border-left: 2px solid var(--gold);
-    background: color-mix(in oklab, var(--gold) 5%, transparent);
-    border-radius: 8px;
-    font-size: 15px;
-    color: var(--text);
-    line-height: 1.6;
-  }
-  .scarcity b { color: var(--gold); font-weight: 500; font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; display: block; margin-bottom: 7px; }
-
-  /* Teardown cards */
-  .td-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin: 26px 0 8px; }
-  .td-card {
-    display: block;
-    padding: 24px 24px 20px;
-    background: linear-gradient(180deg, var(--panel-2), var(--panel));
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    text-decoration: none;
-    color: inherit;
-    box-shadow: 0 1px 0 rgba(255,255,255,0.03) inset;
-    transition: border-color 200ms var(--ease-out), transform 200ms var(--ease-out), box-shadow 260ms var(--ease-out);
-  }
-  .td-card:active { transform: scale(0.99); }
-  @media (hover: hover) {
-    .td-card:hover { border-color: color-mix(in oklab, var(--gold) 45%, transparent); transform: translateY(-2px); box-shadow: 0 1px 0 rgba(255,255,255,0.03) inset, 0 18px 40px -16px rgba(0,0,0,0.5); }
-    .td-card:hover .td-card-arrow { transform: translateX(3px); color: var(--gold-bright); }
-  }
-  .td-card-cat { font-family: var(--mono); font-size: 10.5px; font-weight: 460; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
-  .td-card-stat { font-family: var(--serif); font-size: 21px; font-weight: 440; color: var(--text); margin: 0 0 7px; line-height: 1.3; letter-spacing: -0.008em; }
-  .td-card-hook { font-size: 14px; color: var(--soft); margin: 0 0 15px; line-height: 1.55; }
-  .td-card-foot { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; color: var(--dim); display: flex; justify-content: space-between; align-items: center; }
-  .td-card-arrow { color: var(--dim); transition: transform 200ms var(--ease-out), color 200ms ease; }
-  .td-card-wide { grid-column: 1 / -1; }
-  .td-card-wide .td-card-stat { font-size: 23px; }
-  .td-card-latest { font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
-  @media (max-width: 680px) {
-    .td-grid { grid-template-columns: 1fr; }
-    .td-card-wide .td-card-stat { font-size: 21px; }
-  }
-
-  /* Inline objection FAQ */
-  .obj-list { margin: 24px 0 8px; }
-  .obj { border-top: 1px solid var(--line-soft); padding: 22px 0; }
-  .obj:last-of-type { border-bottom: 1px solid var(--line-soft); }
-  .obj-q {
-    font-family: var(--serif); font-size: 18px; font-weight: 440; color: var(--text);
-    cursor: pointer; list-style: none; padding-right: 32px;
-    position: relative; line-height: 1.4; letter-spacing: -0.005em;
-    transition: color 200ms var(--ease-out);
-  }
-  .obj-q::-webkit-details-marker { display: none; }
-  .obj-q::after {
-    content: '+'; position: absolute; right: 0; top: -2px;
-    font-family: var(--mono); font-size: 22px; color: var(--gold);
-    line-height: 1; font-weight: 300;
-    transition: transform 220ms var(--ease-out);
-  }
-  details.obj[open] .obj-q::after { content: '−'; }
-  details.obj[open] .obj-q { color: var(--gold); }
-  .obj-q:hover { color: var(--gold-bright); }
-  .obj-a { font-size: 15px; color: var(--soft); margin: 14px 0 0; line-height: 1.65; }
-  .obj-foot { margin-top: 22px; font-size: 14px; color: var(--dim); }
-
-  /* The shift (AI adoption stat strip) */
-  .shift { margin: 0 0 36px; }
-  .shift-lead { font-family: var(--serif); font-size: clamp(21px, 2.2vw, 25px); color: var(--text); font-weight: 440; margin: 0 0 20px; letter-spacing: -0.008em; }
-  .shift-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line-soft); border: 1px solid var(--line-soft); border-radius: 14px; overflow: hidden; }
-  .shift-stat { background: var(--bg); padding: 24px 18px; display: flex; flex-direction: column; gap: 10px; }
-  .shift-stat .num { font-family: var(--serif); font-size: 33px; font-weight: 380; color: var(--gold); line-height: 1; letter-spacing: -0.015em; font-variant-numeric: lining-nums; }
-  .shift-stat .lab { font-size: 12.5px; color: var(--soft); line-height: 1.45; }
-  .shift-src { font-family: var(--mono); font-size: 11px; letter-spacing: 0.04em; color: var(--dim); margin: 13px 0 0; }
-  @media (max-width: 640px) { .shift-stats { grid-template-columns: repeat(2, 1fr); } .shift-stat .num { font-size: 27px; } }
-
-  /* What one customer is worth (ROI) */
-
-  /* The moving target — live standings */
-  .rvs{ background: linear-gradient(180deg, var(--panel-2), var(--panel)); border:1px solid var(--line); border-radius:16px; box-shadow: 0 1px 0 rgba(255,255,255,0.03) inset, 0 18px 44px -18px rgba(0,0,0,0.45); padding:22px 24px 18px; max-width:700px; margin:30px 0 8px; }
-  .rvs-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
-  .rvs-eyebrow{ display:flex; align-items:center; gap:8px; font-family: var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--dim); }
-  .rvs-live{ width:7px; height:7px; border-radius:50%; background:var(--gold); flex:none; animation:nr-pulse 2s infinite; }
-  @keyframes nr-pulse{ 0%{box-shadow:0 0 0 0 color-mix(in oklab, var(--gold) 50%, transparent)} 70%{box-shadow:0 0 0 7px transparent} 100%{box-shadow:0 0 0 0 transparent} }
-  .rvs-month{ font-family:var(--mono); font-size:12px; color:var(--gold); letter-spacing:.04em; }
-  .rvs-engines{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:18px; }
-  .rvs-eng{ font-family: var(--mono); font-size:10px; color:var(--dim); border:1px solid var(--line-soft); border-radius:999px; padding:4px 10px; transition:color .35s ease, border-color .35s ease, background .35s ease; }
-  .rvs-eng.scan{ color:var(--gold-bright); border-color:color-mix(in oklab, var(--gold) 50%, transparent); background:color-mix(in oklab, var(--gold) 7%, transparent); }
-  .rvs-board{ position:relative; height:266px; }
-  .rvs-row{ position:absolute; left:0; right:0; height:46px; display:flex; align-items:center; gap:12px; transform:translateY(0); transition:transform .7s var(--ease-out); will-change:transform; }
-  .rvs-rank{ width:20px; text-align:center; font-family:var(--mono); font-size:12px; color:var(--dim); transition:color .4s ease; }
-  .rvs-name{ width:120px; font-size:13.5px; color:var(--soft); transition:color .4s ease; flex:none; }
-  .rvs-track{ flex:1; height:12px; background:var(--bg-deep); border-radius:6px; overflow:hidden; }
-  .rvs-fill{ height:100%; width:0%; border-radius:6px; background:#55503c; transition:width .7s var(--ease-out), background .4s ease; }
-  .rvs-val{ width:38px; text-align:right; font-family:var(--mono); font-size:12.5px; color:var(--soft); transition:color .4s ease; font-variant-numeric: tabular-nums; }
-  .rvs-ec{ width:54px; text-align:right; font-family:var(--mono); font-size:11px; color:var(--dim); transition:color .4s ease; font-variant-numeric: tabular-nums; }
-  .rvs-row.you .rvs-name{ color:var(--text); font-weight:600; }
-  .rvs-row.you .rvs-rank{ color:var(--gold); }
-  .rvs-row.you .rvs-fill{ background: linear-gradient(90deg, var(--gold), var(--gold-bright)); }
-  .rvs-row.you .rvs-val{ color:var(--gold-bright); }
-  .rvs-row.you .rvs-ec{ color:var(--soft); }
-  .rvs-caption{ margin-top:18px; padding-top:14px; border-top:1px solid var(--line-soft); font-size:13px; line-height:1.5; color:var(--dim); max-width:52ch; }
-  @media (prefers-reduced-motion: reduce){ .rvs-live,.rvs-row,.rvs-fill,.rvs-eng{ animation:none !important; transition:none !important; } }
-  @media (max-width:560px){ .rvs-top{ flex-direction:column; align-items:flex-start; gap:6px; } .rvs-name{ width:84px; } .rvs-ec{ display:none; } .rvs-board{ height:286px; } }
-
 </style>
 </head>
 <body>
@@ -784,1311 +403,462 @@
   <header class="nav">
     <div class="nav-inner">
       <a class="wordmark" href="/">Never<em>Ranked</em></a>
-      <nav class="nav-links">
-        <a href="/methodology/">Methodology</a>
+      <nav class="nav-links" aria-label="Main">
+        <a href="#how">How it works</a>
         <a href="/pricing/">Pricing</a>
-        <a href="/for-agencies/">For agencies</a>
-        <a href="/security/">Security</a>
+        <a href="/teardowns/">Studies</a>
+        <a href="/for-teams/">For teams</a>
       </nav>
-      <a class="nav-cta" href="https://check.neverranked.com/">Free AI check</a>
+      <a class="nav-cta js-check" href="https://check.neverranked.com/?utm_source=homepage">Free check</a>
     </div>
   </header>
 
-  <!-- Live operating proof strip -->
-  <div class="proof-strip" role="status" aria-label="Operating status">
-    <div class="proof-strip-inner">
-      <span class="proof-strip-dot" aria-hidden="true"></span>
-      <span><b>11</b> measurements published</span>
-      <span class="sep">/</span>
-      <span><b>378</b> prompts per run</span>
-      <span class="sep hide-sm">/</span>
-      <span class="hide-sm">18 questions &times; 3 reps &times; 7 measured surfaces (6 AI tools + Bing control)</span>
-      <span class="sep">/</span>
-      <span>measured in <b>repeated runs</b>, never one snapshot</span>
-    </div>
-  </div>
+  <main>
 
-  <!-- Hero -->
+  <!-- ═══ 1. HERO ═══ -->
   <section class="hero">
-    <div class="inner">
+    <div class="wrap">
       <div class="hero-grid">
-      <div class="hero-copy">
-      <div class="kicker reveal">The independent measurement layer for AI search</div>
-      <h1 class="wpu" id="hero-h1"><span class="wpu-word" style="--wpu-delay:0ms">Asked for the best hotel in Hawaii, keyword search returned a store locator in Elmira, New York.</span></h1>
-      <p class="turn reveal" id="hero-turn" style="transition-delay:.16s">That was Bing organic, the classic-search control we run beside six AI tools. It returned that store locator on six of its ten runs, and not one AI engine returned it once. Keyword search matches words. Answer engines decide who gets named, and almost nobody can see what they cite for their own category.</p>
-
-      <form class="hero-form reveal" id="hero-form" style="transition-delay:.24s">
-        <input type="text" id="hero-url" placeholder="yourbusiness.com" autocomplete="url" autocapitalize="off" autocorrect="off" inputmode="url" spellcheck="false" required />
-        <button type="submit">See what AI sees &rarr;</button>
-      </form>
-      <div class="hero-price-line reveal" style="transition-delay:.27s">
-        From <strong>$199 a month</strong> per category, month to month. <a href="/pricing/">See what it costs</a>.
-      </div>
-      <div class="hero-form-note reveal" style="transition-delay:.30s">Free. Your score shows in seconds. The full result comes by email. This check reads your site. It does not ask an AI tool about you.</div>
-
-      <div class="reveal" style="transition-delay:.46s; font-family:var(--mono); font-size:12px; letter-spacing:0.04em; color:var(--dim); line-height:1.65; margin-top:26px;">
-        Eleven measurements on the public record, across ten categories in two states. Every number dated. Every question set hash-locked before we looked.
-      </div>
-      </div>
-
-      <aside class="finding reveal" style="transition-delay:.34s" aria-label="A published finding">
-        <div class="f-top"><span>NeverRanked &middot; Published measurement</span><span class="f-no">No. 13</span></div>
-        <div class="f-eyebrow">The question we asked about ourselves</div>
-        <h3>We ran our own questions. We are not in the answer.</h3>
-
-        <div class="f-label">Question under review</div>
-        <p class="f-body">&ldquo;Who are the best agencies for helping businesses show up in AI search results?&rdquo; One of 15, hash-locked before the first run.</p>
-
-        <div class="f-label">What the measurement found</div>
-        <p class="f-body">Across <strong>18,267 citations</strong> on the six AI tools, neverranked.com was cited <strong>0 times</strong>. Nor was almost anyone else: the most-cited vendor website in the category holds <strong>1.8%</strong>, and it takes <strong>91 hosts</strong> to reach half the citations.</p>
-
-        <div class="f-limit">
-          <div class="f-label" style="margin-top:0">What this does not establish</div>
-          <p class="f-body">That the category is unwinnable, that any particular action earns a citation, or that our own zero will still be zero next month.</p>
-        </div>
-
-        <div class="f-foot">
-          15 questions &middot; 2,862 runs &middot; 2026-08-12 to 2026-09-10<br>
-          <a href="/teardowns/aeo-vendors/">Read the full teardown &rarr;</a>
-        </div>
-      </aside>
-
-      </div>
-
-    </div>
-  </section>
-
-  <!-- 01 The blind spot: the live citation map.
-       REAL DATA. Hawaii hotels cohort, three runs measured 2026-06-21
-       (18 locked questions x 6 AI tools x 3 reps per run = up to 9
-       samples per tool per question). CMAP_DATA below is generated by
-       emit-map-json.mjs from the runs' raw.jsonl. Edge rule: a tool
-       earns a line to a hotel when it names that hotel in at least
-       half of its ok samples (minimum two). The subject's absence
-       claims are zero-mention claims (0 of 54 samples on the first
-       question). NEVER hand-edit the numbers in CMAP_DATA. Hotels
-       anonymized per the public-surface anonymization rule. -->
-  <section class="section panel">
-    <div class="inner cmap-inner reveal">
-      <div class="sec-label"><span class="n">01</span>The blind spot</div>
-      <p class="lead">A Google search gives you ten links. An AI answer gives you three names, and nothing tells you when yours is not one of them. So here is a real market, measured. Six AI tools plus a Bing organic control, one Waikiki boutique hotel, and four questions its buyers actually ask.</p>
-
-      <div class="cmap" id="cmap">
-        <p class="sr-only">An interactive map of a real measurement. Six AI tools and a Bing organic control on the left, five Hawaii hotels on the right, anonymized. For the question "best hotel in Honolulu", every tool that answered named other hotels and none named the boutique hotel. For "best hotel in Waikiki", one tool of six named it. For "top boutique hotels in Hawaii" and "boutique hotel in Honolulu walking distance to the beach", four tools named it. Measured June 21, 2026.</p>
-
-        <div class="cmap-queries" role="tablist" aria-label="Buyer questions from the locked Hawaii hotels question set"></div>
-
-        <div class="cmap-stage" aria-hidden="true">
-          <div class="cmap-tilt">
-            <svg id="cmap-svg" viewBox="0 0 860 500" focusable="false">
-              <defs>
-                <linearGradient id="cmapEdgeYou" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0" stop-color="#8f7c46"/>
-                  <stop offset="1" stop-color="#edd58a"/>
-                </linearGradient>
-              </defs>
-              <g id="cmap-caps"></g>
-              <g id="cmap-edges"></g>
-              <g id="cmap-nodes"></g>
-            </svg>
+        <div class="hero-copy">
+          <div class="kicker">What AI tells your customers</div>
+          <h1>Your customers are asking AI who&rsquo;s best in town. It answers with a few names.</h1>
+          <p class="turn">Is yours one of them?</p>
+          <p class="body">ChatGPT and Google&rsquo;s AI answers now reply to the questions people used to type into a search box. The reply is a short list of businesses with a few links underneath. We check what it says about you, write it down, and <strong>never sell you the fix.</strong></p>
+          <div class="hero-actions">
+            <a class="btn btn-primary js-check" href="https://check.neverranked.com/?utm_source=homepage">Run the free check &rarr;</a>
+            <p class="hero-note">About a minute. It checks whether AI tools can read your website. It does not ask them about you.</p>
           </div>
+          <p class="hero-secondary">Want the real answer? <a href="#written-check">We ask AI your customer&rsquo;s question and send it in writing, $249 &rarr;</a></p>
         </div>
 
-        <div class="cmap-verdict">
-          <div class="cmap-count" id="cmap-count"><span id="cmap-num">0</span><span class="cmap-den" id="cmap-den"> / 6</span></div>
-          <div class="cmap-vtext" aria-live="polite">
-            <div class="cmap-vline" id="cmap-vline"></div>
-            <div class="cmap-vnote" id="cmap-vnote"></div>
+        <!-- The hero visual. Illustration only: made-up businesses, a generic
+             "Ask AI" box with no product branding, no real measurement.
+             Cycles three kinds of business so it reads as "yours". To change
+             a category, edit its .ask-set block. The script reads the question
+             from data-q, so the visible text and the typed text cannot drift. -->
+        <figure class="ask" role="img" aria-label="Illustration of an AI answer. A customer asks who is the best dentist in town. The answer names three made-up dental practices, and the links under it go to a review site, a best-of list and a local directory. None of the links is the business owner's own website. The illustration repeats for a hotel and an air conditioning company.">
+          <div class="ask-card" aria-hidden="true">
+            <div class="ask-head">
+              <span class="ask-title"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2.5 3.5h11v7h-6l-3 2.5v-2.5h-2z" stroke-linejoin="round"/></svg>Ask AI</span>
+              <span class="ask-tag">Illustration</span>
+            </div>
+            <div class="ask-sets">
+
+              <div class="ask-set on" data-q="Who&rsquo;s the best dentist in town?">
+                <div class="ask-input"><span class="ask-ghost">Who&rsquo;s the best dentist in town?</span><span class="ask-live">Who&rsquo;s the best dentist in town?</span></div>
+                <div class="ask-thinking"><i></i><i></i><i></i></div>
+                <p class="ask-lead ask-step st1">Here are three that patients speak well of:</p>
+                <ol class="ask-names">
+                  <li class="ask-step st1"><div><b>Linden Row Dental</b><span>Gentle with nervous patients, open evenings.</span></div></li>
+                  <li class="ask-step st2"><div><b>Bright Harbor Family Dentistry</b><span>Good with kids, accepts most insurance.</span></div></li>
+                  <li class="ask-step st3"><div><b>Canal Street Smiles</b><span>Often mentioned for cosmetic work.</span></div></li>
+                </ol>
+                <p class="ask-src-label ask-step st4">Sources</p>
+                <ul class="ask-srcs ask-step st4">
+                  <li class="lit-final"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6.5 9.5l3-3M7 4.5l1-1a2.5 2.5 0 013.5 3.5l-1 1M9 11.5l-1 1A2.5 2.5 0 014.5 9l1-1" stroke-linecap="round"/></svg>A review site</li>
+                  <li class="lit-final"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6.5 9.5l3-3M7 4.5l1-1a2.5 2.5 0 013.5 3.5l-1 1M9 11.5l-1 1A2.5 2.5 0 014.5 9l1-1" stroke-linecap="round"/></svg>A &ldquo;best dentists&rdquo; list</li>
+                  <li class="lit-final"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6.5 9.5l3-3M7 4.5l1-1a2.5 2.5 0 013.5 3.5l-1 1M9 11.5l-1 1A2.5 2.5 0 014.5 9l1-1" stroke-linecap="round"/></svg>A local directory</li>
+                  <li class="yours ask-step st5">Your website: not one of the links</li>
+                </ul>
+              </div>
+
+              <div class="ask-set" data-q="What&rsquo;s the best hotel near the beach?">
+                <div class="ask-input"><span class="ask-ghost">What&rsquo;s the best hotel near the beach?</span><span class="ask-live">What&rsquo;s the best hotel near the beach?</span></div>
+                <div class="ask-thinking"><i></i><i></i><i></i></div>
+                <p class="ask-lead ask-step st1">Here are three that guests speak well of:</p>
+                <ol class="ask-names">
+                  <li class="ask-step st1"><div><b>The Saltwind Inn</b><span>Small, quiet, a short walk to the sand.</span></div></li>
+                  <li class="ask-step st2"><div><b>Coral Lantern Hotel</b><span>Ocean views and a rooftop pool.</span></div></li>
+                  <li class="ask-step st3"><div><b>Palm &amp; Tide Suites</b><span>Kitchens in every room, good for families.</span></div></li>
+                </ol>
+                <p class="ask-src-label ask-step st4">Sources</p>
+                <ul class="ask-srcs ask-step st4">
+                  <li class="lit-final"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6.5 9.5l3-3M7 4.5l1-1a2.5 2.5 0 013.5 3.5l-1 1M9 11.5l-1 1A2.5 2.5 0 014.5 9l1-1" stroke-linecap="round"/></svg>A booking site</li>
+                  <li class="lit-final"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6.5 9.5l3-3M7 4.5l1-1a2.5 2.5 0 013.5 3.5l-1 1M9 11.5l-1 1A2.5 2.5 0 014.5 9l1-1" stroke-linecap="round"/></svg>A travel guide</li>
+                  <li class="lit-final"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6.5 9.5l3-3M7 4.5l1-1a2.5 2.5 0 013.5 3.5l-1 1M9 11.5l-1 1A2.5 2.5 0 014.5 9l1-1" stroke-linecap="round"/></svg>A review site</li>
+                  <li class="yours ask-step st5">Your website: not one of the links</li>
+                </ul>
+              </div>
+
+              <div class="ask-set" data-q="Who&rsquo;s the best AC repair company near me?">
+                <div class="ask-input"><span class="ask-ghost">Who&rsquo;s the best AC repair company near me?</span><span class="ask-live">Who&rsquo;s the best AC repair company near me?</span></div>
+                <div class="ask-thinking"><i></i><i></i><i></i></div>
+                <p class="ask-lead ask-step st1">Here are three that customers speak well of:</p>
+                <ol class="ask-names">
+                  <li class="ask-step st1"><div><b>Northstar Air &amp; Heat</b><span>Same-day repairs, upfront pricing.</span></div></li>
+                  <li class="ask-step st2"><div><b>Clearbreeze Cooling</b><span>Known for older units and quiet installs.</span></div></li>
+                  <li class="ask-step st3"><div><b>Ridgeway Comfort Co.</b><span>Family-run, answers the phone on weekends.</span></div></li>
+                </ol>
+                <p class="ask-src-label ask-step st4">Sources</p>
+                <ul class="ask-srcs ask-step st4">
+                  <li class="lit-final"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6.5 9.5l3-3M7 4.5l1-1a2.5 2.5 0 013.5 3.5l-1 1M9 11.5l-1 1A2.5 2.5 0 014.5 9l1-1" stroke-linecap="round"/></svg>A review site</li>
+                  <li class="lit-final"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6.5 9.5l3-3M7 4.5l1-1a2.5 2.5 0 013.5 3.5l-1 1M9 11.5l-1 1A2.5 2.5 0 014.5 9l1-1" stroke-linecap="round"/></svg>A home services directory</li>
+                  <li class="lit-final"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6.5 9.5l3-3M7 4.5l1-1a2.5 2.5 0 013.5 3.5l-1 1M9 11.5l-1 1A2.5 2.5 0 014.5 9l1-1" stroke-linecap="round"/></svg>A local news &ldquo;best of&rdquo; list</li>
+                  <li class="yours ask-step st5">Your website: not one of the links</li>
+                </ul>
+              </div>
+
+            </div>
           </div>
-        </div>
-
-        <p class="cmap-foot">Real measurement, not a mockup. Hawaii hotels, measured June 21, 2026: 18 locked questions, 6 AI tools plus a Bing organic control, 9 sampled answers per surface per question across three runs. Four questions and five of the measured hotels are shown. A line is drawn when a tool names a hotel in at least half of its samples. Google AI Overviews is scored on the answers it shows. Hotels are anonymized here, the way every non-customer is on our public pages. A customer&rsquo;s map ships fully named.</p>
+          <figcaption class="ask-caption">Illustration. Made-up businesses, not a real AI answer and not one of our measurements.</figcaption>
+        </figure>
       </div>
-
-      <p class="cmap-followon">This hotel does not know any of this. Neither do its competitors. AI builds these answers from everyone else&rsquo;s account of a business, not from its own site. <a href="/teardowns/cross-category/#offsite">See where AI sources its answers &rarr;</a> or <a href="/teardowns/hotels-hawaii/">read the full Hawaii hotels teardown &rarr;</a></p>
     </div>
   </section>
 
-  <!-- The scorekeeper: the structural argument, side by side -->
-  <section class="section">
-    <div class="inner wide reveal">
-      <div class="sec-label"><span class="n">The scorekeeper</span>Two different jobs wear the same label</div>
-      <h2>Every tool that optimizes your site grades its own homework.</h2>
-      <p class="lead">There are two jobs in AI search, and one vendor cannot honestly hold both. Optimization tools change your pages, then report how their own changes performed. We never touch your site, so the number we hand you answers to nothing but the measurement.</p>
-      <div class="keeper">
-        <div class="keeper-col keeper-them">
-          <h3>An optimization tool</h3>
-          <ul>
-            <li>Edits your pages, schema, and profiles, sometimes on autopilot</li>
-            <li>Needs write access to your website and content</li>
-            <li>Reports the results of its own changes</li>
-            <li>Quotes the lift it expects to produce</li>
-          </ul>
-        </div>
-        <div class="keeper-col keeper-us">
-          <h3>The scorekeeper</h3>
-          <ul>
-            <li>Never touches your website, your systems, or your accounts</li>
-            <li>Observes the six AI tools from the outside</li>
-            <li>Reports what they actually cite, either way the number lands</li>
-            <li>Promises the measurement, never the outcome</li>
-          </ul>
-        </div>
+  <!-- ═══ 2. WHAT IS HAPPENING ═══ -->
+  <section class="section panel" id="how">
+    <div class="wrap">
+      <div class="sec-label"><span class="n">01</span>What is happening</div>
+      <h2>Here is what happens now.</h2>
+      <ol class="steps">
+        <li class="step">
+          <svg class="step-art" viewBox="0 0 220 140" fill="none" role="img" aria-label="A search box set aside, and a question asked in a chat bubble instead">
+            <rect x="14" y="16" width="150" height="30" rx="15" stroke="#55503c" stroke-width="2"/>
+            <circle cx="36" cy="31" r="7" stroke="#55503c" stroke-width="2"/><path d="M41 36l5 5" stroke="#55503c" stroke-width="2" stroke-linecap="round"/>
+            <path d="M58 31h88" stroke="#55503c" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 6"/>
+            <path d="M8 52L170 10" stroke="#877f6c" stroke-width="2" stroke-linecap="round"/>
+            <path d="M58 70h138a12 12 0 0112 12v26a12 12 0 01-12 12h-96l-18 16v-16H58a12 12 0 01-12-12V82a12 12 0 0112-12z" stroke="#cdb87f" stroke-width="2.2" stroke-linejoin="round"/>
+            <path d="M68 89h96M68 103h62" stroke="#edd58a" stroke-width="2.4" stroke-linecap="round"/>
+            <text x="180" y="108" fill="#edd58a" font-family="Georgia, serif" font-size="26">?</text>
+          </svg>
+          <div class="step-num">Step 1</div>
+          <h3>A customer asks AI.</h3>
+          <p>The same question they used to type into a search box. Who&rsquo;s the best plumber near me?</p>
+        </li>
+        <li class="step">
+          <svg class="step-art" viewBox="0 0 220 140" fill="none" role="img" aria-label="An AI answer with three names listed">
+            <rect x="14" y="12" width="192" height="116" rx="16" stroke="#cdb87f" stroke-width="2.2"/>
+            <path d="M32 34h92" stroke="#877f6c" stroke-width="2.4" stroke-linecap="round"/>
+            <circle cx="38" cy="60" r="7" fill="#edd58a"/><path d="M54 60h104" stroke="#f0ece1" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="38" cy="84" r="7" fill="#edd58a"/><path d="M54 84h86" stroke="#f0ece1" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="38" cy="108" r="7" fill="#edd58a"/><path d="M54 108h96" stroke="#f0ece1" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+          <div class="step-num">Step 2</div>
+          <h3>It answers with a few names.</h3>
+          <p>Two or three businesses, in a sentence or a short list. That short list is what your customer sees.</p>
+        </li>
+        <li class="step">
+          <svg class="step-art" viewBox="0 0 220 140" fill="none" role="img" aria-label="The answer points to three outside pages, and the business's own website is left out">
+            <rect x="10" y="44" width="62" height="52" rx="12" stroke="#cdb87f" stroke-width="2.2"/>
+            <path d="M24 62h34M24 76h24" stroke="#f0ece1" stroke-width="2.6" stroke-linecap="round"/>
+            <path d="M74 60C110 40 120 22 146 20M74 70h72M74 80c36 20 46 38 72 40" stroke="#8f7c46" stroke-width="2" stroke-linecap="round"/>
+            <rect x="148" y="6" width="62" height="28" rx="6" stroke="#edd58a" stroke-width="2"/><path d="M158 20h40" stroke="#edd58a" stroke-width="2" stroke-linecap="round"/>
+            <rect x="148" y="56" width="62" height="28" rx="6" stroke="#edd58a" stroke-width="2"/><path d="M158 70h40" stroke="#edd58a" stroke-width="2" stroke-linecap="round"/>
+            <rect x="148" y="106" width="62" height="28" rx="6" stroke="#edd58a" stroke-width="2"/><path d="M158 120h40" stroke="#edd58a" stroke-width="2" stroke-linecap="round"/>
+            <rect x="88" y="104" width="44" height="30" rx="6" stroke="#c98b74" stroke-width="2" stroke-dasharray="4 4"/>
+            <text x="110" y="124" fill="#c98b74" font-family="ui-monospace, monospace" font-size="11" text-anchor="middle">you</text>
+          </svg>
+          <div class="step-num">Step 3</div>
+          <h3>It points to the pages it used.</h3>
+          <p>Links under the answer. Review sites, &ldquo;best of&rdquo; lists, directories. Sometimes your own website, often someone else&rsquo;s page about you.</p>
+        </li>
+      </ol>
+
+      <!-- VIDEO SLOT. Approved 2026-10-13, not built yet. A 45 to 60 second
+           captioned explainer goes here, under the three steps: click to
+           play, poster frame, no autoplay, preload="none", captions on by
+           default (a VTT track or burned in), and the 16:9 box reserved with
+           aspect-ratio so nothing shifts when it loads. Until the video
+           exists, nothing renders here. Do not ship an empty box. -->
+
+      <div class="try">
+        <p class="try-label">Try it now</p>
+        <p>Ask ChatGPT the question your best customer would ask. Not your business name. Their question. Then look at two things. Is your name in the answer? And whose websites do the links point to?</p>
+        <p>Ask again tomorrow. The answer may change, which is why one screenshot is a glimpse and not a measurement.</p>
       </div>
-      <p class="keeper-verdict">You can hire either. <b>Only one can referee the other.</b></p>
-      <p>The question set is committed to a public timestamp before we measure. The method is documented in full at <a href="/methodology/">/methodology/</a>, and every published number lives on a public claims record, dated and tied to the run that produced it. Your team executes, and we never grade our own work. <a href="/vs/">The structural comparison, tool by tool &rarr;</a></p>
     </div>
   </section>
 
-  <!-- The check.
-       LANHAM DISCIPLINE, load-bearing: every sentence here is a fact about
-       NeverRanked, never a claim about a competitor. The Corgi media policy
-       EXCLUDES Lanham Act false advertising, so an assertion that some other
-       vendor's number is wrong or unsubstantiated would be uninsured. It is
-       also unnecessary: "we never touch your site" is a checkable fact about
-       us that no vendor who ships work can also say. Let the reader do the
-       arithmetic. Do not name a competitor or characterize their claims here,
-       ever, no matter how tempting the quarter. -->
+  <!-- ═══ 3. WHY IT MATTERS ═══ -->
   <section class="section">
-    <div class="inner wide reveal">
-      <div class="sec-label"><span class="n">The check</span>Who tells you whether it worked</div>
-      <h2>Hire whoever you like to do the work. Then ask who is going to tell you it worked.</h2>
-      <p class="lead">Most of the people who come to us already have someone shipping the work: an in-house team, an agency, a platform running on autopilot. Good. We are not trying to replace them. We exist for the question that arrives ninety days later.</p>
-      <p>A vendor who ships the change and then reports the lift is not lying to you. It is simply the only party in the room with a reason for the number to move. That is not an accusation, it is arithmetic, and it is why auditors do not keep the books, and why a hotel trusts a comp-set index published by a company that does not operate hotels.</p>
-      <p>We are structurally incapable of returning you a flattering number, and you can check every piece of that yourself:</p>
-      <div class="check-list">
-        <ul>
-          <li><b>We never touch your website, your systems, or your accounts.</b> There is no work of ours for a number to flatter.</li>
-          <li><b>The questions are locked by hash before we look.</b> We cannot tune the test to the answer we want.</li>
-          <li><b>All six AI tools, every run, with no cheaper tier that watches fewer.</b> We cannot quietly report the flattering subset.</li>
-          <li><b>Three runs, every cycle.</b> An AI answer moves between two askings of the same question, so one reading is not a result and we will not sell you one.</li>
-          <li><b>Every number we publish is dated and tied to the run that produced it,</b> on a record you can read and re-run against.</li>
-          <li><b>When we could not substantiate our own customer result, we tested it, failed our own pre-registered criteria, pulled the product inside a day, and retracted the numbers in public.</b></li>
+    <div class="wrap">
+      <div class="sec-label"><span class="n">02</span>Why it matters to your business</div>
+      <h2>That answer is the new front page for your business.</h2>
+      <div class="why">
+        <ul class="points">
+          <li>
+            <h3>It happens before anyone reaches your website.</h3>
+            <p>If the answer names someone else, your customer can make up their mind without ever seeing you.</p>
+          </li>
+          <li>
+            <h3>You cannot see it happen.</h3>
+            <p>There is no ranking to check and no click to trace. You can audit a ranking. You cannot audit a conversation you were never part of.</p>
+          </li>
+          <li>
+            <h3>Your website is one voice among many.</h3>
+            <p>AI tools lean on the sites that already write about your kind of business. Your own site is one of them, and often not the main one.</p>
+          </li>
         </ul>
+
+        <!-- One figure, one denominator. Fact Bank rows: hotels' own websites
+             and booking sites plus travel editorial, hospitality teardown,
+             13-hotel cohort, 3 runs on 2026-06-21, seven measured surfaces
+             (six AI tools plus the Bing control). The tally draws exactly 100
+             squares with round(pct) lit, per the card system's motif law.
+             The unlabelled remainder is everything else and carries no
+             number of its own. -->
+        <figure class="tally-card" style="margin:0">
+          <p class="tally-kicker">From one of our studies</p>
+          <p class="tally-claim">On hotel questions, <span class="fig">17</span> of every 100 pages we counted were the hotels&rsquo; own websites.</p>
+          <p class="tally-scope">That counts every page six AI tools pointed to, plus what plain Bing search returned, which we run as a control. Across the 13 hotels we tracked, in June 2026, over three full runs.</p>
+          <div class="tally" role="img" aria-label="A grid of 100 squares. 17 are lit for the hotels' own websites. 74 are shaded for booking sites and travel editorial. The rest are everything else.">
+            <i class="own"></i><i class="own"></i><i class="own"></i><i class="own"></i><i class="own"></i><i class="own"></i><i class="own"></i><i class="own"></i><i class="own"></i><i class="own"></i><i class="own"></i><i class="own"></i><i class="own"></i><i class="own"></i><i class="own"></i><i class="own"></i><i class="own"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i class="agg"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          </div>
+          <ul class="legend">
+            <li><span class="sw own"></span><b>17%</b> the hotels&rsquo; own websites</li>
+            <li><span class="sw agg"></span><b>74%</b> booking sites and travel editorial</li>
+            <li><span class="sw rest"></span><span>everything else</span></li>
+          </ul>
+          <p class="tally-limit">Hotels are one category. We have not measured yours. <a href="/teardowns/hotels-hawaii/">Read the hotel study &rarr;</a></p>
+        </figure>
       </div>
-      <p class="keeper-verdict" style="margin-top:26px;">The last one is the only one that counts. <b>The rest is what any vendor would say. The retraction is the receipt.</b></p>
-      <p style="margin-top:18px;">If the work is already underway and the number has not moved, that is worth knowing early. If it has moved, you should be able to prove it to a board with something other than the invoice of the company that did the work. <a href="/retraction/">Read the retraction first, then decide whether to believe our numbers &rarr;</a></p>
     </div>
   </section>
 
-  <!-- Agency path -->
-  <div class="reveal" style="max-width:940px;margin:4px auto 0;padding:0 32px;">
-    <a href="/for-agencies/" style="display:block;border:1px solid var(--line);border-left:2px solid var(--gold);border-radius:4px;background:var(--panel);padding:13px 18px;color:var(--dim);text-decoration:none;font-size:14px;line-height:1.55;">
-      <strong style="color:var(--text);font-weight:600;">Running an agency?</strong> NeverRanked sits upstream of your team. We measure, you execute, you keep the client. <span style="color:var(--gold);white-space:nowrap;">For agencies &rarr;</span>
-    </a>
-  </div>
-
-  <!-- The finding: proof-first beat (tournament winner) -->
-  <section class="section">
-    <div class="inner wide reveal">
-      <div class="sec-label"><span class="n">Finding</span>The result most vendors will never show you</div>
-      <p class="lead">We measure whether the AI engines name a business when buyers ask the category question. Eleven measurements, three runs each, six AI tools. On the engines that search the live web, where most buyers already are, AI names three to five businesses per question. Someone in your category is getting named. The first job is finding out whether it is you.</p>
-      <p>Then there is the result the AEO industry would rather you did not see. The engines that answer from training data instead of searching the live web barely cite local businesses at all. Claude, on the same questions where web-searching engines reach 38 to 66 percent, collapses to near zero. You can look strong on one surface and be invisible on another, which is exactly why a single-engine tool cannot tell you where you actually stand.</p>
-      <table style="width:100%;border-collapse:collapse;margin:26px 0 10px;font-family:var(--mono);font-size:13px;line-height:1.4;">
-        <thead><tr>
-          <th style="text-align:left;padding:12px 14px 12px 0;border-bottom:1px solid var(--line);color:var(--gold);font-weight:400;letter-spacing:0.06em;text-transform:uppercase;font-size:11px;">Category</th>
-          <th style="text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);color:var(--gold);font-weight:400;letter-spacing:0.06em;text-transform:uppercase;font-size:11px;">Top web engine</th>
-          <th style="text-align:right;padding:12px 0 12px 14px;border-bottom:1px solid var(--line);color:var(--gold);font-weight:400;letter-spacing:0.06em;text-transform:uppercase;font-size:11px;">Claude</th>
-        </tr></thead>
-        <tbody style="color:var(--soft);">
-          <tr><td style="padding:12px 14px 12px 0;border-bottom:1px solid var(--line-soft);color:var(--text);">Honolulu HVAC</td><td style="padding:12px 14px;border-bottom:1px solid var(--line-soft);">ChatGPT search, 66%</td><td style="padding:12px 0 12px 14px;border-bottom:1px solid var(--line-soft);text-align:right;color:var(--gold);font-variant-numeric:tabular-nums;">2%</td></tr>
-          <tr><td style="padding:12px 14px 12px 0;border-bottom:1px solid var(--line-soft);color:var(--text);">Honolulu med spas</td><td style="padding:12px 14px;border-bottom:1px solid var(--line-soft);">Gemini, 64%</td><td style="padding:12px 0 12px 14px;border-bottom:1px solid var(--line-soft);text-align:right;color:var(--gold);font-variant-numeric:tabular-nums;">2%</td></tr>
-          <tr><td style="padding:12px 14px 12px 0;border-bottom:1px solid var(--line-soft);color:var(--text);">Hawaii CPA firms</td><td style="padding:12px 14px;border-bottom:1px solid var(--line-soft);">OpenAI, 60%</td><td style="padding:12px 0 12px 14px;border-bottom:1px solid var(--line-soft);text-align:right;color:var(--gold);font-variant-numeric:tabular-nums;">1%</td></tr>
-          <tr><td style="padding:12px 14px 12px 0;color:var(--text);">Austin CPA firms <span style="color:var(--dim);">(cross-geo control)</span></td><td style="padding:12px 14px;">holds outside Hawaii</td><td style="padding:12px 0 12px 14px;text-align:right;color:var(--gold);font-variant-numeric:tabular-nums;">0%</td></tr>
-        </tbody>
-      </table>
-      <p>The HVAC line is the one we pre-registered. Before a single question ran, we committed the prediction to a public file with a timestamp. We measured two percent. The same story repeats in med spas and accounting, across three unrelated industries in two states. A business can look fine on one surface and be invisible on another. Most vendors cannot publish a table like this, because to publish it you have to actually measure, name the date, and lock the questions before you look. A vibe cannot be put in a table.</p>
-      <p style="margin-top:18px"><a href="/claims/">Every number here is on the record, with the dated run and the documented method that produced it &rarr;</a></p>
-    </div>
-  </section>
-
-  <!-- Named customer capability example (HTC, permission granted).
-       SCOPE IS SET BY OUR OWN RETRACTION: Hawaii Theatre may be used as a
-       named reference "only as a capability example: the kinds of gaps a
-       forensic measurement engagement surfaces that a standard SEO scan
-       misses." The score-lift and Perplexity-citation figures from that
-       engagement are RETRACTED and must never appear on a public surface
-       again, in any framing, hedged or not.
-
-       The figures are deliberately NOT written out here. They are quoted in
-       exactly one place on this site, /retraction/, which is the accounting
-       itself. Everything else refers and links. That is not fussiness: AI
-       crawlers parse HTML comments, and a company whose product is what AI
-       reads about a business should not be feeding a retracted number about
-       itself into the corpus from its own source. check-claims scans
-       comments for exactly this and will fail the build.
-
-       The old "we never touched their site" line was also false for this
-       engagement. The snippet was deployed on it, which is precisely what
-       the retraction disavows, and the visible copy below now says so. Do
-       not reintroduce either. -->
+  <!-- ═══ 4. WHAT WE DO, AND WHAT WE DO NOT ═══
+       LANHAM DISCIPLINE, load-bearing: every sentence here is a fact about
+       NeverRanked, never a claim about a competitor. Do not name or
+       characterize anyone else. -->
   <section class="section panel">
-    <div class="inner wide reveal">
-      <div class="sec-label"><span class="n">Case study</span>A named customer, and what we actually found</div>
-      <h2>The AI was not wrong about Hawaii Theatre. It was reading a profile last touched in 1999.</h2>
-      <p class="lead">Hawaii Theatre Center, the 1922 landmark in downtown Honolulu, agreed to be named. We measured what the AI engines said about them against a 19-question buyer set. The interesting part was never a score. It was where the answers were coming from.</p>
-      <p>A Charity Navigator profile that had not been updated since 2023. A Better Business Bureau listing last touched in 1999. No presence at all on Bing Business Profile, which feeds Bing&rsquo;s organic results. Authority backlinks pointing to the wrong places. We handed their team the memo and collaborated on the meta description rewrites, and their team shipped the work.</p>
-      <p>None of that is exotic. All of it is invisible to a standard SEO scan, because a standard SEO scan looks at your website, and none of those things are your website. That is the whole point. An AI answer is assembled from everyone else's account of you, and for a beloved 1922 theatre, part of that account was a quarter century out of date.</p>
-      <div class="retract-note">
-        <p><strong>What we used to say here, and why we do not anymore.</strong> This page once presented a score lift and a Perplexity citation count from this engagement as evidence that our work caused them. Both were real measurements. The causal link was not, so we tested it against our own domain, failed our own pre-registered criteria, pulled the product inside a day, and retracted both claims. The diagnostic findings above are what survived, because they are what actually happened. The retracted figures themselves are quoted in exactly one place on this site now, on the accounting itself, so they can never be lifted from here and reused as proof.</p>
-        <p style="margin-top:12px;">We should also say the part that is easy to leave out. Our snippet was deployed on their site during that engagement, and it did move the score we were measuring. What it never moved was the citations. We were the vendor grading our own homework and we could not see it until we ran the test. That is the reason we do not touch your website now. <a href="/retraction/">The full accounting, including the test that killed our own thesis &rarr;</a></p>
-      </div>
-      <p style="margin-top:28px;"><a class="cta" href="https://check.neverranked.com/">See what AI sees on your site &rarr;</a></p>
-    </div>
-  </section>
-
-  <!-- Who we measure for: vertical entries -->
-  <section class="section">
-    <div class="inner wide reveal">
-      <div class="sec-label"><span class="n">Markets</span>Who we measure for</div>
-      <h2>High-consideration categories, anywhere buyers ask AI first.</h2>
-      <div class="verticals">
-        <a class="vertical-card" href="/for-hospitality/">
-          <div class="vc-cat">Hotels &amp; resorts</div>
-          <p class="vc-line">Your next guest asks AI before they ever see your rate.</p>
-          <p class="vc-sub">Measured proof from one of the most contested hotel markets in the world, built for a property anywhere.</p>
-          <span class="vc-arrow">For hospitality &rarr;</span>
-        </a>
-        <a class="vertical-card" href="/for-real-estate/">
-          <div class="vc-cat">Real estate</div>
-          <p class="vc-line">It is not your website. It is your category.</p>
-          <p class="vc-sub">The most aggregator-captured market we have measured, and the cross-category data that proves the number is structural.</p>
-          <span class="vc-arrow">For real estate &rarr;</span>
-        </a>
-        <a class="vertical-card" href="/for-hvac/">
-          <div class="vc-cat">HVAC &amp; home services</div>
-          <p class="vc-line">The forecast we dated before the data. It held.</p>
-          <p class="vc-sub">One of the few local categories where the citation is still up for grabs, measured to a pre-registered standard.</p>
-          <span class="vc-arrow">For home services &rarr;</span>
-        </a>
-        <a class="vertical-card" href="/for-agencies/">
-          <div class="vc-cat">Agencies</div>
-          <p class="vc-line">We measure. You execute. The client stays yours.</p>
-          <p class="vc-sub">An independent measurement layer upstream of your team, resold into your accounts with your markup on top.</p>
-          <span class="vc-arrow">For agencies &rarr;</span>
-        </a>
-        <a class="vertical-card wide" href="mailto:Lance@hi.neverranked.com?subject=Measure%20my%20category">
-          <div class="vc-cat">Your category</div>
-          <p class="vc-line">Eleven measurements so far. Yours can be next.</p>
-          <p class="vc-sub">Venues, tours and experiences, weddings, clubs, local services. If your buyers research before they buy, it can be measured.</p>
-          <span class="vc-arrow">Start the conversation &rarr;</span>
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <script>
-  (function(){
-    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var NS = 'http://www.w3.org/2000/svg';
-
-    // Canonical 4+1+2 order. full/short = desktop/mobile display names.
-    var ENGINES = [
-      { id:'ppx',  full:'Perplexity',          short:'Perplexity' },
-      { id:'cgpt', full:'ChatGPT search',      short:'ChatGPT' },
-      { id:'gem',  full:'Gemini grounded',     short:'Gemini' },
-      { id:'cop',  full:'Bing organic (control)',  short:'Bing (control)' },
-      { id:'aio',  full:'Google AI Overviews', short:'AI Overviews' },
-      { id:'cla',  full:'Claude',              short:'Claude' },
-      { id:'gma',  full:'Gemma',               short:'Gemma' }
-    ];
-
-    // Right column, top to bottom. Node size follows how often each hotel
-    // is named across the whole run (rank only, no printed share).
-    var BIZ = [
-      { id:'a',   name:'Hotel A', r:15 },
-      { id:'b',   name:'Hotel B', r:13 },
-      { id:'you', name:'A Waikiki boutique hotel', mobileName:['A Waikiki','boutique hotel'], r:11.5, you:true },
-      { id:'c',   name:'Hotel C', r:11 },
-      { id:'d',   name:'Hotel D', r:9.5 }
-    ];
-
-    // GENERATED from raw.jsonl by emit-map-json.mjs. Do not hand-edit.
-    // st: 0 = no AI answer shown, 1 = answered, 2 = answered but named
-    // none of the five hotels shown. edges: [hotel, named, of samples].
-    var CMAP_DATA = [
-      { q:'best hotel in Honolulu', answered:6, hits:0,
-        note:'Asked nine times per tool on June 21. Fifty-four answers came back and zero of them named it. Two icons own this answer.',
-        e:{ ppx:{st:1,edges:[['a',9,9],['b',7,9]]}, cgpt:{st:1,edges:[['a',9,9]]}, gem:{st:1,edges:[['a',9,9],['b',9,9]]}, cop:{st:2,edges:[]}, aio:{st:0,edges:[]}, cla:{st:1,edges:[['a',8,9],['b',9,9]]}, gma:{st:1,edges:[['a',9,9],['b',9,9]]} } },
-      { q:'best hotel in Waikiki', answered:6, hits:1,
-        note:'Its own neighborhood. One tool named it, in 7 of 9 samples. Four of the others reached for the same two icons every single time.',
-        e:{ ppx:{st:1,edges:[['a',9,9],['b',9,9]]}, cgpt:{st:1,edges:[['you',7,9],['a',9,9],['b',8,9]]}, gem:{st:1,edges:[['a',9,9],['b',9,9]]}, cop:{st:2,edges:[]}, aio:{st:0,edges:[]}, cla:{st:1,edges:[['a',9,9],['b',9,9]]}, gma:{st:1,edges:[['a',9,9],['b',9,9]]} } },
-      { q:'top boutique hotels in Hawaii', answered:6, hits:4,
-        note:'Ask for boutique and four of six tools name it consistently. Claude, answering from model memory, still reaches for a legacy icon instead. Same market, different reality in every tool.',
-        e:{ ppx:{st:1,edges:[['you',9,9],['c',9,9]]}, cgpt:{st:1,edges:[['c',9,9],['you',8,9]]}, gem:{st:1,edges:[['you',8,9],['c',8,9],['b',6,9]]}, cop:{st:2,edges:[]}, aio:{st:0,edges:[]}, cla:{st:1,edges:[['a',7,9]]}, gma:{st:1,edges:[['you',9,9]]} } },
-      { q:'boutique hotel in Honolulu walking distance to the beach', answered:7, hits:4,
-        note:'The specific question a ready buyer asks. Four tools name it, and Google AI Overviews, silent on every head question, shows up here. The long tail is where a boutique gets found.',
-        e:{ ppx:{st:1,edges:[['d',8,9]]}, cgpt:{st:1,edges:[['you',8,9],['a',5,9]]}, gem:{st:1,edges:[['d',7,9]]}, cop:{st:2,edges:[]}, aio:{st:1,edges:[['you',2,2]]}, cla:{st:1,edges:[['you',9,9],['a',9,9]]}, gma:{st:1,edges:[['you',9,9]]} } }
-    ];
-
-    var svg = document.getElementById('cmap-svg');
-    if (!svg) return;
-    var gCaps = document.getElementById('cmap-caps');
-    var gEdges = document.getElementById('cmap-edges');
-    var gNodes = document.getElementById('cmap-nodes');
-    var mobileMq = window.matchMedia ? window.matchMedia('(max-width: 640px)') : null;
-
-    function el(tag, attrs){ var n = document.createElementNS(NS, tag); for (var k in attrs) n.setAttribute(k, attrs[k]); return n; }
-    function txt(x, y, s, cls, anchor){
-      var t = el('text', { x:x, y:y, 'text-anchor':anchor || 'start' });
-      t.setAttribute('class', cls); t.textContent = s; return t;
-    }
-
-    // Two layouts, same data. Desktop: 860x500. Mobile: 400x640.
-    var L = null, eByI = [], enNodes = {}, enLabels = {}, enTags = {}, bnNodes = {}, bPos = {}, youPulse = null, youTag = null;
-
-    function layout(){
-      var m = mobileMq && mobileMq.matches;
-      return m
-        ? { vb:'0 0 400 552', EX:112, BX:286, capX:16, capRX:384,
-            eY:[86,131,176,221,266,346,391], gcapY:[58,318], bY:[104,201,298,395,492],
-            eFont:'short', bFontYou:12, tagLong:false }
-        : { vb:'0 0 860 500', EX:196, BX:640, capX:30, capRX:640,
-            eY:[74,122,170,218,266,344,392], gcapY:[46,316], bY:[92,176,260,344,428],
-            eFont:'full', bFontYou:15, tagLong:true };
-    }
-
-    function buildScene(){
-      L = layout();
-      svg.setAttribute('viewBox', L.vb);
-      while (gCaps.firstChild) gCaps.removeChild(gCaps.firstChild);
-      while (gNodes.firstChild) gNodes.removeChild(gNodes.firstChild);
-      while (gEdges.firstChild) gEdges.removeChild(gEdges.firstChild);
-
-      gCaps.appendChild(txt(L.capX, L.gcapY[0], 'Searches the live web', 'cmap-colcap'));
-      gCaps.appendChild(txt(L.capX, L.gcapY[1], 'Answers from model memory', 'cmap-colcap'));
-      gCaps.appendChild(txt(L.capRX, 28, 'Who they name', 'cmap-colcap', L.tagLong ? 'start' : 'end'));
-
-      ENGINES.forEach(function(e, i){
-        var y = L.eY[i];
-        var c = el('circle', { cx:L.EX, cy:y, r:8, 'class':'cmap-en' });
-        gNodes.appendChild(c); enNodes[e.id] = c;
-        var lbl = txt(L.EX - 18, y + 4, L.eFont === 'full' ? e.full : e.short, 'cmap-elabel', 'end');
-        gNodes.appendChild(lbl); enLabels[e.id] = lbl;
-        var tag = txt(L.EX - 18, y + 17, '', 'cmap-etag', 'end');
-        gNodes.appendChild(tag); enTags[e.id] = tag;
-      });
-
-      BIZ.forEach(function(b, i){
-        var y = L.bY[i], x = L.BX;
-        bPos[b.id] = { x:x, y:y, r:b.r };
-        if (b.you){
-          youPulse = el('circle', { cx:x, cy:y, r:b.r + 6, 'class':'cmap-pulse' });
-          gNodes.appendChild(youPulse);
-        }
-        var c = el('circle', { cx:x, cy:y, r:b.r, 'class':'cmap-bn' + (b.you ? ' you' : '') });
-        gNodes.appendChild(c); bnNodes[b.id] = c;
-        if (b.you && L.eFont === 'short'){
-          var t = el('text', { x:x + b.r + 10, y:y - 3, 'text-anchor':'start' });
-          t.setAttribute('class', 'cmap-blabel you');
-          t.style.fontSize = L.bFontYou + 'px';
-          b.mobileName.forEach(function(line, li){
-            var ts = el('tspan', { x:x + b.r + 10, dy: li === 0 ? 0 : 15 });
-            ts.textContent = line; t.appendChild(ts);
-          });
-          gNodes.appendChild(t);
-          youTag = txt(x + b.r + 10, y + 27, '', 'cmap-tag-absent', 'start');
-          gNodes.appendChild(youTag);
-        } else {
-          var lbl = txt(x + b.r + 12, y + (b.you ? -1 : 5), b.name, 'cmap-blabel' + (b.you ? ' you' : ''), 'start');
-          if (b.you) lbl.style.fontSize = L.bFontYou + 'px';
-          gNodes.appendChild(lbl);
-          if (b.you){
-            youTag = txt(x + b.r + 12, y + 14, '', 'cmap-tag-absent', 'start');
-            gNodes.appendChild(youTag);
-          }
-        }
-      });
-    }
-
-    function edgePath(ey, b){
-      var x1 = L.EX + 8, x2 = b.x - b.r, mx = (x1 + x2) / 2;
-      return 'M' + x1 + ' ' + ey + ' C ' + mx + ' ' + ey + ', ' + mx + ' ' + b.y + ', ' + x2 + ' ' + b.y;
-    }
-
-    function render(qi, animate){
-      var Q = CMAP_DATA[qi];
-      clearTimeout(flowTimer);
-      gEdges.classList.remove('flowing');
-      while (gEdges.firstChild) gEdges.removeChild(gEdges.firstChild);
-      var order = 0, maxEnd = 0;
-      ENGINES.forEach(function(e, i){
-        var d = Q.e[e.id];
-        var lit = d.st === 1 && d.edges.length > 0;
-        enNodes[e.id].classList.toggle('on', lit);
-        enLabels[e.id].classList.toggle('on', lit);
-        enTags[e.id].textContent =
-          d.st === 0 ? (L.tagLong ? 'no AI answer shown' : 'no AI answer') :
-          d.st === 2 ? (L.tagLong ? 'names none of these five' : 'none of these 5') : '';
-        d.edges.forEach(function(edge){
-          var b = bPos[edge[0]]; if (!b) return;
-          var isYou = edge[0] === 'you';
-          var dStr = edgePath(L.eY[i], b);
-          var p = el('path', { d: dStr, 'class':'cmap-edge' + (isYou ? ' you' : '') });
-          gEdges.appendChild(p);
-          // Flow overlay (same path): the streaming current, fades in after draw.
-          gEdges.appendChild(el('path', { d: dStr, 'class':'cmap-flow' + (isYou ? ' you' : '') }));
-          if (animate && p.animate){
-            // Use the Web Animations API rather than a CSS transition + double
-            // requestAnimationFrame: that older trick silently no-ops on mobile
-            // Safari for freshly-inserted SVG nodes, which made every line just
-            // pop in at once. element.animate() draws reliably everywhere.
-            if (reduce){
-              // Reduced-motion: no drawing/movement, just a gentle staggered
-              // fade so the lines still arrive one by one instead of popping.
-              var target = isYou ? 1 : 0.55;
-              p.style.opacity = 0;
-              p.animate([{ opacity: 0 }, { opacity: target }],
-                { duration: 480, delay: 60 + order * 95, easing: 'ease-out', fill: 'forwards' });
-              if (60 + order * 95 + 480 > maxEnd) maxEnd = 60 + order * 95 + 480;
-            } else {
-              // Draw left-to-right (tool -> business) at a roughly constant pen
-              // speed -> longer lines take longer -> plus a small per-line speed
-              // and start-time jitter so they feel hand-drawn, not in lockstep.
-              var len = p.getTotalLength() || 320;
-              p.style.strokeDasharray = len; p.style.strokeDashoffset = len;
-              var dur = Math.max(1150, Math.min(2050, len / 0.34));
-              dur = Math.round(dur * (0.88 + Math.random() * 0.24));   // +/-12% speed
-              var delay = Math.round(90 + order * 125 + Math.random() * 60);
-              p.animate([{ strokeDashoffset: len }, { strokeDashoffset: 0 }],
-                { duration: dur, delay: delay, easing: 'cubic-bezier(0.22,1,0.32,1)', fill: 'forwards' });
-              if (delay + dur > maxEnd) maxEnd = delay + dur;
-            }
-            order++;
-          }
-        });
-      });
-      // Start the continuous flow once the lines have finished drawing in (or
-      // immediately when we render without the draw-in animation).
-      if (!reduce) {
-        var wait = animate ? (maxEnd + 350) : 0;
-        flowTimer = setTimeout(function(){ gEdges.classList.add('flowing'); }, wait);
-      }
-
-      var youNode = bnNodes['you'];
-      if (Q.hits > 0){
-        youNode.classList.remove('absent');
-        if (youTag) youTag.textContent = '';
-        if (animate) pulseYou();
-      } else {
-        youNode.classList.add('absent');
-        if (youTag) youTag.textContent = 'not named';
-      }
-
-      var num = document.getElementById('cmap-num');
-      var den = document.getElementById('cmap-den');
-      var count = document.getElementById('cmap-count');
-      var vline = document.getElementById('cmap-vline');
-      var vnote = document.getElementById('cmap-vnote');
-      den.textContent = ' / ' + Q.answered;
-      count.classList.toggle('absent', Q.hits === 0);
-      vline.textContent = Q.hits === 0
-        ? 'None of the ' + Q.answered + ' tools that answered named this hotel.'
-        : Q.hits + ' of the ' + Q.answered + ' tools that answered named this hotel.';
-      vnote.textContent = Q.note;
-      if (animate && !reduce) countUp(num, Q.hits); else num.textContent = Q.hits;
-    }
-
-    function pulseYou(){
-      if (reduce || !youPulse) return;
-      var r0 = bPos['you'].r;
-      youPulse.style.transition = 'none';
-      youPulse.setAttribute('r', r0);
-      youPulse.style.opacity = '0.9';
-      requestAnimationFrame(function(){ requestAnimationFrame(function(){
-        youPulse.style.transition = 'r 1s cubic-bezier(0.22,1,0.36,1), opacity 1s ease';
-        youPulse.setAttribute('r', r0 + 14);
-        youPulse.style.opacity = '0';
-      }); });
-    }
-
-    function countUp(node, to){
-      var t0 = null, D = 620;
-      function step(t){
-        if (t0 === null) t0 = t;
-        var p = Math.min(1, (t - t0) / D);
-        p = 1 - Math.pow(1 - p, 4);
-        node.textContent = Math.round(to * p);
-        if (p < 1) requestAnimationFrame(step); else node.textContent = to;
-      }
-      requestAnimationFrame(step);
-    }
-
-    // Query chips
-    var qWrap = document.querySelector('.cmap-queries');
-    var current = 0, userDrove = false, autoTimer = null, started = false, flowTimer = null, fadeTimer = null;
-    var chips = CMAP_DATA.map(function(Q, i){
-      var b = document.createElement('button');
-      b.className = 'cmap-q'; b.type = 'button';
-      b.setAttribute('role', 'tab');
-      b.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
-      b.textContent = '“' + Q.q + '”';
-      b.addEventListener('click', function(){
-        userDrove = true; stopAuto(); select(i, true);
-      });
-      qWrap.appendChild(b);
-      return b;
-    });
-
-    function select(i, animate){
-      current = i;
-      chips.forEach(function(c, ci){ c.setAttribute('aria-selected', ci === i ? 'true' : 'false'); });
-      // Smooth crossfade on a switch: fade the current lines out, then draw the
-      // new set in. Avoids the hard "pop" of clearing and redrawing instantly.
-      if (animate && !reduce && gEdges.childNodes.length){
-        clearTimeout(fadeTimer);
-        gEdges.style.transition = 'opacity 0.5s ease';
-        gEdges.style.opacity = '0';
-        fadeTimer = setTimeout(function(){
-          gEdges.style.transition = ''; gEdges.style.opacity = '1';
-          render(i, true);
-        }, 480);
-      } else {
-        gEdges.style.transition = ''; gEdges.style.opacity = '1';
-        render(i, animate);
-      }
-    }
-
-    // Auto-advance the story arc until the visitor takes over.
-    function startAuto(){
-      if (reduce || userDrove || autoTimer) return;
-      autoTimer = setInterval(function(){ select((current + 1) % CMAP_DATA.length, true); }, 7000);
-    }
-    function stopAuto(){ if (autoTimer){ clearInterval(autoTimer); autoTimer = null; } }
-
-    var stage = document.querySelector('.cmap-stage');
-    var canHover = window.matchMedia && window.matchMedia('(hover: hover)').matches;
-
-    // Pause the auto-advance while a mouse rests on the map, resume on leave --
-    // but ONLY on hover-capable (desktop) devices. On touch, a scroll or tap
-    // fires the same pointerenter and would silently freeze the cycle, so there
-    // we keep it running and only a real chip tap (userDrove) stops it.
-    if (!reduce && canHover){
-      stage.addEventListener('pointerenter', stopAuto);
-      stage.addEventListener('pointerleave', function(){ if (!userDrove && started) startAuto(); });
-      // Subtle data-motivated depth: the map leans toward the pointer.
-      stage.addEventListener('pointermove', function(ev){
-        var r = stage.getBoundingClientRect();
-        var dx = (ev.clientX - r.left) / r.width - 0.5;
-        var dy = (ev.clientY - r.top) / r.height - 0.5;
-        svg.style.transform = 'rotateY(' + (dx * 5) + 'deg) rotateX(' + (-dy * 4) + 'deg)';
-      });
-      stage.addEventListener('pointerleave', function(){ svg.style.transform = 'rotateY(0) rotateX(0)'; });
-    }
-
-    buildScene();
-    if (mobileMq){
-      var mqHandler = function(){ buildScene(); render(current, false); };
-      if (mobileMq.addEventListener) mobileMq.addEventListener('change', mqHandler);
-      else if (mobileMq.addListener) mobileMq.addListener(mqHandler);
-    }
-
-    if ('IntersectionObserver' in window){
-      // Reveal the lines fresh each time the map scrolls WELL into view -- not
-      // when a sliver first peeks in at the bottom -- so the visitor actually
-      // watches them arrive. The bottom rootMargin holds the trigger until the
-      // map has risen into the middle of the screen. When it scrolls away we
-      // clear the lines so the next arrival plays again from nothing. This path
-      // runs for reduced-motion too (render does a gentle fade there, and
-      // startAuto no-ops), so reduced-motion still gets a staggered reveal
-      // instead of an instant pop.
-      var io = new IntersectionObserver(function(entries){
-        var en = entries[0]; if (!en) return;
-        if (en.isIntersecting){
-          started = true;
-          select(current, true);
-          if (!userDrove) startAuto();
-        } else {
-          stopAuto();
-          while (gEdges.firstChild) gEdges.removeChild(gEdges.firstChild);
-          gEdges.classList.remove('flowing');
-        }
-      }, { threshold: 0.1, rootMargin: '0px 0px -45% 0px' });
-      io.observe(stage);
-    } else {
-      started = true; select(0, true); startAuto();
-    }
-  })();
-  </script>
-
-  <!-- The moving target (recurring value) -->
-  <section class="section panel">
-    <div class="inner wide reveal">
-      <div class="sec-label">The moving target</div>
-      <h2>AI doesn&rsquo;t decide once.</h2>
-      <p class="lead">The engines re-read the web constantly. What they cite for your category changes week to week. A competitor ships a page, an engine re-crawls, a new source surfaces, and the answer moves without anyone telling you. A one-time audit is a photograph of a river.</p>
-
-      <div class="rvs" role="img" aria-label="A live standings board showing a business climbing past competitors in AI-citation share month over month, measured across six AI tools and a Bing organic control.">
-        <div class="rvs-top">
-          <div class="rvs-eyebrow"><span class="rvs-live"></span> Tracked across 6 AI tools + Bing control, run after run</div>
-          <div class="rvs-month"><span class="rvs-month-v">Month 1</span></div>
-        </div>
-        <div class="rvs-engines"></div>
-        <div class="rvs-board"></div>
-        <p class="rvs-caption">Your standing changes every month. The month you stop measuring is the month you stop knowing.</p>
-      </div>
-
-      <p>So we measure the same questions three times a month, every month, and not once a day. Day-to-day movement is mostly noise, and reacting to it would have you chasing a number that means nothing. <b>We are measuring the climate, not the weather.</b></p>
-
-      <p>Your position is contested share, and share is taken. The first read tells you where you stand. The second tells you whether you are moving. By the sixth you have a trend most of your category is not even watching.</p>
-    </div>
-  </section>
-  <script>
-  (function(){
-    var stage = document.querySelector('.rvs'); if(!stage) return;
-    var board = stage.querySelector('.rvs-board'), engEl = stage.querySelector('.rvs-engines'), monthEl = stage.querySelector('.rvs-month-v');
-    var ENGINES = ['Perplexity','ChatGPT','Gemini','Bing (control)','Google AIO','Claude','Gemma'], ROWH = 46;
-    var VENUES = ['You','Competitor A','Competitor B','Competitor C','Competitor D'];
-    var MONTHS = [
-      {label:'Month 1', d:[[9,3],[22,6],[18,5],[12,4],[7,2]]},
-      {label:'Month 2', d:[[13,4],[20,6],[17,5],[11,4],[8,3]]},
-      {label:'Month 3', d:[[18,5],[19,6],[15,5],[10,3],[9,3]]},
-      {label:'Month 4', d:[[23,6],[17,5],[14,5],[10,3],[9,3]]}
-    ];
-    ENGINES.forEach(function(n){ var s=document.createElement('span'); s.className='rvs-eng'; s.textContent=n; engEl.appendChild(s); });
-    var chips = Array.prototype.slice.call(engEl.children);
-    var rows = VENUES.map(function(name){
-      var r=document.createElement('div'); r.className='rvs-row'+(name==='You'?' you':'');
-      r.innerHTML='<div class="rvs-rank"></div><div class="rvs-name">'+name+'</div><div class="rvs-track"><div class="rvs-fill"></div></div><div class="rvs-val"></div><div class="rvs-ec"></div>';
-      board.appendChild(r);
-      return {el:r, rank:r.querySelector('.rvs-rank'), fill:r.querySelector('.rvs-fill'), val:r.querySelector('.rvs-val'), ec:r.querySelector('.rvs-ec')};
-    });
-    var MAX=24;
-    function render(mi){
-      var m=MONTHS[mi]; monthEl.textContent=m.label;
-      var order=VENUES.map(function(_,i){return i;}).sort(function(a,b){return m.d[b][0]-m.d[a][0];});
-      var rankOf={}; order.forEach(function(idx,pos){ rankOf[idx]=pos; });
-      VENUES.forEach(function(_,i){
-        var share=m.d[i][0], eng=m.d[i][1], pos=rankOf[i];
-        rows[i].el.style.transform='translateY('+(pos*ROWH)+'px)';
-        rows[i].rank.textContent=(pos+1); rows[i].fill.style.width=(share/MAX*100)+'%';
-        rows[i].val.textContent=share+'%'; rows[i].ec.textContent=eng+'/7';
-      });
-    }
-    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if(reduce){ render(MONTHS.length-1); return; }
-    var mi=0; render(0);
-    setInterval(function(){ mi=(mi+1)%MONTHS.length; render(mi); }, 2300);
-    var si=0; setInterval(function(){ chips.forEach(function(c){c.classList.remove('scan');}); chips[si].classList.add('scan'); si=(si+1)%chips.length; }, 380);
-  })();
-  </script>
-
-  <!-- 02 What we measure -->
-  <section class="section">
-    <div class="inner wide reveal">
-      <div class="sec-label"><span class="n">02</span>What we measure</div>
-      <h2>Six AI tools plus a search control, measured in repeated runs.</h2>
-      <p>NeverRanked measures which businesses the AI answer engines name for your category, and which pages they pull from to answer. Two layers, and they fail in different ways.</p>
-      <div class="engines">
-        <div class="engine-group">
-          <div class="engine-group-label"><b>Four</b> &middot; web-searching &middot; look things up before answering</div>
-          <div class="engine-chips">
-            <span class="chip grade">Perplexity</span>
-            <span class="chip grade">ChatGPT search</span>
-            <span class="chip grade">Gemini grounded</span>
-            <span class="chip grade">Google AI Overviews</span>
-          </div>
-        </div>
-        <div class="engine-group">
-          <div class="engine-group-label"><b>One</b> &middot; control &middot; classic keyword search</div>
-          <div class="engine-chips">
-            <span class="chip control">Bing organic (top 5)</span>
-          </div>
-        </div>
-        <div class="engine-group">
-          <div class="engine-group-label"><b>Two</b> &middot; model-knowledge &middot; answer from training data</div>
-          <div class="engine-chips">
-            <span class="chip">Claude</span>
-            <span class="chip">Gemma</span>
-          </div>
-        </div>
-      </div>
-      <p style="margin-top:24px">The deliverable is a research memo and a prepped punch list, ordered by impact. Your team executes it. We do not. That separation is structural.</p>
-    </div>
-  </section>
-
-  <!-- Atlas · between memos · the interactive demo block -->
-  <section class="section atlas-section">
-    <div class="inner wide reveal">
-      <div class="sec-label"><span class="n">Atlas</span>Between memos</div>
-      <h2>Ask the data. Get the answer. Never the prescription.</h2>
-      <p>Atlas is the data-interpretation layer of your dashboard. It answers what the measurement shows. It refuses to tell you what to do. That separation is the engagement.</p>
-
-      <div class="atlas-card" id="atlas-card" aria-label="Atlas demo">
-        <div class="atlas-card-head">
-          <span class="atlas-card-tag">Atlas</span>
-          <span class="atlas-card-dot">Live</span>
-        </div>
-        <div class="atlas-chat" id="atlas-chat" aria-live="polite">
-          <!-- populated by JS -->
-        </div>
-      </div>
-
-      <div class="atlas-boundary">
-        <div class="col does">
-          <h3>What Atlas answers</h3>
+    <div class="wrap">
+      <div class="sec-label"><span class="n">03</span>What we do</div>
+      <h2>We check what AI says about you. We never sell the fix.</h2>
+      <p class="lead">Anyone who changes your website has a stake in the number that comes back. We never change it, so the number we hand you has nothing of ours to flatter.</p>
+      <div class="keeper">
+        <div class="keeper-col keeper-us">
+          <h3>What we do</h3>
           <ul>
-            <li>Mention counts, week over week deltas</li>
-            <li>Per-engine and per-question breakdowns</li>
-            <li>Cohort positions and competitor share</li>
-            <li>Source-type distribution shifts</li>
-            <li>Observable correlations to dated events</li>
+            <li><b>Ask six AI tools the questions your customers ask.</b>Including ChatGPT and Google&rsquo;s AI answers.</li>
+            <li><b>Run the same questions through plain Bing search, as a control.</b>So the AI answers have something to be compared against.</li>
+            <li><b>Ask more than once.</b>The same question can get a different answer tomorrow.</li>
+            <li><b>Write down what came back.</b>Dated, with the questions saved, so anyone can check it again.</li>
           </ul>
         </div>
-        <div class="col doesnt">
-          <h3>What Atlas refuses</h3>
+        <div class="keeper-col keeper-not">
+          <h3>What we do not do</h3>
           <ul>
-            <li>What you should do about it</li>
-            <li>Which fix to prioritize first</li>
-            <li>Whether a tactic is a good idea</li>
-            <li>Causation claims of any kind</li>
-            <li>Strategic positioning advice</li>
+            <li><b>Edit your website or touch your accounts.</b>Your team, or anyone you hire, makes any changes.</li>
+            <li><b>Sell fixes.</b>So we have no reason to tell you a number moved when it did not.</li>
+            <li><b>Promise that AI will say your name.</b>Nobody can honestly promise that.</li>
           </ul>
         </div>
       </div>
-      <p class="atlas-caption">The boundary is structural. Prioritization lives in your monthly memo, written by the principal. Atlas holds the data. Crossing that line would damage the engagement.</p>
-      <p style="margin-top: 20px; text-align: center;"><a href="/atlas-preview/" style="font-family: var(--mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); text-decoration: none; padding: 11px 22px; border: 1px solid var(--gold); border-radius: 3px; display: inline-block; transition: background 160ms ease;">See the full Atlas preview &rarr;</a></p>
+      <div class="confess">
+        <p>We published a result for a customer. It failed our own test. We pulled it within a day, and the retraction is still up. <a href="/retraction/">Read the retraction &rarr;</a></p>
+      </div>
+      <p class="more">Want the whole method, the engagement and every study in one place? <a href="/for-teams/">For teams and agencies &rarr;</a></p>
     </div>
   </section>
 
-  <!-- 03 How the measurement holds up -->
+  <!-- ═══ 5. WAYS IN ═══
+       Prices and wording match /pricing/. If a price changes there, change it
+       here in the same commit. -->
+  <section class="section" id="ways-in">
+    <div class="wrap">
+      <div class="sec-label"><span class="n">04</span>Ways in</div>
+      <h2>Start free. Pay when you want the answer in writing.</h2>
+      <div class="offers">
+
+        <div class="offer">
+          <p class="offer-name">Free check</p>
+          <p class="offer-price">Free</p>
+          <p class="offer-unit">About a minute</p>
+          <p class="offer-q">Can AI tools read your website?</p>
+          <p>Paste your web address. Your score shows in seconds. The full result comes by email.</p>
+          <p class="small">It reads your site. It does not ask AI about you.</p>
+          <a class="btn btn-ghost js-check" href="https://check.neverranked.com/?utm_source=homepage">Run the free check</a>
+        </div>
+
+        <div class="offer key" id="written-check">
+          <p class="offer-name">Written AI answer check</p>
+          <p class="offer-price">$249</p>
+          <p class="offer-unit">One time &middot; in writing within two business days</p>
+          <p class="offer-q">What does AI say when your customers ask?</p>
+          <p>Send the question your best customer would ask. We ask it, and up to nine like it, three times each across six AI tools, with plain Bing search alongside as a control. You get, in writing, which tools said your name, how often, and the sites they drew on when they named someone else.</p>
+          <p class="small">Measurement only. No fixes. If you start an Audit within 60 days, the $249 comes off your first invoice. Pay by card. Lance emails you within one business day to confirm your question.</p>
+          <a class="btn btn-primary" href="https://buy.stripe.com/28EeVc6dMaId5cj08Je3e01">Buy the check</a>
+        </div>
+
+        <div class="offer">
+          <p class="offer-name">Monitor</p>
+          <p class="offer-price">$199</p>
+          <p class="offer-unit">A month per category &middot; month to month, cancel anytime</p>
+          <p class="offer-q">Is AI saying your name this month?</p>
+          <p>Every month: which of the six AI tools said your name, and which businesses they named in your place. Reported as a yes or a no, never as a percentage, because a sample this size cannot defend one.</p>
+          <a class="btn btn-ghost" href="mailto:lance@hi.neverranked.com?subject=Start%20Monitor&amp;body=The%20category%20I%20want%20measured%3A%20%5Bfor%20example%2C%20boutique%20hotels%20in%20Honolulu%5D%0A%0AMy%20website%3A%20">Start Monitor</a>
+        </div>
+
+        <div class="offer">
+          <p class="offer-name">Audit</p>
+          <p class="offer-price">$750</p>
+          <p class="offer-unit">A month per category &middot; on a three-month term</p>
+          <p class="offer-q">For when you have to prove it to someone else.</p>
+          <p>The questions and the businesses you are compared with are locked before the first run. Three full passes a month, and a written readout with the reasoning shown.</p>
+          <p class="small">Rather not commit to three months? Month to month, the first month is $950 and it is $750 a month after that.</p>
+          <a class="btn btn-ghost" href="mailto:lance@hi.neverranked.com?subject=Scope%20an%20Audit&amp;body=The%20category%20I%20need%20measured%3A%20%0A%0AWho%20the%20readout%20has%20to%20convince%3A%20">Scope an Audit</a>
+        </div>
+
+      </div>
+      <p class="offers-foot">A category is one kind of business in one market, like boutique hotels in Honolulu. <a href="/pricing/">Everything each plan includes &rarr;</a></p>
+    </div>
+  </section>
+
+  <!-- ═══ 6. PROOF AND FAQ ═══ -->
   <section class="section panel">
-    <div class="inner reveal">
-      <div class="sec-label"><span class="n">03</span>How the measurement holds up</div>
-      <h2>A high-ticket engagement has to be checkable.</h2>
-      <p>This one is built to be. Four reasons the numbers can be trusted.</p>
-      <div class="points">
-        <div class="point">
-          <h3>Pre-registered</h3>
-          <p>Every methodology claim is anchored in a hash-locked pre-registration before the test runs. The claim cannot move after the data lands.</p>
+    <div class="wrap">
+      <div class="sec-label"><span class="n">05</span>Proof</div>
+      <h2>Everything we publish, you can check.</h2>
+      <div class="proof">
+        <div class="proof-card">
+          <p class="proof-kicker">Our studies</p>
+          <h3>Every study we have published is public.</h3>
+          <p>Hotels, real estate, home services, agencies and more. Each one is dated, with the questions and the counts behind every number.</p>
+          <p style="margin:0"><a href="/teardowns/">Read the studies &rarr;</a></p>
         </div>
-        <div class="point">
-          <h3>Documented method</h3>
-          <p>The full measurement method is documented at /methodology/, against hash-locked question sets and dated runs on the public claims record. One of the six AI tools, Gemma, is open-weight, so the model itself is independently inspectable.</p>
-        </div>
-        <div class="point">
-          <h3>Repeated runs, not one snapshot</h3>
-          <p>The same hash-locked questions, run after run across all six AI tools. An AI answer can change between two askings of the same question, so a single snapshot is not measurement.</p>
-        </div>
-        <div class="point">
-          <h3>Nothing on your property</h3>
-          <p>We never touch your website, your code, or your CRM. That is not only a security posture, it is what makes the number trustworthy. The moment the measurer is also the one being measured, the score stops being a measurement and becomes a sales document. We keep our hands off the property on purpose, so the only thing we can do is report what the engines actually cite.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 04 What you actually receive -->
-  <section class="section">
-    <div class="inner wide reveal">
-      <div class="sec-label"><span class="n">04</span>What you actually receive</div>
-      <h2>The engagement, end to end.</h2>
-      <p>Five stages. Plain words. No SaaS dashboard between you and the work.</p>
-      <div class="flow">
-        <div class="flow-step">
-          <div class="flow-num">Step 01</div>
-          <h3>Scoping, in writing</h3>
-          <p>Lock the category, the cohort, and the 18 buyer questions we will measure. It happens by email. A call happens only if you ask for one.</p>
-          <a class="flow-link" href="/methodology/#query-set">See an example question set &rarr;</a>
-        </div>
-        <div class="flow-step">
-          <div class="flow-num">Step 02</div>
-          <h3>The baseline month</h3>
-          <p>Repeated runs across 6 AI tools, and the starting numbers frozen with the cohort and the question set. Nothing later can be measured until something is fixed in place first.</p>
-        </div>
-        <div class="flow-step">
-          <div class="flow-num">Step 03</div>
-          <h3>Research memo + punch list</h3>
-          <p>PDF or markdown to your team. Named competitors, observed gaps, the clear list of what to fix first.</p>
-        </div>
-        <div class="flow-step">
-          <div class="flow-num">Step 04</div>
-          <h3>Your team executes</h3>
-          <p>You ship the work. We measure whether it lands. That separation is the whole position.</p>
-        </div>
-        <div class="flow-step">
-          <div class="flow-num">Step 05</div>
-          <h3>Monthly delta memo</h3>
-          <p>What moved, what did not. Updated punch list. Competitor drift is reported here, in the memo, not as an automated alert.</p>
+        <!-- Fact Bank row: classic search failing a superlative category
+             question (keyword 340, 3 to 9 Sept 2026, 6 of 10 Bing organic
+             runs, zero from every AI surface, verified at URL level
+             2026-09-10). The question may be quoted. The client whose
+             question set it belongs to may not be named. Bing is the
+             control, never an AI tool, and its verb is "returned". -->
+        <div class="proof-card">
+          <p class="proof-kicker">Why plain search is not enough</p>
+          <h3>Asked for the best hotel in Hawaii, plain Bing search returned an electronics store&rsquo;s locator page in Elmira, New York.</h3>
+          <p>Six of its ten runs, 3 to 9 September 2026. Bing is not an AI tool. We run it beside six AI tools as a control, and none of the six pointed to that page once.</p>
+          <p>Keyword search matches words. It does not understand questions. That gap is the reason AI answers exist, and it is why a search ranking report cannot tell you what AI says about you.</p>
         </div>
       </div>
-      <p class="flow-note">The first research memo arrives at the end of the baseline month.</p>
-    </div>
-  </section>
 
-  <!-- Teardown blocks — surface the work, do not bury it in a links list -->
-  <section class="section panel">
-    <div class="inner wide reveal">
-      <div class="sec-label"><span class="n">Proof</span>What a teardown looks like</div>
-      <h2>Eleven measurements, on the public record.</h2>
-      <p class="lead">Nine categories deep in one proving ground, one of the most contested visitor markets in the world, plus a cross-geo control in Austin that shows the patterns travel. The method is geography-blind: lock the questions, run the engines, count the names.</p>
-      <p>Every teardown is built from a hash-locked question set, 3 measurement runs, and the same 6 AI tools. Anonymized at the firm level for non-customers, named in full inside paid engagements. Honolulu HVAC was the first finding we pre-registered: the prediction was committed to a public timestamp before the measurement ran. The Claude training-data collapse holds across three unrelated local-service industries, and the two newest teardowns, real estate and hotels, are where it inverts: AI hands the answer to the aggregators (Zillow, Booking), while the training-data engines cite the businesses more than the live-search engines do. In hotels, the boutiques AI names even out-cite the chains.</p>
-
-      <div style="margin: 22px 0 28px; padding: 20px 24px; background: var(--panel-2); border: 1px solid var(--line); border-left: 2px solid var(--gold); border-radius: 4px;">
-        <div style="font-family: var(--mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px;">The finding we called in advance &middot; pre-registered &middot; 2026-06-11</div>
-        <p style="margin: 0; font-size: 16px; color: var(--text); line-height: 1.55;">Before running a single query, we committed a prediction to a public timestamp: Claude would name a Honolulu AC company in under 5% of its answers. It came in at 2%, while the web-searching engines reached 38% to 66% on the same questions. A forecast made before the data, not a case study written after it. This is the third unrelated industry where Claude collapses on local firms, after CPA and med spas. <a href="/teardowns/hvac-honolulu/" style="color: var(--gold);">Read the pre-registered teardown &rarr;</a></p>
-      </div>
-
-      <div class="td-grid">
-        <a class="td-card" href="/teardowns/hotels-hawaii/">
-          <div class="td-card-cat">Hawaii hotels (boutique vs chain)</div>
-          <div class="td-card-stat">17% own-site. The boutiques AI names beat the chains.</div>
-          <p class="td-card-hook">13-hotel cohort, seven measured surfaces: six AI tools plus a Bing search control. Only 17% of citations go to a hotel's own site. 74% go to Booking, Expedia, and travel editorial. But among hotels AI names, boutiques out-cite chains 493 to 457, and the most-cited hotel in Hawaii is a boutique. The contest is hotel versus OTA.</p>
-          <div class="td-card-foot"><span>13 hotels &middot; 3 runs</span><span class="td-card-arrow">Read &rarr;</span></div>
-        </a>
-        <a class="td-card" href="/teardowns/real-estate-honolulu/">
-          <div class="td-card-cat">Honolulu real estate</div>
-          <div class="td-card-stat">15% own-site. The collapse inverts here.</div>
-          <p class="td-card-hook">11-firm cohort, seven measured surfaces: six AI tools plus a Bing search control. Local agents get just 15% of citations while 77% go to the independent web: portals like Zillow and Realtor.com, agent-ranking sites and editorial. The training-data engines cite local firms more than the live-search engines do, the first category where Claude is not the blind spot.</p>
-          <div class="td-card-foot"><span>11 firms &middot; 3 runs</span><span class="td-card-arrow">Read &rarr;</span></div>
-        </a>
-        <a class="td-card" href="/teardowns/bank-honolulu/">
-          <div class="td-card-cat">Hawaii consumer banking</div>
-          <div class="td-card-stat">53% own-site, 75-point engine spread</div>
-          <p class="td-card-hook">23-domain cohort. The widest cross-engine gap of any category measured. One bank owns the head queries on training-data tools. The long tail sits open in the Bing organic control.</p>
-          <div class="td-card-foot"><span>21 firms &middot; 3 runs</span><span class="td-card-arrow">Read &rarr;</span></div>
-        </a>
-        <a class="td-card" href="/teardowns/wealth-mgmt-hawaii/">
-          <div class="td-card-cat">Hawaii wealth management</div>
-          <div class="td-card-stat">47% own-site, the lead-gen middleman pattern</div>
-          <p class="td-card-hook">42-firm cohort, seven measured surfaces: six AI tools plus a Bing search control. AI defers to lead-gen aggregators (SmartAsset, Unbiased, Plannersearch) more than to any individual firm. The structural ground for firms sits outside that middleman tier.</p>
-          <div class="td-card-foot"><span>42 firms &middot; 3 runs</span><span class="td-card-arrow">Read &rarr;</span></div>
-        </a>
-        <a class="td-card" href="/teardowns/dental-honolulu/">
-          <div class="td-card-cat">Honolulu dental</div>
-          <div class="td-card-stat">44% own-site, the Bing search gap</div>
-          <p class="td-card-hook">46-practice cohort, seven measured surfaces: six AI tools plus a Bing search control. Bing organic returns zero practice websites for the entire cohort. Whether ranking there changes what any AI answer engine cites is not something this measurement tested.</p>
-          <div class="td-card-foot"><span>46 firms &middot; 3 runs</span><span class="td-card-arrow">Read &rarr;</span></div>
-        </a>
-        <a class="td-card" href="/teardowns/law-firm-hawaii/">
-          <div class="td-card-cat">Hawaii law firms</div>
-          <div class="td-card-stat">Top 5 own 64% of all firm-owned mentions</div>
-          <p class="td-card-hook">33-firm cohort. The dominant firm gets roughly three times the citations of the second-tier firms. For any firm outside the top 5, the closable ground is the long tail and Bing search (control).</p>
-          <div class="td-card-foot"><span>33 firms &middot; 3 runs</span><span class="td-card-arrow">Read &rarr;</span></div>
-        </a>
-        <a class="td-card" href="/teardowns/cpa-hawaii/">
-          <div class="td-card-cat">Hawaii CPA firms</div>
-          <div class="td-card-stat">Training-data engines collapse to 1-2%</div>
-          <p class="td-card-hook">41-firm cohort. Claude and Gemma name a Hawaii CPA firm in less than 2% of their answers. Competitive game plays inside OpenAI, Gemini, Perplexity, and Google AI Overviews.</p>
-          <div class="td-card-foot"><span>41 firms &middot; 3 runs</span><span class="td-card-arrow">Read &rarr;</span></div>
-        </a>
-        <a class="td-card" href="/teardowns/cpa-austin/">
-          <div class="td-card-cat">Austin TX CPA firms (cross-geo)</div>
-          <div class="td-card-stat">Claude generalizes (0%). Gemma does not (23% vs Hawaii 2%).</div>
-          <p class="td-card-hook">37-firm Austin cohort. First non-Hawaii measurement. Claude's collapse holds across geographies, Gemma's does not. A category pattern from one geo turned out to be two once measured in two.</p>
-          <div class="td-card-foot"><span>37 firms &middot; 3+ runs</span><span class="td-card-arrow">Read &rarr;</span></div>
-        </a>
-        <a class="td-card" href="/teardowns/med-spa-honolulu/">
-          <div class="td-card-cat">Honolulu med spas</div>
-          <div class="td-card-stat">Web engines 53-64%, Claude collapses to 2%</div>
-          <p class="td-card-hook">15-firm cohort. The Claude training-data collapse, found again in a second unrelated industry. Strong on the web-searching engines, near-zero on Claude. The competitive game is on the live-web tools.</p>
-          <div class="td-card-foot"><span>15 firms &middot; 3 runs</span><span class="td-card-arrow">Read &rarr;</span></div>
-        </a>
-        <a class="td-card" href="/teardowns/hvac-honolulu/">
-          <div class="td-card-cat">Honolulu HVAC (pre-registered)</div>
-          <div class="td-card-stat">We predicted Claude under 5%. It came in at 2%.</div>
-          <p class="td-card-hook">12-firm AC-company cohort. The prediction was committed to a public timestamp before any data existed. Claude landed at 2%, the web-searching engines at 38-66%. The first finding we called in advance, not a case study written after.</p>
-          <div class="td-card-foot"><span>12 firms &middot; 3 clean runs</span><span class="td-card-arrow">Read &rarr;</span></div>
-        </a>
-      </div>
-      <p style="margin-top: 22px; font-size: 14px; color: var(--dim);"><a href="/teardowns/cross-category/">The cross-category teardown reads every measurement against each other &rarr;</a></p>
-      <p style="margin-top: 8px; font-size: 14px; color: var(--dim);"><a href="/claims/">Every number we publish is on the record, with the dated run and the documented method that produced it &rarr;</a></p>
-    </div>
-  </section>
-
-  <!-- 05 What a readout reveals -->
-  <section class="section">
-    <div class="inner wide reveal">
-      <div class="sec-label"><span class="n">05</span>What a readout reveals</div>
-      <h2>Per query, per engine, per competitor, per source type.</h2>
-      <p>Which questions in your category get answered, who gets cited when you do not, and which kinds of sources the engines actually pull from when they decide.</p>
-      <div class="readout">
-        <div class="readout-label">One category we measured &middot; an early read</div>
-        <div class="readout-row">
-          <div class="readout-name">Independent web</div>
-          <div class="readout-track"><div class="readout-fill" style="--target-width:96%"></div></div>
-        </div>
-        <div class="readout-row">
-          <div class="readout-name">Review directories</div>
-          <div class="readout-track"><div class="readout-fill" style="--target-width:7%"></div></div>
-        </div>
-        <div class="readout-row">
-          <div class="readout-name">YouTube</div>
-          <div class="readout-track"><div class="readout-fill" style="--target-width:4%"></div></div>
-        </div>
-        <div class="readout-row">
-          <div class="readout-name">Reddit, forums</div>
-          <div class="readout-track"><div class="readout-fill faint" style="--target-width:1.5%"></div></div>
-        </div>
-        <div class="readout-note">A single category, an early read. A data point, not a generalized pattern. And the two directories the engines did trust were niche ones most operators have never heard of.</div>
-      </div>
-      <p style="margin-top:22px">Take one named reference. At Hawaii Theatre Center, the readout surfaced what a standard scan walks past: a Charity Navigator profile not updated since 2023, a Better Business Bureau profile last touched in 1999, a missing Bing Business Profile, authority backlinks pointed at the wrong places. The quiet, citation-shaping detail nobody is looking at.</p>
-      <p><a href="/example-engagement/">See a full example readout &rarr;</a></p>
-    </div>
-  </section>
-
-  <!-- 06 Pricing -->
-  <section class="section panel" id="pricing">
-    <div class="inner reveal">
-      <div class="sec-label"><span class="n">06</span>Pricing</div>
-      <h2>Per category, not per client.</h2>
-      <p>No bundled tiers, no per-seat math.</p>
-      <p>Three ways in. The written check answers one question, once. Monitor tells you where you stand. Audit proves whether anything moved.</p>
-      <div class="prices">
-        <div class="price price-secondary">
-          <div class="amt">$249</div>
-          <div class="unit">One time &middot; in writing within two business days</div>
-          <div class="role">Written answer check</div>
-        </div>
-        <div class="price price-secondary">
-          <div class="amt">$199</div>
-          <div class="unit">Per month per category &middot; month to month</div>
-          <div class="role">Monitor</div>
-        </div>
-        <div class="price price-primary">
-          <div class="amt">$750</div>
-          <div class="unit">Per month per category &middot; after a $950 baseline month</div>
-          <div class="role">Audit</div>
-        </div>
-      </div>
-      <p><b>The written answer check</b> is the place to start if you want one real answer before committing to anything monthly. You send the question your best customer would ask. We ask it, and up to nine like it, three times each across the six AI tools, with plain Bing search alongside as a control. In two business days you get, in writing, which tools said your name, how often, and which sites they drew on when they named someone else. It is one dated photograph, not the river, and it says so. $249, once. If you start an Audit within 60 days, it comes off your first invoice. <a href="https://buy.stripe.com/28EeVc6dMaId5cj08Je3e01">Buy the check</a>.</p>
-      <p><b>Monitor</b> is the meter. Every month, which of the six AI tools name you and which do not, question by question, plus the answers built from your own site that never credit you. No setup, no call, cancel anytime. You will not find a precise-looking percentage in it, because one run a month cannot support one honestly.</p>
-      <p><b>Audit</b> is the record. The baseline month freezes the competitor set, the question set, and the starting numbers, so later months have something real to be measured against. Then three full runs a month, thresholds agreed before the work starts, and the written research memo: where you stand, what moved and what did not, a punch list with the exact first click for each item, and what we are watching next.</p>
-      <div class="scarcity">
-        <b>Audit capacity is the principal&rsquo;s reading list</b>
-        Every audit memo is checked against the measured data and read by the principal before it ships. That review is the product, and it does not scale like software, so audit capacity is finite and honest: when it is full, new audit engagements wait rather than getting a thinner read. Monitor has no such limit. It is the instrument on its own, and the instrument scales.
-      </div>
-      <p>Start with the free instant check. Paste your URL and see in seconds what AI tools can read from your site. The full engagement is the other half of the picture. It runs 18 real customer questions per category across all six AI tools, measures throughout the month, builds a cohort baseline that makes the numbers mean something, and hands you a clear list of what to fix.</p>
-      <p style="margin-top:26px;display:flex;gap:18px;flex-wrap:wrap;align-items:center;">
-        <a class="cta" href="/pricing/">See what is included &rarr;</a>
-        <a class="hero-secondary" href="https://check.neverranked.com/" style="margin-top:0;">Or run the free check first &rarr;</a>
-      </p>
-    </div>
-  </section>
-
-  <!-- What one customer is worth -->
-  <section class="section" id="worth">
-    <div class="inner reveal">
-      <div class="sec-label"><span class="n">MATH</span>Why this is happening now</div>
-      <div class="shift">
-        <p class="shift-lead">AI is becoming the front door, fast.</p>
-        <div class="shift-stats">
-          <div class="shift-stat"><span class="num">2.5B</span><span class="lab">people a month see Google's AI answers, over half of everyone on Google</span></div>
-          <div class="shift-stat"><span class="num">1B</span><span class="lab">on Google's AI Mode in its first year, the fastest any Search feature has reached it</span></div>
-          <div class="shift-stat"><span class="num">~900M</span><span class="lab">weekly ChatGPT users</span></div>
-          <div class="shift-stat"><span class="num">34%</span><span class="lab">of US adults have used ChatGPT, about double two years ago</span></div>
-        </div>
-        <p class="shift-src">Sources: Google, OpenAI, Pew Research.</p>
-      </div>
-    </div>
-  </section>
-
-  
-
-  <!-- 07 Who runs it -->
-  <section class="section">
-    <div class="inner reveal">
-      <div class="sec-label"><span class="n">07</span>Who runs it</div>
-      <h2>You work with the principal.</h2>
-      <div class="principal">
-        <p>NeverRanked is a research practice, not a software company. The measurement, the memos, and the punch lists are produced by Lance Roylo, in Honolulu. There is no account layer between you and the person doing the research.</p>
-        <p>How the practice operates: we measure, we do not execute. We report what the AI engines actually cite, never what we claim our work caused. We do not promise a citation lift in advance. A finding that cannot be substantiated does not ship. That discipline is the product.</p>
-        <div class="sign">Lance Roylo &middot; NeverRanked &middot; Honolulu</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Inline objection FAQ — the five conversion-killers, answered short -->
-  <section class="section panel">
-    <div class="inner reveal">
-      <div class="sec-label"><span class="n">FAQ</span>The questions that stop people</div>
-      <h2>The seven hard ones.</h2>
-      <p>Lifted from the inbound emails Lance answers most often.</p>
-      <div class="obj-list">
-        <details class="obj">
-          <summary class="obj-q">How is this different from SEO?</summary>
-          <p class="obj-a">SEO measures search engine ranking factors on your own site. We measure what AI tools actually cite when buyers ask category-shaped questions, across 7 measured surfaces. The deliverable is also different: SEO tools give you a dashboard to interpret yourself. We hand off an interpreted research memo plus a prepped punch list your team executes. See <a href="/vs/">/vs/</a> for the structural comparison.</p>
+      <div class="faq">
+        <h3>Plain answers</h3>
+        <details class="q" open>
+          <summary>Is my business invisible to AI?</summary>
+          <div class="a">
+            <p>Nobody can answer that in one word, including us. It is three separate questions. Can AI tools read your website? Do they say your name when a customer asks about your kind of business? And when they answer, do they point people to your site or to someone else&rsquo;s page?</p>
+            <p>The free check answers the first in about a minute. The other two take asking the AI tools, more than once, and writing down what comes back. That is what the $249 written check and our monthly plans do.</p>
+          </div>
         </details>
-        <details class="obj">
-          <summary class="obj-q">What if my buyers do not use AI tools yet?</summary>
-          <p class="obj-a">Two reads on this. First, AI search usage in B2B and high-consideration consumer decisions is already non-trivial and growing on the curve we have public visibility into. Second, even if your buyer is not asking ChatGPT today, your competitor showing up there first when they do is the move you can not undo. We measure that surface so you know whether the move has already started.</p>
+        <details class="q" open>
+          <summary>What is AEO?</summary>
+          <div class="a"><p>AEO is short for answer engine optimization, the industry&rsquo;s name for showing up when people ask AI tools like ChatGPT about your kind of business. You do not need the term, only the answer to one question: what do those tools say when your customers ask?</p></div>
         </details>
-        <details class="obj">
-          <summary class="obj-q">Will my mentions actually go up?</summary>
-          <p class="obj-a">We do not promise a lift in advance. The only promise we make is the measurement itself: you will know what AI cites for your category, what gaps exist, and what conditions a buyer of your category typically closes to move the needle. Whether your team executes the punch list well is what determines lift, and we measure that monthly so the answer is observable, not asserted.</p>
+        <details class="q">
+          <summary>How is this different from SEO?</summary>
+          <div class="a"><p>SEO is about where your website lands in a list of search results. An AI answer has no list to climb. It names a few businesses and links to a few pages, and that answer is what we measure.</p></div>
         </details>
-        <details class="obj">
-          <summary class="obj-q">What does success look like, and how fast?</summary>
-          <p class="obj-a">By day thirty you have the baseline and the punch list: where AI names you, where it names competitors instead, and the fixes ordered by impact. From there the work is your team&rsquo;s, and we measure whether it moves every month, reporting competitor drift in that memo rather than as an automated alert. We do not hand you a vanity timeline. We hand you observable movement. You will always know whether it is working, in dated numbers on the public record.</p>
+        <details class="q">
+          <summary>Which AI tools do you check?</summary>
+          <div class="a"><p>Six: ChatGPT search, Perplexity, Google AI Overviews, Gemini, Claude and Gemma. We also run plain Bing search on the same questions as a control. Bing is not an AI tool, and we never count it as one.</p></div>
         </details>
-        <details class="obj">
-          <summary class="obj-q">Why spend this on AI visibility instead of more ads or local marketing?</summary>
-          <p class="obj-a">We are not asking you to drop local marketing. Reviews, Maps, and reputation still matter. AEO reaches a different moment: the buyer who asks AI "who is the best [category]" before they ever open a map, and takes the three names it gives them. For a considered purchase, that shortlist is the whole game, and today you cannot even see the answer that left you out. We measure the one surface no ad budget shows you. And if your buyers do not research before they buy, we are the wrong spend, and we will tell you so.</p>
+        <details class="q">
+          <summary>Do you change my website?</summary>
+          <div class="a"><p>No. We never touch your website, your systems or your accounts. If you want changes made, your own team or anyone you hire makes them. We only measure.</p></div>
         </details>
-        <details class="obj">
-          <summary class="obj-q">Do you do the work or just measure?</summary>
-          <p class="obj-a">We measure. We do not execute. We do not write content, edit pages, deploy schema, update profiles, or change your site. Your in-house team or your agency executes against the punch list we deliver. That separation is structural and is the whole position. It also means we never compete with your agency for execution hours.</p>
+        <details class="q">
+          <summary>Can you promise AI will name my business?</summary>
+          <div class="a"><p>No. Nobody controls what AI tools say, and we do not sell anything meant to change it. What we promise is the measurement. We tell you what they said and when, question by question.</p></div>
         </details>
-        <details class="obj">
-          <summary class="obj-q">Can I try before I commit?</summary>
-          <p class="obj-a">Yes, and it is free. The instant check at <a href="https://check.neverranked.com">check.neverranked.com</a> shows in seconds what AI tools can read from your site. Your score needs no email. The full result is emailed. When you want to go further, <a href="/pricing/">see what Monitor and Audit include</a>.</p>
+        <details class="q">
+          <summary>Who is behind NeverRanked?</summary>
+          <div class="a"><p>Lance Roylo, in Honolulu. NeverRanked is a small research practice, not a software company. You deal with the person doing the work, and all of it can happen in writing.</p></div>
         </details>
       </div>
-      <p class="obj-foot">More: <a href="/faq/">the full FAQ</a> covers cancellation, NDAs, agency channel, data handling, and what happens if a finding turns out to be wrong.</p>
-    </div>
-  </section>
 
-  <!-- Where to dig in -->
-  <section class="section">
-    <div class="inner reveal">
-      <div class="sec-label"><span class="n">&rarr;</span>Where to dig in</div>
-      <div class="links">
-        <a href="/results/">Results so far <span class="sub">&middot; the cumulative scoreboard</span></a>
-        <a href="/teardowns/">All teardowns <span class="sub">&middot; 11 published &middot; 9 Hawaii categories + cross-geo Austin + national agencies</span></a>
-        <a href="/teardowns/cross-category/">The cross-category teardown <span class="sub">&middot; 11 measurements, two axes plus the cross-geo split</span></a>
-        <a href="/teardowns/hvac-honolulu/">Honolulu HVAC teardown <span class="sub">&middot; pre-registered: predicted Claude under 5%, it came in at 2%</span></a>
-        <a href="/teardowns/bank-honolulu/">Hawaii consumer banking teardown <span class="sub">&middot; 23-domain cohort, the 75-point engine spread</span></a>
-        <a href="/teardowns/dental-honolulu/">Honolulu dental teardown <span class="sub">&middot; 46 practices, the Bing search gap</span></a>
-        <a href="/teardowns/law-firm-hawaii/">Hawaii law firms teardown <span class="sub">&middot; 33 firms, top 5 own 64% of mentions</span></a>
-        <a href="/teardowns/wealth-mgmt-hawaii/">Hawaii wealth management teardown <span class="sub">&middot; 42 firms, the lead-gen middleman pattern</span></a>
-        <a href="/teardowns/cpa-hawaii/">Hawaii CPA firms teardown <span class="sub">&middot; 41 firms, the training-data engine collapse</span></a>
-        <a href="/teardowns/cpa-austin/">Austin TX CPA firms teardown <span class="sub">&middot; 37 firms, the cross-geo split (first non-Hawaii)</span></a>
-        <a href="/hawaii-bank-aeo/">If you are a Hawaii bank <span class="sub">&middot; what 6 AI tools cite for consumer banking</span></a>
-        <a href="/hawaii-wealth-aeo/">If you are a Hawaii wealth firm <span class="sub">&middot; what 6 AI tools cite + the lead-gen pattern</span></a>
-        <a href="/honolulu-dental-aeo/">If you are a Honolulu dental practice <span class="sub">&middot; what 6 AI tools cite + the Bing organic gap</span></a>
-        <a href="/hawaii-law-aeo/">If you are a Hawaii law firm <span class="sub">&middot; what 6 AI tools cite + the closable ground outside top 5</span></a>
-        <a href="/hawaii-cpa-aeo/">If you are a Hawaii CPA firm <span class="sub">&middot; what 6 AI tools cite + the training-data engine collapse</span></a>
-        <a href="/austin-cpa-aeo/">If you are an Austin TX CPA firm <span class="sub">&middot; what 6 AI tools cite + the Claude/Gemma cross-geo split</span></a>
-        <a href="/example-engagement/">What the baseline month produces <span class="sub">&middot; real example deliverable</span></a>
-        <a href="/methodology/">How we measure <span class="sub">&middot; engines, classifier, working example</span></a>
-        <a href="/schema-library/">Schema library <span class="sub">&middot; deployable JSON-LD blocks for AI citation</span></a>
-        <a href="/templates/">Page templates <span class="sub">&middot; outlines for the 5 page types AI engines cite</span></a>
-        <a href="/directories/">Directory playbooks <span class="sub">&middot; what AI extracts from each third-party source</span></a>
-        <a href="/vs/">How we differ from the other tools <span class="sub">&middot; structural differences, honest</span></a>
-        <a href="/for-agencies/">For agencies <span class="sub">&middot; we measure, you keep the retainer</span></a>
-        <a href="/security/">Security posture <span class="sub">&middot; for compliance teams</span></a>
-        <a href="/faq/">FAQ <span class="sub">&middot; the questions that come up most</span></a>
-        <a href="/first-30-days/">The first 30 days <span class="sub">&middot; what the baseline month looks like, day by day</span></a>
-        <a href="/about/">About NeverRanked</a>
+      <div class="close">
+        <h2>Start with one minute.</h2>
+        <p>See whether AI tools can read your website. When you want to know what they actually say about you, we will ask them and write it down.</p>
+        <a class="btn btn-primary js-check" href="https://check.neverranked.com/?utm_source=homepage">Run the free check &rarr;</a>
       </div>
     </div>
   </section>
 
-  <!-- Closing CTA -->
-  <section class="section panel close">
-    <div class="inner reveal">
-      <h2>We will not sell you a number. We will show you the one that is real.</h2>
-      <p style="max-width:520px;margin:0 auto 26px;">See what AI tools can read from your site.</p>
-      <a class="cta" href="https://check.neverranked.com/">See what AI sees &rarr;</a>
-      <div class="cta-note">Paste your URL. Your score shows in seconds, and the full result comes by email. Ready to go further? <a href="/pricing/">See what is included</a>.</div>
-    </div>
-  </section>
+  </main>
 
-  <div class="footer">NeverRanked &middot; measured from Honolulu &middot; founder-led, bootstrapped &middot; &copy; 2026 Never Ranked LLC<br><a href="/methodology/">methodology</a> &middot; <a href="/terms/">terms</a> &middot; <a href="/privacy/">privacy</a> &middot; <a href="/takedowns/">takedowns &amp; opt-out</a></div>
+  <footer class="footer">
+    <div class="row"><a href="/for-teams/">For teams</a> &middot; <a href="/for-agencies/">For agencies</a> &middot; <a href="/teardowns/">Studies</a> &middot; <a href="/methodology/">Methodology</a> &middot; <a href="/pricing/">Pricing</a> &middot; <a href="/retraction/">Retraction</a> &middot; <a href="/faq/">FAQ</a> &middot; <a href="/about/">About</a> &middot; <a href="/security/">Security</a></div>
+    <div class="row"><a href="/terms/">Terms</a> &middot; <a href="/privacy/">Privacy</a> &middot; <a href="/takedowns/">Takedowns &amp; opt-out</a></div>
+    NeverRanked &middot; measured from Honolulu &middot; founder-led, bootstrapped &middot; &copy; 2026 Never Ranked LLC
+  </footer>
 
   <script>
-    /* Scroll-reveal: elements fade and rise as they enter the viewport.
-       Above-the-fold elements fire immediately on load. No dependencies. */
+    /* Free-check links. Default attribution is utm_source=homepage. If the
+       visitor arrived with utm_* tags (for example from a tagged LinkedIn
+       post), those are carried across instead, so the scan is still
+       attributed to the post that brought them. Only utm_* keys are copied,
+       never anything else from the query string. */
     (function () {
-      var els = document.querySelectorAll('.reveal, .readout, .wpu');
-      if (!('IntersectionObserver' in window)) {
-        els.forEach(function (el) { el.classList.add('in'); });
-        return;
-      }
-      var io = new IntersectionObserver(function (entries) {
-        entries.forEach(function (e) {
-          if (e.isIntersecting) {
-            e.target.classList.add('in');
-            io.unobserve(e.target);
+      var incoming = [];
+      try {
+        new URLSearchParams(window.location.search).forEach(function (value, key) {
+          if (/^utm_[a-z0-9_]{1,40}$/i.test(key) && value) {
+            incoming.push(encodeURIComponent(key) + '=' + encodeURIComponent(value.slice(0, 200)));
           }
         });
-      }, { rootMargin: '0px 0px -80px 0px', threshold: 0.12 });
-      els.forEach(function (el) { io.observe(el); });
+      } catch (err) { /* old browser: keep the default homepage tag */ }
+      if (!incoming.length) return;
+      var links = document.querySelectorAll('a.js-check');
+      for (var i = 0; i < links.length; i++) {
+        links[i].href = 'https://check.neverranked.com/?' + incoming.join('&');
+      }
     })();
 
-    /* Hero form: capture URL and hand off to the grader with ?url= so
-       it auto-scans. Zero friction: paste, hit enter, see result.
-       Any utm_* tags this page arrived with are carried across, so a
-       visitor who came from a tagged post and used this form instead of
-       the direct check link is still attributed to that post. Only utm_*
-       keys are copied, never anything else from the query string. */
+    /* Hero "Ask AI" animation, about 8.5 seconds per kind of business:
+       the question types itself, the answer names three made-up businesses,
+       the source links light up one by one, and the "your website" slot
+       stays unlit. The end frame holds for two seconds, then the next
+       business. Only opacity and colour change, so nothing shifts. Skipped
+       entirely under prefers-reduced-motion (the final frame shows). Pauses
+       while the box is off screen or the tab is hidden. */
     (function () {
-      var form = document.getElementById('hero-form');
-      if (!form) return;
-      form.addEventListener('submit', function (e) {
-        e.preventDefault();
-        var input = document.getElementById('hero-url');
-        var url = (input.value || '').trim();
-        if (!url) { input.focus(); return; }
-        if (!/^https?:\/\//i.test(url)) { url = 'https://' + url; }
-        var target = 'https://check.neverranked.com/?url=' + encodeURIComponent(url);
-        try {
-          var params = new URLSearchParams(window.location.search);
-          params.forEach(function (value, key) {
-            if (/^utm_[a-z0-9_]{1,40}$/i.test(key) && value) {
-              target += '&' + encodeURIComponent(key) + '=' + encodeURIComponent(value.slice(0, 200));
-            }
-          });
-        } catch (err) { /* old browser without URLSearchParams: send the scan untagged */ }
-        window.location.href = target;
-      });
-    })();
+      var root = document.documentElement;
+      if (root.className.indexOf('anim') === -1) return;
+      var sets = Array.prototype.slice.call(document.querySelectorAll('.ask-set'));
+      if (!sets.length) return;
+      var box = document.querySelector('.ask');
+      var visible = true;
+      if ('IntersectionObserver' in window && box) {
+        new IntersectionObserver(function (es) { visible = es[0].isIntersecting; }, { threshold: 0.1 }).observe(box);
+      }
+      var timers = [];
+      function at(ms, fn) { timers.push(setTimeout(fn, ms)); }
+      function decode(s) { var t = document.createElement('textarea'); t.innerHTML = s; return t.value; }
 
-    /* Scroll-linked character opacity on the hero turn paragraph.
-       Each character starts at 0.2 opacity and ramps to 1 as it
-       scrolls into the reading zone (between 70% and 30% of viewport
-       height). Reading becomes a deliberate act, not a fade-in event.
-       Channels the Prisma scroll-reveal pattern but lighter (one
-       paragraph, not whole page sections). */
-    (function () {
-      var turn = document.getElementById('hero-turn');
-      if (!turn) return;
-      var prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (prefersReduced) return;
-
-      // Wrap each non-space character in a span. Spaces stay as text
-      // so word wrapping behaves naturally.
-      var text = turn.textContent || '';
-      turn.innerHTML = '';
-      var chars = [];
-      for (var i = 0; i < text.length; i++) {
-        var ch = text[i];
-        if (ch === ' ') {
-          turn.appendChild(document.createTextNode(' '));
-        } else {
-          var span = document.createElement('span');
-          span.className = 'schar';
-          span.textContent = ch;
-          turn.appendChild(span);
-          chars.push(span);
+      function play(i) {
+        var set = sets[i];
+        var live = set.querySelector('.ask-live');
+        var q = decode(set.getAttribute('data-q') || live.textContent);
+        var srcs = set.querySelectorAll('.ask-srcs li:not(.yours)');
+        sets.forEach(function (s) { s.classList.remove('on'); });
+        set.className = 'ask-set on typing';
+        for (var k = 0; k < srcs.length; k++) srcs[k].classList.remove('lit');
+        live.textContent = '';
+        var t = 300, per = 42;
+        for (var c = 1; c <= q.length; c++) {
+          (function (n) { at(t + n * per, function () { live.textContent = q.slice(0, n); }); })(c);
         }
-      }
-
-      // Throttled scroll handler: compute viewport position of the
-      // turn element, set per-char opacity based on relative progress.
-      // Throttle via requestAnimationFrame for smoothness.
-      var ticking = false;
-      function update() {
-        var rect = turn.getBoundingClientRect();
-        var vh = window.innerHeight;
-        // 0 when element bottom is at viewport bottom; 1 when element
-        // top has scrolled to 30% of viewport. Linear ramp.
-        var start = vh * 0.85;
-        var end = vh * 0.30;
-        var elementCenter = rect.top + rect.height / 2;
-        var overallProgress = (start - elementCenter) / (start - end);
-        overallProgress = Math.max(0, Math.min(1, overallProgress));
-        // Apply per-char with a small lag so chars reveal in order
-        var n = chars.length;
-        for (var j = 0; j < n; j++) {
-          var charProgress = j / n;
-          // Each char's local progress window: [charProgress - 0.1, charProgress + 0.05]
-          var local = (overallProgress - (charProgress - 0.1)) / 0.15;
-          local = Math.max(0, Math.min(1, local));
-          var opacity = 0.85 + (1 - 0.85) * local;
-          chars[j].style.setProperty('--char-opacity', opacity.toFixed(3));
+        t += q.length * per + 250;
+        at(t, function () { set.classList.remove('typing'); set.classList.add('thinking'); });
+        t += 650;
+        at(t, function () { set.classList.remove('thinking'); set.classList.add('s1'); });
+        at(t + 350, function () { set.classList.add('s2'); });
+        at(t + 700, function () { set.classList.add('s3'); });
+        t += 1300;
+        at(t, function () { set.classList.add('s4'); });
+        for (var j = 0; j < srcs.length; j++) {
+          (function (el, d) { at(d, function () { el.classList.add('lit'); }); })(srcs[j], t + 350 + j * 450);
         }
-        ticking = false;
+        t += 350 + srcs.length * 450 + 150;
+        at(t, function () { set.classList.add('s5'); });
+        t += 2000; /* hold the end frame */
+        at(t, function () { next((i + 1) % sets.length); });
       }
-      window.addEventListener('scroll', function () {
-        if (!ticking) {
-          window.requestAnimationFrame(update);
-          ticking = true;
-        }
-      }, { passive: true });
-      update();
-    })();
-
-    // ── Atlas demo: cycling typed exchanges ─────────────────────
-    // Two scripted exchanges. One Atlas answers (data). One Atlas
-    // refuses (action, punt pattern verbatim from system prompt).
-    // Triggers on scroll-into-view. Skipped under reduced-motion.
-    (function () {
-      var chat = document.getElementById('atlas-chat');
-      if (!chat) return;
-      var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-      var script = [
-        {
-          user: "How many mentions did I have last week vs the week before?",
-          atlas: "37 mentions across 6 AI tools last week. 41 the week before. Perplexity dropped from 14 to 11. Google AI Overviews held at 8. The other 4 tools were stable within noise."
-        },
-        {
-          user: "What should I do about the Perplexity drop?",
-          atlas: "That's prioritization, which lives in your monthly memo. Your next memo arrives June 25. If you want this addressed before then, reply 'flag it' and I'll send Lance a note."
-        }
-      ];
-
-      function makeMsg(role) {
-        var wrap = document.createElement('div');
-        wrap.className = 'atlas-msg ' + role;
-        var label = document.createElement('div');
-        label.className = 'atlas-msg-label';
-        label.textContent = role === 'user' ? 'You' : 'Atlas';
-        var body = document.createElement('div');
-        body.className = 'atlas-msg-body atlas-cursor';
-        wrap.appendChild(label);
-        wrap.appendChild(body);
-        return { wrap: wrap, body: body };
+      function next(i) {
+        timers.forEach(clearTimeout); timers = [];
+        if (!visible || document.hidden) { timers.push(setTimeout(function () { next(i); }, 600)); return; }
+        play(i);
       }
-
-      function typeInto(node, text, speed) {
-        return new Promise(function (resolve) {
-          if (reduced) { node.textContent = text; node.classList.remove('atlas-cursor'); return resolve(); }
-          var i = 0;
-          (function step() {
-            node.textContent = text.slice(0, i);
-            if (i >= text.length) { node.classList.remove('atlas-cursor'); return resolve(); }
-            i++;
-            setTimeout(step, speed + (Math.random() * 18 - 9));
-          })();
-        });
-      }
-
-      function sleep(ms) { return new Promise(function (r) { setTimeout(r, reduced ? 0 : ms); }); }
-
-      var idx = 0;
-      var running = false;
-
-      function runOnce() {
-        if (running) return;
-        running = true;
-        var ex = script[idx];
-        chat.innerHTML = '';
-
-        var u = makeMsg('user');
-        chat.appendChild(u.wrap);
-        typeInto(u.body, ex.user, 28).then(function () {
-          return sleep(700);
-        }).then(function () {
-          var a = makeMsg('atlas');
-          chat.appendChild(a.wrap);
-          return typeInto(a.body, ex.atlas, 16);
-        }).then(function () {
-          return sleep(reduced ? 0 : 4200);
-        }).then(function () {
-          idx = (idx + 1) % script.length;
-          running = false;
-          runOnce();
-        });
-      }
-
-      // Trigger on scroll-into-view, once.
-      var started = false;
-      if (!('IntersectionObserver' in window) || reduced) {
-        runOnce();
-      } else {
-        var io = new IntersectionObserver(function (entries) {
-          entries.forEach(function (e) {
-            if (e.isIntersecting && !started) {
-              started = true;
-              runOnce();
-              io.disconnect();
-            }
-          });
-        }, { threshold: 0.35 });
-        io.observe(chat);
-      }
+      next(0);
     })();
   </script>
 
