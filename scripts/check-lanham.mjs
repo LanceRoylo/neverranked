@@ -70,7 +70,10 @@ const NAMED = new RegExp(
 const CHARACTERIZE = /\b(?:they|their|competitors?|other tools?|those tools?|rivals?)\b[^.]{0,60}\b(?:lie|lying|lies|mislead(?:ing)?|deceptive|dishonest|fake|fraud|bogus|inflated|unsubstantiated|can(?:not|'t) be trusted|untrue|false)\b/i;
 
 const SECTIONS = [
-  ["homepage: The check", "index.html", "Who tells you whether it worked", "Running an agency?"],
+  // The check section moved to /for-teams/ with the old homepage body on
+  // 2026-10-13. The new homepage's referee argument is "What we do".
+  ["/for-teams/: The check", "for-teams/index.html", "Who tells you whether it worked", "Running an agency?"],
+  ["homepage: What we do", "index.html", "We check what AI says about you", "Start free."],
   ["/vs/: Or don't pick", "vs/index.html", "Or don't pick", "We will eventually prove"],
 ];
 

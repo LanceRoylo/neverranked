@@ -30,6 +30,7 @@ on:
       - 'first-30-days/**'
       - 'first-look/**'
       - 'for-agencies/**'
+      - 'for-teams/**'
       - 'for-hospitality/**'
       - 'for-real-estate/**'
       - 'for-hvac/**'
