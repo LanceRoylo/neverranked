@@ -495,3 +495,34 @@ test("agency mode never logs a gate impression, and a returning visitor gets a s
   assert.match(WORKER_SRC, /id="email-resend-btn"/);
   assert.match(WORKER_SRC, /resendBtn\.addEventListener\('click', resendResult\)/);
 });
+
+test("a gate impression carries the landing tags, so the capture rate can be read per post", async (t) => {
+  const fake = await d1Fake();
+  if (!fake) { t.skip("needs node:sqlite and migration 0131 on this branch"); return; }
+  const worker = (await import("../../tools/schema-check/src/index.ts")).default as any;
+  const { kv } = kvFake();
+  const env = { DB: fake.d1, LEADS: kv };
+  const { ctx, settle } = ctxFake();
+  await worker.fetch(post("/api/gate-impression", {
+    session_id: "3f1c2b9e-8d7a-4c6b-9e5f-1a2b3c4d5e6f", client: "page", domain: "example-dental.test",
+    referrer: "https://www.linkedin.com/", utm: { utm_source: "linkedin", utm_campaign: "post-2", junk: "x" },
+  }), env, ctx);
+  await worker.fetch(post("/api/gate-impression", {
+    session_id: "4a2d3c0f-9e8b-4d7c-8f6a-2b3c4d5e6f70", client: "page", domain: "example-dental.test",
+  }), env, ctx);
+  await settle();
+  const rows = fake.db.prepare("SELECT * FROM free_check_events WHERE type = 'gate_impression' ORDER BY id").all() as any[];
+  assert.equal(rows.length, 2);
+  assert.equal(rows[0].utm_source, "linkedin");
+  assert.equal(rows[0].utm_campaign, "post-2");
+  assert.equal(rows[0].referrer, "https://www.linkedin.com/");
+  assert.ok(!("junk" in rows[0]));
+  assert.equal(rows[1].utm_source, null);
+  assert.equal(rows[1].referrer, null);
+});
+
+test("the page sends its landing tags with the gate impression", () => {
+  const fn = WORKER_SRC.slice(WORKER_SRC.indexOf("function logGateImpression(reportData)"), WORKER_SRC.indexOf("function animateGradeRing(root)"));
+  assert.match(fn, /referrer: _ref \|\| null/);
+  assert.match(fn, /utm: Object\.keys\(_utm\)\.length \? _utm : undefined/);
+});
