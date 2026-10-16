@@ -9,7 +9,7 @@
 
 ## What we actually do now
 
-- Repeated measurement runs across six AI tools: four citation-grade tools that search the live web (Perplexity, ChatGPT search, Gemini grounded, Google AI Overviews) and two model-knowledge tools that answer from memory (Claude, Gemma). Bing organic search runs beside them as a classic-search control. The control is not an AI tool. Seven measured surfaces in total.
+- Repeated measurement runs across six AI tools: four citation-grade tools that search the live web (Perplexity, ChatGPT search, Gemini grounded, Google AI Overviews) and two model-knowledge tools that answer from memory (Claude, Gemma). Bing organic search runs beside them as a classic-search control. The control is Bing's plain list of links, not Bing's AI answers. Seven measured surfaces in total.
 - Per question, per AI tool, per competitor, per source type. The output is a forensic research memo, not a dashboard.
 - The deliverable: a prepped punch list for the customer's team to execute. We do not make the changes ourselves. The boundary is structural.
 
