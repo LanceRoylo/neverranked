@@ -260,6 +260,15 @@ function layerOf(engine: string): CompareLayer {
  * in the compared set, so the brief's headline blamed the one change that
  * could not have mattered.
  */
+/**
+ * Changes the AI tool made on its own side (recorded 2026-10-15 after Perplexity
+ * changed its answer format on 2026-09-29). They still withhold a comparison,
+ * because the months then measure two different tools, but they are not ours,
+ * and a client document must never say they were.
+ */
+export const ENGINE_SIDE_KINDS: readonly string[] = ["engine_behavior_changed"];
+const engineSide = (own: InstrumentEvent[]) => own.length > 0 && own.every((e) => ENGINE_SIDE_KINDS.includes(e.kind));
+
 function describeEvents(own: InstrumentEvent[]): string {
   if (own.length === 1) return `${own[0].kind}: ${own[0].detail}`;
   return `${own.length} recorded changes: ` + own.map((e) => e.kind).join(", ");
@@ -283,8 +292,16 @@ export function computeComparison(input: ComparisonInput): ComparisonResult {
   const basisKind: ComparisonBasis = input.basis ?? "shared";
   const events: InstrumentEvent[] = [];
   const setAside: SetAsideEvent[] = [];
+  // A detector step on an engine that also carries a recorded change of the
+  // tool's own is that change, seen in the numbers. Counting it again would
+  // turn the tool's change into "a change of ours" in a client document.
+  const toolChanged = new Set(
+    (input.events ?? []).filter((e) => ENGINE_SIDE_KINDS.includes(e.kind) && e.engine).map((e) => e.engine as string),
+  );
   for (const e of input.events ?? []) {
-    const why = setAsideReason(e, basisKind);
+    const why = e.kind === "unexplained_step" && e.engine && toolChanged.has(e.engine)
+      ? "explained by the change the tool made on its own side, listed separately"
+      : setAsideReason(e, basisKind);
     if (why === null) events.push(e);
     else setAside.push({ event: e, why });
   }
@@ -313,7 +330,9 @@ export function computeComparison(input: ComparisonInput): ComparisonResult {
     } else if (own.length > 0) {
       movement = {
         kind: "withheld",
-        reason: `an instrument change lands inside the window (${describeEvents(own)})`,
+        reason: engineSide(own)
+          ? `the tool itself changed how it answers inside the window (${describeEvents(own)})`
+          : `an instrument change lands inside the window (${describeEvents(own)})`,
       };
     } else {
       movement = { kind: "stated", prevRate, curRate, deltaPp: curRate - prevRate };
@@ -387,7 +406,9 @@ function pooledFor(
     if (own.length > 0) {
       return {
         kind: "withheld",
-        reason: `an instrument change affects ${s.engine} inside the window (${describeEvents(own)})`,
+        reason: engineSide(own)
+          ? `one of these tools changed how it answers inside the window (${describeEvents(own)})`
+          : `an instrument change affects ${s.engine} inside the window (${describeEvents(own)})`,
       };
     }
   }
@@ -443,14 +464,20 @@ export function describeMovement(m: Movement, subject: string): string {
  * mix and missing-window reasons carry no client detail and pass through.
  */
 export function publicReason(text: string): string {
-  return text.replace(
-    /an instrument change (lands inside|affects \S+ inside) the window \([^)]*(\)[^)]*)*\)/g,
-    "an instrument change of ours lands inside the window (listed below)",
-  );
+  return text
+    .replace(
+      /an instrument change (lands inside|affects \S+ inside) the window \([^)]*(\)[^)]*)*\)/g,
+      "an instrument change of ours lands inside the window (listed below)",
+    )
+    .replace(
+      /(the tool itself|one of these tools) changed how it answers inside the window \([^)]*(\)[^)]*)*\)/g,
+      "$1 changed how it answers inside the window, a change on its side and not ours (listed below)",
+    );
 }
 
 /** An instrument event as a client-facing document (the weekly brief, the monthly memo) may describe it: kind and scope, no notes. */
 export function publicEventLine(e: { kind: string; scope: string; engine?: string | null }): string {
+  if (ENGINE_SIDE_KINDS.includes(e.kind) && e.engine) return `${e.engine} changed how it answers, on its own side`;
   const what = e.kind.replace(/_/g, " ");
   const where = e.scope === "engine" && e.engine
     ? ` on ${e.engine}`
