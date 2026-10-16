@@ -22,6 +22,7 @@
 
 import type { Env } from "../types";
 import { ENGINE_ORDER } from "../lib/engine-order";
+import { LINK_BASIS } from "../lib/link-basis";
 import { getUser } from "../auth";
 import { redirect, esc } from "../render";
 
@@ -167,12 +168,15 @@ async function loadDeliveredReports(env: Env, slug: string): Promise<ReportRow[]
 // below are read by the renderer, so anything added there and used here must
 // be added here too. Nothing typechecks this project (no typescript
 // dependency, despite a tsconfig), so the compiler will not tell you.
-interface ChartEngine { name: string; pct: number; prev?: number | null; noCohortSignal?: boolean; layer?: string; }
+interface ChartEngine { name: string; pct: number; prev?: number | null; prevWithheld?: string; noCohortSignal?: boolean; layer?: string; }
 interface ChartRow { label: string; pct: number; you?: boolean; own?: boolean; }
 interface ReportFacts {
   period_label?: string;
   prior_label?: string;
   engines?: ChartEngine[];
+  /** One sentence naming the engines whose link counts left out Google's own
+   *  viewer links (2026-10-05). Shown once, under the own-site chart. */
+  linkBasisNote?: string;
   /** Surfaces held out of this month, with the reason. Must be RENDERED, not
    *  just carried: filtering a surface out of the charts without telling the
    *  reader leaves them unable to tell a measured zero from an engine we could
@@ -182,17 +186,27 @@ interface ReportFacts {
   venue?: { rows?: ChartRow[] };
   sources?: ChartRow[];
   topSources?: { host: string; pct: number }[]; // specific third-party domains AI pulled from
+  /** The client's group's other sites (2026-10-05), listed apart from the
+   *  third-party hosts and never counted as the client's own site. */
+  affiliatedSources?: { host: string; pct: number }[];
   /** Links to google.com itself left out of sources, topSources and the
    *  per-engine link totals (almost all are Google's own viewer links). Set on
    *  facts counted on that basis, so the captions can say so. Absent on facts
    *  that still count them, where the google.com row in topSources is the
    *  only trace and the captions disclose it from there. */
   googleLinksSetAside?: number;
+  /** What the per-engine link totals count (lib/link-basis.ts). Facts with
+   *  LINK_BASIS left Google's viewer links out of them, so the "still
+   *  counted" captions below are never shown for them. */
+  linkBasis?: string;
   /** Did the answer name the business. Web-searching surfaces only; two rates
    *  because rows whose stored answer was cut off count as unread, not absent. */
   presence?: {
     engines: { name: string; floorPct: number; ceilingPct: number; unknown: number; total: number }[];
     overall: { floorPct: number; ceilingPct: number; unknown: number; total: number };
+    /** "outward": the floor was rounded down and the ceiling up, so both hold
+     *  as stated. Absent on facts frozen before 2026-10-05. */
+    rounding?: string;
   };
   questions?: { appeared?: Array<{ q: string; engines: string[] }>; disappeared?: Array<{ q: string; engines: string[] }> };
   // Per-engine x per-question citation grid (see report-facts.ts buildCitationGrid).
@@ -536,15 +550,43 @@ function scaleNote(maxPct: number): string {
   return `<div class="nr-scale">Bars compare these to each other, not to 100%. The longest bar is ${m}%.</div>`;
 }
 
-function chartBlock(title: string, bars: string, caption: string, note?: string, maxPct?: number): string {
-  return `<section class="nr-chart"><h3 class="nr-ctitle">${esc(title)}</h3><div class="nr-bars">${bars}</div>${typeof maxPct === "number" ? scaleNote(maxPct) : ""}${chartText(caption, note)}</section>`;
+function chartBlock(title: string, bars: string, caption: string, note?: string, maxPct?: number, extraHtml = ""): string {
+  return `<section class="nr-chart"><h3 class="nr-ctitle">${esc(title)}</h3><div class="nr-bars">${bars}</div>${typeof maxPct === "number" ? scaleNote(maxPct) : ""}${chartText(caption, note)}${extraHtml}</section>`;
+}
+
+/** The own-site chart's disclosures, rendered once, under the chart: which
+ *  link counts leave out Google's viewer links, and which tools are shown
+ *  without last month's figure and why. Already-safe HTML. */
+function ownSiteNotes(f: ReportFacts, engines: ChartEngine[], prior: string): string {
+  const out: string[] = [];
+  if (typeof f.linkBasisNote === "string" && f.linkBasisNote) out.push(`<p class="nr-note">${esc(f.linkBasisNote)}</p>`);
+  const scored = engines.filter((e) => !e.noCohortSignal);
+  // Only meaningful when the chart compares at all. A baseline month draws no
+  // "from" dots for anyone and says so in its own caption.
+  if (scored.some((e) => typeof e.prev === "number") || scored.some((e) => e.prevWithheld)) {
+    const byReason = new Map<string, string[]>();
+    for (const e of scored) {
+      if (typeof e.prev === "number") continue;
+      const why = typeof e.prevWithheld === "string" && e.prevWithheld
+        ? e.prevWithheld
+        : `There is no reading from ${prior} to compare it with.`;
+      byReason.set(why, [...(byReason.get(why) ?? []), e.name]);
+    }
+    for (const [why, names] of byReason) {
+      const who = names.length === 1 ? names[0] : `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
+      out.push(`<p class="nr-note">${esc(who)} ${names.length === 1 ? "shows" : "show"} this month only. ${esc(why)}</p>`);
+    }
+  }
+  return out.join("");
 }
 
 // Dumbbell / slope chart for the per-engine month-over-month move (used only when
 // a prior value exists; a baseline report has no prev and falls back to bars).
 // Two dots per engine (prior + current) on a track, connected by a direction-
 // colored line, so the MOVEMENT is the visual, not a footnote pill.
-function renderDumbbell(engines: ChartEngine[], prior: string, note?: string, extraCap = ""): string {
+// extraCap is appended to the caption text, extraHtml (already-safe notes)
+// after it.
+function renderDumbbell(engines: ChartEngine[], prior: string, note?: string, extraCap = "", extraHtml = ""): string {
   // An engine where NOBODY in the cohort appeared is not a score. Pull it
   // out of the chart entirely and disclose it underneath. July 2026:
   // Bing organic (control) returned 794 citations, none to any Honolulu venue,
@@ -555,6 +597,22 @@ function renderDumbbell(engines: ChartEngine[], prior: string, note?: string, ex
   const maxV = Math.max(...scored.map((e) => Math.max(num(e.pct), num(e.prev))), 1);
   const posOf = (v: number) => 4 + (num(v) / maxV) * 92; // inset [4%,96%] so dots never clip
   const rows = [...scored].sort((a, b) => num(b.pct) - num(a.pct)).map((e, i) => {
+    // NO "FROM" DOT WITHOUT A COMPARABLE READING. A tool with no prior value,
+    // or one withheld because its links were counted differently last month
+    // (2026-10-05), used to be drawn moving up from a hollow dot at zero, a
+    // rise that never happened. It gets its current dot and is named in the
+    // note under the chart.
+    if (typeof e.prev !== "number") {
+      const cur = num(e.pct);
+      const title = `${e.name}: ${cur}% this period, not compared with ${prior}`;
+      return `<div class="nr-row" style="--i:${i}" title="${esc(title)}">
+      <div class="nr-lab">${esc(e.name)}</div>
+      <div class="dumb-track">
+        <div class="dumb-dot cur" style="left:${posOf(cur)}%"></div>
+      </div>
+      <div class="dumb-vals"><span class="cur"><span class="cnt" data-v="${cur}">${cur}</span>%</span></div>
+    </div>`;
+    }
     const cur = num(e.pct), prev = num(e.prev);
     const pc = posOf(cur), pp = posOf(prev);
     const lo = Math.min(pc, pp), span = Math.abs(pc - pp);
@@ -575,7 +633,7 @@ function renderDumbbell(engines: ChartEngine[], prior: string, note?: string, ex
   const excluded = names.length
     ? `<p class="nr-note">${esc(names.length === 1 ? names[0] : names.join(" and "))} ${names.length === 1 ? "is" : "are"} left out of this chart on purpose. ${names.length === 1 ? "It returned" : "They returned"} plenty of sources this month, but not one of them was any venue in your category, yours or a competitor's. That points at how ${names.length === 1 ? "that tool" : "those tools"} sourced answers this month rather than at anything on your side, so scoring it as a zero would be misleading.</p>`
     : "";
-  return `<section class="nr-chart"><h3 class="nr-ctitle">How much of what AI reads is your own site</h3><div class="nr-bars">${rows}</div>${chartText(cap, note)}${excluded}</section>`;
+  return `<section class="nr-chart"><h3 class="nr-ctitle">How much of what AI reads is your own site</h3><div class="nr-bars">${rows}</div>${chartText(cap, note)}${excluded}${extraHtml}</section>`;
 }
 
 // 100% stacked bar for the source-type composition (part-to-whole). One bar
@@ -586,7 +644,7 @@ const STACK_COLORS = ["#9c8a4e", "#75704f", "#5b563f", "#4a4436", "#3d382c", "#3
 // it is shown as what it is: every other website.
 const SOURCE_LABEL_SHOWN: Record<string, string> = { "Independent web": "Other websites" };
 
-function renderStack(sources: ChartRow[], note?: string, googlePct?: number, googleSetAside?: number): string {
+function renderStack(sources: ChartRow[], note?: string, googlePct?: number, googleSetAside?: number, extraHtml = ""): string {
   const total = sources.reduce((s, r) => s + num(r.pct), 0) || 100;
   let ci = 0;
   const colors = sources.map((r) => (r.own ? "#d4c596" : STACK_COLORS[ci++ % STACK_COLORS.length]));
@@ -601,7 +659,7 @@ function renderStack(sources: ChartRow[], note?: string, googlePct?: number, goo
       ? ` Other websites here include links to google.com itself, ${googlePct}% of all links, almost all of them Google's own viewer links whose destination we cannot see.`
       : "";
   const cap = `One bar, split by the kind of site the AI tools that search the web listed as sources. Your own site is the gold segment.${google}`;
-  return `<section class="nr-chart"><h3 class="nr-ctitle">Where AI's answers come from</h3><div class="stack-bar">${segs}</div><div class="stack-legend">${legend}</div>${chartText(cap, note)}</section>`;
+  return `<section class="nr-chart"><h3 class="nr-ctitle">Where AI's answers come from</h3><div class="stack-bar">${segs}</div><div class="stack-legend">${legend}</div>${chartText(cap, note)}${extraHtml}</section>`;
 }
 
 
@@ -628,10 +686,14 @@ function renderSummary(f: ReportFacts): string {
   // 1. The outcome. How often an AI says their name.
   const p = f.presence;
   if (p?.overall && Number.isFinite(p.overall.floorPct) && num(p.overall.total) > 0) {
+    // "At least" only on a floor. With no unread answer the figure is the
+    // share itself, rounded (wholePercentBounds), so it can sit just above the
+    // exact share and must not be called a floor. A missing count is not 0.
+    const exact = p.overall.unknown === 0;
     tiles.push({
       big: `${num(p.overall.floorPct)}%`,
       label: "of answers from AI tools that search the web name you",
-      sub: `at least, across ${num(p.overall.total).toLocaleString("en-US")} answers from the ${countWord(Array.isArray(p.engines) ? p.engines.length : 0, "tool")} that ${Array.isArray(p.engines) && p.engines.length === 1 ? "searches" : "search"} the web`,
+      sub: `${exact ? "across" : "at least, across"} ${num(p.overall.total).toLocaleString("en-US")} answers from the ${countWord(Array.isArray(p.engines) ? p.engines.length : 0, "tool")} that ${Array.isArray(p.engines) && p.engines.length === 1 ? "searches" : "search"} the web`,
     });
   }
 
@@ -774,7 +836,13 @@ export function renderCharts(factsJson: string | null): string {
   // isGoogleHost and ReportFacts.googleLinksSetAside.
   const allTopSources = Array.isArray(f.topSources) ? f.topSources.filter((r) => r && typeof r.host === "string") : [];
   const googleRow = allTopSources.find((r) => isGoogleHost(r.host));
-  const googlePct = googleRow ? num(googleRow.pct) : undefined;
+  // Facts counted on LINK_BASIS left Google's viewer links out of the source
+  // mix, the host list and the per-engine link totals, so a google.com row
+  // still in them is google.com's real pages, and the "still counted"
+  // sentences built from googlePct would be false. Only facts that still
+  // count the viewer links get them.
+  const viewerLinksCounted = f.linkBasis !== LINK_BASIS;
+  const googlePct = googleRow && viewerLinksCounted ? num(googleRow.pct) : undefined;
   const googleSetAside = typeof f.googleLinksSetAside === "number" && f.googleLinksSetAside > 0 ? f.googleLinksSetAside : undefined;
   // Above everything. See renderSummary.
   const summary = renderSummary(f);
@@ -833,21 +901,33 @@ export function renderCharts(factsJson: string | null): string {
     const bars = rows.map((e, i) => {
       const label = displayEngine(ENGINE_ORDER.find((x) => x.key === e.name)?.label ?? String(e.name));
       const lo = num(e.floorPct), hi = num(e.ceilingPct);
-      // "about": frozen shares are whole percents, so a bound stated in them
-      // can sit a fraction of a point past the exact one (2026-10-05 audit:
-      // 27.88% had been shown as "at least 28%").
+      // "about": facts frozen before the bound fix rounded both ends to the
+      // nearest whole percent, so a bound in them can sit a fraction of a
+      // point past the exact one (2026-10-05 audit: 27.88% had been shown as
+      // "at least 28%"). Facts built since round the floor down and the
+      // ceiling up (wholePercentBounds), and "about" is true of both.
       const title = lo === hi
         ? `${label}: named you in about ${lo}% of its answers`
         : `${label}: named you in about ${lo}% to ${hi}% of its answers, the range allowing for ${e.unknown} answer${e.unknown === 1 ? "" : "s"} too long to store`;
       return barRow(label, lo, maxP, i, { title });
     }).join("");
+    // A floor only when something went unread. With nothing unread the figure
+    // is the share itself, rounded, so "at least" could overstate it by a
+    // fraction of a point, and there is no stored-answer caveat to make.
+    const exact = pres.overall.unknown === 0;
+    // A ceiling rounded UP is a bound, so it is stated as one ("up to").
+    // Facts frozen before that rounding keep the sentence they were shown
+    // with: their ceiling was rounded to the nearest whole percent.
+    const ceilingHolds = pres.rounding === "outward";
     const cap =
       `This is the one that matters most. When someone asks an AI about your category, ` +
       `does it say your name? Across every question and every web-searching tool this month, ` +
-      `the answer was yes on at least ${floor}% of answers. ` +
-      `"At least" is a floor: ${pres.overall.unknown.toLocaleString("en-US")} of ${pres.overall.total.toLocaleString("en-US")} answers ran longer than we keep, ` +
-      `so your name may also be in a part we did not store. Counting every one of those in your favour would put the figure at ${ceil}%. ` +
-      storageNote(f.period_label) +
+      (exact
+        ? `the answer was yes on ${floor}% of answers. We kept all ${pres.overall.total.toLocaleString("en-US")} answers in full, so this is the whole count, not a floor. `
+        : `the answer was yes on at least ${floor}% of answers. ` +
+          `"At least" is a floor: ${pres.overall.unknown.toLocaleString("en-US")} of ${pres.overall.total.toLocaleString("en-US")} answers ran longer than we keep, ` +
+          `so your name may also be in a part we did not store. Counting every one of those in your favour would ${ceilingHolds ? `take the figure up to ${ceil}%` : `put the figure at ${ceil}%`}. ` +
+          storageNote(f.period_label)) +
       `The next chart answers a different question, so do not read the two as versions of each other. ` +
       `That one is a share of SOURCES: out of every link a tool used while answering, how many went to your website. ` +
       `A tool lists several sources per answer, so that share is not a smaller version of the number here. ` +
@@ -870,18 +950,26 @@ export function renderCharts(factsJson: string | null): string {
   const controls = allEngines.filter((e) => e.layer !== "model_knowledge" && isControlLabel(e.name));
   const namedFromMemory = allEngines.filter((e) => e.layer === "model_knowledge");
   const hasAio = allEngines.some((e) => /AI Overviews|Google AIO/i.test(String(e.name)));
+  // SAID ONCE. Facts that carry linkBasisNote state, under this chart, every
+  // tool whose link count leaves Google's viewer links out (ownSiteNotes), so
+  // the caption does not say it a second time.
+  const basisNoteShown = typeof f.linkBasisNote === "string" && f.linkBasisNote.length > 0;
   const controlNote = (controls.length
     ? ` ${controls.map((e) => e.name).join(" and ")} is left out of this chart. It is a classic search run as a control, not an AI tool.`
     : "")
-    + (hasAio && googleSetAside
-      ? ` For Google AI Overviews, Google's own viewer links are set aside from its link count.`
-      : hasAio && typeof googlePct === "number" && googlePct > 0
-        ? ` For Google AI Overviews, the links counted here include Google's own viewer links, so its share reads lower than it would without them.`
-        : "");
+    + (basisNoteShown
+      ? ""
+      : hasAio && googleSetAside
+        ? ` For Google AI Overviews, Google's own viewer links are set aside from its link count.`
+        : hasAio && typeof googlePct === "number" && googlePct > 0
+          ? ` For Google AI Overviews, the links counted here include Google's own viewer links, so its share reads lower than it would without them.`
+          : "");
 
   if (engines.length) {
+    // The raw label: ownSiteNotes escapes what it renders, and `prior` above is already escaped.
+    const disclosures = ownSiteNotes(f, engines, f.prior_label || "last month");
     if (engines.some((e) => typeof e.prev === "number")) {
-      blocks.push(renderDumbbell(engines, prior, notes.engines, controlNote));
+      blocks.push(renderDumbbell(engines, prior, notes.engines, controlNote, disclosures));
     } else {
       const sorted = [...engines].sort((a, b) => num(b.pct) - num(a.pct));
       const max = Math.max(...sorted.map((e) => num(e.pct)), 1);
@@ -896,7 +984,7 @@ export function renderCharts(factsJson: string | null): string {
         `A tool lists several sources per answer, and every business in the set competes for them. ` +
         `It matters because your own site is the one source here you control outright. The chart above shows whether AI says your name. This shows how much of what it uses is yours.` +
         controlNote;
-      blocks.push(chartBlock("How much of what AI reads is your own site", bars, cap, notes.engines, max));
+      blocks.push(chartBlock("How much of what AI reads is your own site", bars, cap, notes.engines, max, disclosures));
     }
   }
 
@@ -996,7 +1084,14 @@ export function renderCharts(factsJson: string | null): string {
   // 3. Where the answers come from (source types) -- a 100% stacked bar (part-to-whole).
   const sources = Array.isArray(f.sources) ? f.sources.filter((r) => r && typeof r.label === "string") : [];
   if (sources.length) {
-    blocks.push(renderStack(sources, notes.sources, googlePct, googleSetAside));
+    // The client's group's sites, named, so the reader can see which pages
+    // that segment is. Never folded into "Your own site".
+    const aff = (Array.isArray(f.affiliatedSources) ? f.affiliatedSources : [])
+      .filter((r) => r && typeof r.host === "string" && r.host);
+    const affNote = aff.length
+      ? `<p class="nr-note">Your group's other sites are their own segment here and are never counted as your own site: ${aff.map((r) => esc(String(r.host))).join(", ")}.</p>`
+      : "";
+    blocks.push(renderStack(sources, notes.sources, googlePct, googleSetAside, affNote));
   }
 
   // 4. The specific third-party sites AI pulled from (answers "which ones?" for the

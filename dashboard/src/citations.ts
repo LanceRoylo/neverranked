@@ -8,10 +8,13 @@
 
 import type { Env, CitationKeyword, CitedEntity, Domain, InjectionConfig } from "./types";
 import { RESPONSE_TEXT_CAP } from "./lib/answer-presence";
+import { READOUT_ENGINE_LABEL } from "./lib/readout-engine-labels";
 import { resolveGroundingUrls } from "./gemini-resolver";
 import { detectAndRecordAlerts } from "./lib/citation-alerts";
 import { isReadoutShapeSnapshot } from "./lib/snapshot-shape";
-import { classifySource, hostOf } from "./lib/classify-source";
+import { classifySource, classifyGoogleLink, hostOf, affiliatedMatch } from "./lib/classify-source";
+import { loadAffiliatedDomains } from "./lib/affiliated-domains";
+import { LINK_BASIS } from "./lib/link-basis";
 import { keywordRunVerdict } from "./lib/keyword-run-verdict";
 import { LAYER1_ENGINE_KEYS } from "./lib/engine-layer";
 import { recordSpend } from "./lib/engine-spend";
@@ -1080,7 +1083,9 @@ export function nameMatches(entityName: string, businessName: string): boolean {
   return e.includes(b) || b.includes(e);
 }
 
-function computeProminence(
+// Exported for test/link-basis.test.ts: run-level client_cited is decided
+// here, from the client's own domain, and a Google wrapper link can never be it.
+export function computeProminence(
   entities: CitedEntity[],
   urls: string[],
   clientDomain: string,
@@ -2482,15 +2487,8 @@ export interface CitationDigestData {
  *  ENGINE_LABEL exactly: report-facts matches a prior report's engines BY
  *  NAME, so a label that differs by one word silently drops the dumbbell's
  *  "from" dots instead of failing loudly. */
-const READOUT_ENGINE_LABEL: Record<string, string> = {
-  perplexity: "Perplexity",
-  openai: "ChatGPT search",
-  gemini: "Gemini grounded",
-  google_ai_overview: "Google AI Overviews",
-  bing: "Bing search (control)",
-  anthropic: "Claude",
-  gemma: "Gemma",
-};
+// Moved to lib/readout-engine-labels.ts (2026-10-05) so the memo joins on the
+// same map instead of a second copy.
 
 /** Engines that retrieve and cite. Everything else in the map is Layer 2.
  *  Imported rather than declared: Atlas needs the same answer, and a second
@@ -2553,6 +2551,10 @@ export async function buildReadoutSnapshot(
   // boolean that weekly-extras discarded. A guard with no notification path
   // is indistinguishable from the thing never happening, and the cost lands
   // on the 25th, when the readout renders from whatever row survived.
+  /** keyAt: the week_start to write, instead of the Monday of the build week.
+   *  kind: recorded as top_competitors.snapshot_kind. The month-end build
+   *  passes both (see lib/month-end-snapshot.ts). */
+  opts: { keyAt?: number; kind?: "month_end" } = {},
 ): Promise<ReadoutSnapshotResult> {
   const owned = await env.DB.prepare(
     "SELECT domain FROM domains WHERE client_slug = ? AND is_competitor = 0 AND active = 1 LIMIT 1"
@@ -2586,11 +2588,22 @@ export async function buildReadoutSnapshot(
   const umbrellaLabels = umbrellaLabelMap(compRows);
   const cohort = new Set<string>([ownedHost, ...competitorHosts]);
 
+  // measurement_start is a FLOOR here too. The window is a calendar month, so
+  // for a client whose engagement starts mid-month the first snapshot would
+  // otherwise include pre-engagement runs (a sales teardown, a dry run), and
+  // the monthly memo reads its per-engine and venue figures from this row.
+  // No start recorded keeps the old behaviour.
+  const reg = await env.DB.prepare(
+    "SELECT measurement_start FROM measurement_registry WHERE client_slug = ?"
+  ).bind(clientSlug).first<{ measurement_start: number | null }>().catch(() => null);
+  const regStart = Number(reg?.measurement_start);
+  const runsFrom = Number.isFinite(regStart) && regStart > 0 ? Math.max(windowStart, regStart) : windowStart;
+
   const rows = (await env.DB.prepare(
     `SELECT cr.engine, cr.client_cited, cr.cited_urls, cr.cited_entities, ck.keyword
        FROM citation_runs cr JOIN citation_keywords ck ON ck.id = cr.keyword_id
       WHERE ck.client_slug = ? AND cr.run_at >= ? AND cr.run_at < ?`
-  ).bind(clientSlug, windowStart, windowEnd).all<{
+  ).bind(clientSlug, runsFrom, windowEnd).all<{
     engine: string;
     client_cited: number;
     cited_urls: string;
@@ -2603,7 +2616,16 @@ export async function buildReadoutSnapshot(
     return { ok: false, reason: "no_runs_in_window" };
   }
 
-  const ctx = { owned: [ownedHost], competitors: competitorHosts };
+  // AFFILIATED SITES (decided 2026-10-05, migration 0130): the client's group's
+  // pages, a parent hotel group's page for the hotel being the case that
+  // prompted it. Listed as their own source type and NEVER counted as the
+  // client's own site or as a competitor. A missing table (before the
+  // migration is applied) or no rows leaves `affiliated` empty, and every
+  // branch below is then exactly what it was before this existed.
+  const affiliated = await loadAffiliatedDomains(env, clientSlug);
+  const ctx = affiliated.length
+    ? { owned: [ownedHost], affiliated, competitors: competitorHosts }
+    : { owned: [ownedHost], competitors: competitorHosts };
 
   // Which region the customer competes in, read from their own domain and
   // business name. Used ONLY to drop chain properties on other islands.
@@ -2631,6 +2653,17 @@ export async function buildReadoutSnapshot(
   const venueLabels: Record<string, string> = {};
   const srcCounts: Record<string, number> = {};
   const offsiteHosts: Record<string, number> = {};
+  /** Affiliated hosts, listed separately from the third-party hosts. */
+  const affiliatedHosts: Record<string, number> = {};
+  /** Google result-page wrapper links left out of source types and hosts.
+   *  See classifyGoogleLink. Recorded so the exclusion is visible. */
+  let googleWrappersDropped = 0;
+  let googleWrappersResolved = 0;
+  /** The same wrappers, per engine label: left out of that engine's link
+   *  TOTAL as well, the denominator of its own-site link share (decided
+   *  2026-10-05, see lib/link-basis.ts). Never the client's domain, so the
+   *  owned count above them is unchanged. */
+  const engUrlWrappers: Record<string, number> = {};
 
   // Layer 2 accumulators (response-based).
   const engRuns: Record<string, number> = {};
@@ -2664,7 +2697,10 @@ export async function buildReadoutSnapshot(
         const h = hostOf(u);
         if (!h) continue;
         const inOwned = h === ownedHost || h.endsWith("." + ownedHost);
-        const compHit = competitorHosts.find((c) => h === c || h.endsWith("." + c));
+        // Owned wins, then affiliated, then competitor: a group page is never
+        // the client's own site and never a competitor's citation.
+        const inAffiliated = !inOwned && affiliated.length > 0 && affiliatedMatch(u, affiliated);
+        const compHit = inAffiliated ? undefined : competitorHosts.find((c) => h === c || h.endsWith("." + c));
         if (inOwned) ownedHere++;
 
         // Resolve the SPECIFIC property behind a chain URL. A cohort of
@@ -2718,10 +2754,27 @@ export async function buildReadoutSnapshot(
         }
         if (venueKey && !isControl) compCitations[venueKey] = (compCitations[venueKey] || 0) + 1;
         if (isControl) continue;
-        const st = classifySource(u, ctx);
+        // A Google viewer/redirect/search link is not a source. Resolve it to
+        // its real target when it carries one, otherwise leave it out of the
+        // source mix, the host list AND (since 2026-10-05) the engine's own
+        // link total. A link that resolves to a real target stays a link.
+        // The control never reaches here, so its total keeps every result.
+        const g = classifyGoogleLink(u);
+        if (g.kind === "wrapper") {
+          googleWrappersDropped++;
+          engUrlWrappers[label] = (engUrlWrappers[label] || 0) + 1;
+          continue;
+        }
+        const srcUrl = g.kind === "target" ? g.url : u;
+        if (g.kind === "target") googleWrappersResolved++;
+        const srcHost = g.kind === "target" ? hostOf(srcUrl) : h;
+        if (!srcHost) continue;
+        const st = classifySource(srcUrl, ctx);
         srcCounts[st] = (srcCounts[st] || 0) + 1;
         if (st === "independent_web" || st === "review_directory") {
-          offsiteHosts[h] = (offsiteHosts[h] || 0) + 1;
+          offsiteHosts[srcHost] = (offsiteHosts[srcHost] || 0) + 1;
+        } else if (st === "affiliated") {
+          affiliatedHosts[srcHost] = (affiliatedHosts[srcHost] || 0) + 1;
         }
       }
       engUrlOwned[label] = (engUrlOwned[label] || 0) + ownedHere;
@@ -2752,7 +2805,8 @@ export async function buildReadoutSnapshot(
           if (e.name && nameMatches(e.name, businessName)) mentioned = true;
           const h = hostOf(e.url || "");
           if (!h) continue;
-          const compHit = competitorHosts.find((c) => h === c || h.endsWith("." + c));
+          const affHit = affiliated.length > 0 && affiliatedMatch(e.url || "", affiliated);
+          const compHit = affHit ? undefined : competitorHosts.find((c) => h === c || h.endsWith("." + c));
           if (compHit) {
             sawCohort = true;
             (venueEngines[compHit] ??= new Set()).add(label);
@@ -2775,9 +2829,11 @@ export async function buildReadoutSnapshot(
   const enginesBreakdown: Record<string, ReadoutEngineStat> = {};
   for (const [key, label] of Object.entries(READOUT_ENGINE_LABEL)) {
     if (LAYER1_ENGINES.has(key)) {
-      const t = engUrlTotal[label] || 0;
+      if (!(label in engUrlTotal)) continue; // engine never ran
+      // Google's viewer links are not pages, so they are not in the link total
+      // an own-site share is a share of. See engUrlWrappers.
+      const t = (engUrlTotal[label] || 0) - (engUrlWrappers[label] || 0);
       const o = engUrlOwned[label] || 0;
-      if (t === 0 && !(label in engUrlTotal)) continue; // engine never ran
       enginesBreakdown[label] = {
         citations: o,
         total: t,
@@ -2850,6 +2906,14 @@ export async function buildReadoutSnapshot(
       citations,
       share_pct: srcTotal ? Math.round((100 * citations) / srcTotal) : 0,
     }));
+  // Same base as offsite_hosts (every listed source), listed apart from it.
+  const affiliatedList = Object.entries(affiliatedHosts)
+    .sort((a, b) => b[1] - a[1])
+    .map(([host, citations]) => ({
+      host,
+      citations,
+      share_pct: srcTotal ? Math.round((100 * citations) / srcTotal) : 0,
+    }));
 
   const topCompetitors = {
     htc_venue_share_pct: venueTotal ? Math.round((100 * ownedAll) / venueTotal) : 0,
@@ -2857,9 +2921,31 @@ export async function buildReadoutSnapshot(
     competitors,
     source_types: sourceTypes,
     offsite_hosts: offsite,
+    /** The client's group's other sites, never counted as its own site.
+     *  Only present when an affiliated domain was cited. */
+    ...(affiliatedList.length ? { affiliated_hosts: affiliatedList } : {}),
     /** Provenance marker so a later reader can tell which definition produced
      *  the venue numbers without re-deriving it from the code. */
     venue_basis: "layer1_citations",
+    /** Links left out of source_types / offsite_hosts because they were
+     *  Google result-page wrappers, not pages (from 2026-10-05). */
+    source_exclusions: {
+      google_wrapper_links: googleWrappersDropped,
+      google_wrapper_links_resolved: googleWrappersResolved,
+      /** Per engine label, the wrapper links also left out of that engine's
+       *  link total (engines with none are not listed). The disclosure line
+       *  is built from this. */
+      wrapper_links_by_engine: Object.fromEntries(Object.entries(engUrlWrappers).filter(([, n]) => n > 0)),
+    },
+    /** What the per-engine link totals count. Absent on rows written before
+     *  2026-10-05, which counted every listed link. A link share is never
+     *  compared across two bases (lib/link-basis.ts). */
+    link_basis: LINK_BASIS,
+    /** The runs this row actually covers, [start, end), start floored at
+     *  measurement_start. Recorded from 2026-10-05 so a reader can prove a
+     *  row covers a whole month instead of inferring it from week_start. */
+    window: { start: runsFrom, end: windowEnd },
+    ...(opts.kind ? { snapshot_kind: opts.kind } : {}),
   };
 
   const keywordBreakdown = {
@@ -2873,6 +2959,12 @@ export async function buildReadoutSnapshot(
   // quantities -- client_citations / total_queries is NOT citation_share, and
   // any reader dividing one by the other is deriving a number neither writer
   // computed. Logged as a gap rather than papered over here.
+  // DELIBERATELY still every listed link, Google's viewer links included.
+  // citation_share is the pooled scalar that the summary page, the legacy
+  // monthly report, the recap email, Atlas's weekly series and the benchmarks
+  // compare week over week and month over month. Changing its basis would put
+  // a step into each of those comparisons. Decision D (2026-10-05) moved the
+  // PER-ENGINE totals only.
   const totalUrlAll = sumNonControl(engUrlTotal);
   const citationShare = totalUrlAll ? ownedAll / totalUrlAll : 0;
 
@@ -2881,7 +2973,15 @@ export async function buildReadoutSnapshot(
   monday.setUTCHours(0, 0, 0, 0);
   const dow = monday.getUTCDay();
   monday.setUTCDate(monday.getUTCDate() - (dow === 0 ? 6 : dow - 1));
-  const weekStart = Math.floor(monday.getTime() / 1000);
+  // NEVER KEYED BEFORE ITS OWN WINDOW. A month-to-date build made between the
+  // 1st and the month's first Monday (the admin rebuild button, say, on the
+  // 2nd while reading the draft) used to be keyed at the PREVIOUS month's last
+  // Monday. ON CONFLICT then overwrote that month's last weekly row with the
+  // new month's first days, and every reader selecting "the newest row before
+  // the end of September" would have read October as September. The floor
+  // keeps a row inside the month it describes. The month-end build passes its
+  // own key, the month's last second.
+  const weekStart = opts.keyAt ?? Math.max(Math.floor(monday.getTime() / 1000), windowStart);
 
   // Bind this readout to the question set behind it.
   //

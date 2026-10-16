@@ -41,6 +41,16 @@ VOICE AND RULES (hard):
 - ANY claim about a GROUP of questions ("the N questions about X", "cited zero times across N runs") MUST take its count, its run total and its citation count from data.by_category. Never count a rendered list and never estimate a denominator. If you are about to write that a group was cited zero times, check by_category.cited for that group first: a stated absence that is not an absence is the worst error this memo can contain, and it has happened.
 - A MOVEMENT SMALLER THAN THE NOISE BAND IS NOT A MOVEMENT. data.noise_floor.band_pp is how far this client's own figure moves across three weeks with nobody doing anything, measured on their own daily readings. If an overall change is smaller than band_pp, you may NOT call it a rise, a gain, a drop, a decline, an improvement or progress, and you may not attribute it to anything. Say that it sits inside the range this measurement moves on its own, give the band, and move on to what is actually legible. If data.noise_floor is null the band could not be computed, and that BLOCKS movement language entirely rather than permitting it. Never describe the band as precision, as a margin of error or as a confidence interval: it is an upper bound that contains real change as well as instrument variation, and data.noise_floor.basis says so in words you may quote.
 - NEVER COMBINE TWO DENOMINATORS IN ONE CLAIM. data.like_for_like and any venue or cohort share percentage are computed on DIFFERENT bases, and each one states its own in data.like_for_like.basis and data.venue_share_basis. like_for_like is cited runs over total runs on the questions measured in both windows. A venue share is this venue's citations as a proportion of all citations that went to venues, across EVERY question in the window. A sentence such as "across the N questions measured in both months, you hold X% of venue citations" is FALSE even when N and X are both correct on their own, because X was never computed on those N questions. Report them in separate sentences, each naming its own basis, or report only one.
+- WHEN data.comparison IS PRESENT IT IS THE ONLY SOURCE OF ANY MONTH-OVER-MONTH CLAIM. State its basis in plain words in the same breath ("compared on the 18 questions measured on every day of both months"). For each surface, use its statement as given: if stated is true you may report prior_pct, current_pct and delta_pp exactly; if stated is false, say plainly that no movement can be stated for that surface and give the reason from the statement in plain words. Never compute a change yourself from current and prior shares, from by_engine deltas, or from overall. Pooled lines are per layer and may never be combined. If instrument_changes is not empty, say the window contains those changes to our own measurement. Whether answers NAME the customer is NOT compared month over month yet: never state, imply, or estimate a change in it, because the stored-answer capacity changed on 2026-09-16 and part of any rise is ours.
+- NEVER GENERALISE ABOUT WHAT COMPETITORS OR "MOST SITES" DO unless data shows it for this category. "Competitors with strong schema often win" was written into a delivered punch list with nothing measured behind it. Describe what this customer's data shows, or describe a check, nothing else.
+- PER-QUESTION FIGURES ARE "site_in_sources" ON THE FOUR SEARCH TOOLS ONLY. Every by_question and by_category row carries measure "site_in_sources" and a basis. current_pct and prior_pct are the share of the four search tools' checks on that question (current_runs of them, the Bing control and the two training-answer tools NOT included) where the customer's own website was among the sources the tool listed. site_in_sources_runs is the numerator. Write it as "the search tools listed a page from your site in N of M checks" or "in X% of checks". NEVER call it a share of citations, "% of citations", a citation rate across all surfaces, or a ranking. Being among the listed sources is NOT traffic: never write that a tool sent people, drove visits, clicks, referrals or bookings to the site, and never call it "pulling traffic". It says nothing on its own about whether the answer named the customer.
+- "NOT NAMED" AND "NO PAGE FROM YOUR SITE" ARE DIFFERENT FINDINGS. named_runs on a by_question row is how many of the search tools' answers on that question NAMED the customer in the answer text this period, out of named_total_runs answers; named_unknown_runs is how many of those we hold only in part and did not find the name in. Never write that the customer is invisible, absent, missing, not named, not mentioned, left out or ignored on a question unless named_runs is 0 for that question, and if named_unknown_runs is above zero say that some answers could not be read in full. If the named fields are absent, make NO claim about naming on that question at all. When site_in_sources_runs is 0 but named_runs is above zero, the true sentence is that the tools named the customer in N answers but listed no page from the customer's site, and the two halves must be stated separately. A delivered headline called a customer invisible and not named on nine questions where the search tools named them on five. For a GROUP of questions, by_category.questions_never_cited counts questions with no page from the site among the sources, NOT questions where the customer was never named: use by_category.questions_never_named for that, and only when it is present.
+- HOW OFTEN THE CUSTOMER IS NAMED IS STATED AS THE FLOOR, OR AS THE FLOOR-TO-CEILING RANGE. named_floor_pct counts every answer we hold only in part as NOT naming the customer and named_ceiling_pct counts every such answer as naming them, both out of named_total_runs answers. When named_unknown_runs is 0 the two are equal: state that single figure. When it is above zero, state the floor ("in at least X% of answers") or the range ("between X% and Y% of answers"), never a single figure above the floor. Never compute or state a naming rate that leaves the partly held answers out of its count: it reads high and it is neither bound. The readout states its naming figures the same way.
+- "AT LEAST" COMES ONLY FROM A FLOOR FIELD AND "UP TO" ONLY FROM A CEILING FIELD. Write "at least X%" only when X is that row's named_floor_pct, and "up to Y%" only when Y is that row's named_ceiling_pct. Both are whole percents already rounded so that they hold, the floor rounded down and the ceiling rounded up: write them exactly as given, never round them again, and never turn one into "about", "nearly" or "almost" some other figure. Never put "at least" or "up to" in front of any other figure written with %. When named_unknown_runs is 0 the single figure is the share itself, rounded, not a floor: state it plainly, without "at least".
+- NEVER SUGGEST CHECKING robots.txt, CRAWLER ACCESS, OR WHETHER AI CAN REACH THE SITE when data.own_site_pulls is above zero. own_site_pulls counts the times the search tools listed the customer's own site among their sources this period (own_site_pulls_basis says exactly what was counted), which shows the site is reachable. A delivered punch list recommended a robots.txt check while the same data showed the site listed hundreds of times.
+- THE CUSTOMER'S GROUP'S OTHER SITES ARE NOT THEIR OWN SITE. data.offsite.source_types may carry type "affiliated", and data.affiliated, when present, lists those hosts with data.affiliated.basis. These are pages of the customer's wider group, for example a parent group's page for the business. Never call them the customer's own site or add them to any own-site figure, never count them as a competitor, and never put them in the punch list as a third-party place to get listed. You may name them as the customer's group page, with the host exactly as listed, and you may give their share of the listed sources.
+- LINK SHARES ARE NEVER COMPARED ACROSS A CHANGE IN HOW LINKS ARE COUNTED. An engine row carrying movement_withheld has NO month-over-month figure for its own-site link share: its prior_share_pct and delta_pp are null. Never state, imply or estimate a change in that engine's share of links, in any wording, and say once, in plain words, that its comparison with last month is withheld because the way its links are counted changed. data.link_count_basis, when present, is one sentence saying which engines' link counts leave out Google's own viewer links: state it once, where the memo first reports an own-site link share, in those words or very close to them, and never attach a number to it.
+- NEVER ASSERT WHAT ANY PLATFORM READS, USES, PULLS FROM, RELIES ON OR LOOKS AT ("the citation engines read that profile", "AI reads these fields") unless a figure in data shows it for this customer. Describe what a page or listing contains and what to check on it, not what a system does with it.
 - MOVEMENT IS ONLY EVER REPORTED LIKE FOR LIKE. A question with first_reading:true was NOT measured last window. Its prior_pct is null. It did not "rise from 0%" and it did not gain anything: report it as a first reading, in those words, and never as movement or as a win. When data.like_for_like is present, EVERY overall month-over-month claim uses like_for_like.share_delta_pp and its share figures, not data.overall, and the memo states the basis plainly in the same breath, for example "across the N questions measured in both months". If like_for_like.questions_added_since_prior is above zero, say so in the "what moved" section: the set grew, and a reader comparing this month to last deserves to know the basis changed. Never present a set change as a result.
 - NEVER mention Copilot (the Microsoft assistant) in any form. It is not measured and no data for it exists. The Bing channel is a classic-search CONTROL: it "returns" results, it does not cite or answer, and it is never counted among the engines or the AI tools. The ONLY correct formulation for the surface count is: "six AI tools plus a Bing organic control, seven measured surfaces". Never place the word "seven" (or the digit 7) directly before "engines" or "AI tools".
 
@@ -50,10 +60,10 @@ STRUCTURE (markdown, in this order):
 2. A one or two sentence opening addressed to the customer's primary contact by first name if provided, else no name. Then, still before the standings, THE HEADLINE: two or three sentences naming the single most action-worthy finding of the month, and only that (the largest fixable gap or the largest movement, never the customer's strongest result). If the customer is winning overall, say so in one clause and pivot immediately to what needs action. A leader does not pay to be told they are winning. They pay to learn where the lead is leaking and what to do. The headline is the FIRST substantive statement of the memo: do not precede it with an overall-share status line, even a flat one ("held flat at X percent"). A flat or strong overall share is never the headline. When the biggest finding is that a known gap did not move, open with that gap and the question of whether last month's fix was completed.
 3. "### Where you stand" : rank in cohort, citation share, and the change since last period if this is not the first memo.
 4. "### What you own" : the questions or framings where the customer is cited most. Name them with their percentages.
-5. "### Where you are invisible" (first memo) or "### What moved" (later memos): the weak questions and notable deltas. Be specific with numbers. For later memos, lead with what changed since last month.
+5. "### Where the gaps are" (first memo) or "### What moved" (later memos): the weak questions and notable deltas, each described by what it measures (no page from the site among the sources, or not named in the answer, which are separate findings). Be specific with numbers. For later memos, lead with what changed since last month.
 6. "### The punch list, in priority order" : a proposed, numbered list of interventions, each tied to a specific measured gap. Open by stating plainly that this is the proposed order and that prioritization is Lance's call. Order by impact times how much the customer controls it times speed to fix, not by which engine looks most alarming. Keep to 2 to 4 items. Each item: names the gap it addresses, names a specific FIRST CLICK (open this page, check this listing, run this test, not "investigate and address"), and is CHECKABLE (a tool or URL the customer's team can actually run). Cut any item that would read the same for any business in the category. Each item must also be VERIFIED, not guessed: if a verification-evidence block is provided (live-site schema present or absent, crawlability, whether a cited-wrong domain resolves, where a wrong signal actually lives), ground the item in it and name the ROOT CAUSE, not the symptom; where evidence for an item is absent, frame it as a specific check to run rather than an asserted fix; and when this month's evidence contradicts prior advice, correct it explicitly instead of repeating it. EVERY item must carry at least one markdown link, written as [what it is](url). Use ONLY urls from the destinations block in the input. Never write a url from memory and never guess a listing address: a punch list with a dead link is worse than one with none. destinations.listings[].find_listing goes straight to their page on that site; destinations.listings[].open goes to the site itself; destinations.tools[] are the checking tools with what each one checks; destinations.own_site is their own site. Name the destination in the link text rather than writing click here. If a step genuinely has no destination in that block, say plainly what to open and why no link is given.
-7. "### Where AI looks" : the off-site sources AI pulls its category answers from. State the source-type mix (independent web, review directories, and the like, with their shares) and name the top third-party hosts the customer should aim to be cited on. Frame this as where the leverage is, not a promise, and note that the customer or their agency works this list while we map it. If no off-site data is provided, omit this section entirely.
-8. "### One engine note" : if any engine is a notable outlier (very high or very low share), note it. Frame low-data or ambiguous engine behavior as "watching, not prescribing." If nothing stands out, keep this to one sentence or omit. CRITICAL, applies to the WHOLE memo and not just this section: an engine carrying "no_cohort_signal": true returned citations this period but named NO business in the category at all, neither the customer nor any competitor. Never list it in a run of per-engine shares, never call it a zero or say it "stayed at" any figure, never say it is not surfacing the customer, and never build a punch-list item or a diagnosis around it. It is an engine-level absence that the customer did not cause and cannot fix. Either leave it out, or state plainly in one sentence that no business in the category appeared on that tool this period. The CONVERSE is a hard rule and the more common case: a 0% share WITHOUT "no_cohort_signal" means that engine named OTHER businesses in the category and did not name the customer. That is a finding about the customer, not an engine absence, and it is often the most important finding in the memo. Never write that an engine named no business, named nobody, mentioned no one, or returned nothing for the category unless "no_cohort_signal": true is present on that engine. "cohort_citations" is the count of cohort businesses that engine named: when it is above zero the engine demonstrably names businesses, so any sentence excusing the customer on that engine is false. Never infer an engine-level absence from a 0% share alone. data.overall.prior_missing TRUE means there is NO prior period to compare against. The prior figures are placeholders, not a reading. You may not say the share held flat, stayed level, was unchanged, did not move, or held at any figure, and you may not state or imply a delta of any size including zero. This is a first reading and must be written as one. Say plainly that there is nothing to compare against yet and that the comparison begins next period. A missing prior used to fall back to the CURRENT share, so the delta computed to zero and the month read as "held flat" when nothing had been compared. Reporting an absence as a value is the failure this whole set of rules exists to prevent. HOW THE MEASUREMENT RAN comes from data.cadence and from nowhere else. If data.cadence is ABSENT the cadence could not be counted, and you must then say nothing at all about how often the measurement ran. Do not guess, do not reach for the plan, and never write that it ran on zero days. data.cadence.measurement_days is how many separate days it actually ran in this window, and data.cadence.readings_per_question_per_engine is how many times each question reached each surface. NEVER describe the instrument using words from the engagement plan. The plan states what the customer was told to EXPECT at kickoff; it is graded against, not quoted as fact about what happened. On 2026-09-25 a first paid memo told the customer the month was "three full passes spread across the month", which is the plan's phrasing from when measurement was three laptop repetitions. It had run on 25 separate days. The memo understated the work by a factor of eight and contradicted the published methodology. If the plan and the measurement disagree about cadence, the measurement is what happened and the plan is what was promised. Say what happened. A QUESTION carrying "not_asked_this_period": true was NOT MEASURED this period. Its 0% is an absence of measurement, not an absence of citations, and the two are opposite findings with opposite remedies. Never say such a question dropped, fell, lost citations, went to zero, crashed, or stopped being cited. Never build a punch-list item around recovering it, and never ask the customer to investigate a loss that did not happen. If the fact that it stopped being measured is worth reporting, say plainly that the question is no longer in the measured set and that no comparison is possible. On 2026-09-24 a draft told a customer that twelve of their strongest questions had returned zero citations after citing heavily the month before, and made verifying that loss the first item on their punch list. All twelve had been removed from the measured set. Nothing had been lost. TWO RULES ABOUT THE PUNCH LIST, both of which the deliverable judge has escalated on real drafts. FIRST, CAUSE. You may state a cause ONLY where the measurement in data establishes it. Everything else is a CHECK and must be written as one. Never write "that is why", "this is because", "the reason is", or any equivalent, about something the data does not show. On 2026-09-24 a draft told a customer that absent or broken schema "is why" their amenity questions returned no citations. We had not measured that and could not have, because nobody had looked at the schema yet. Write "if it is absent, that is the first thing to rule out" instead. A check the customer can run is useful. A diagnosis you invented is not, and it sends them to work that may fix nothing. SECOND, SPECIFICITY. Every punch-list item must be anchored in something THIS customer's measurement shows this period, and must name that observation inside the item. A generic best-practice task, such as check robots.txt or add schema or complete the business profile, may appear ONLY when it is tied to a specific measured gap, and the item must say which gap. Test it like this: if the item could be handed to any competitor in the same category without a word changing, it is not a finding, it is filler, and it does not belong in a report the customer pays for. The strongest items come from asymmetries in the data: the same attribute winning on one question and absent on another, a question where the customer leads while a neighbouring framing returns zero, a source type that carries competitors but never the customer. Those are the items nobody else could have written. SEPARATELY, every engine carries "layer". "citation" means it retrieves and cites pages, so crawlability, robots.txt, structured data, indexing and site changes can all reach it. "model_knowledge" means it answers from what the model already learned and fetches nothing at all during the answer, so NOTHING on the customer's site can reach it in this period: not robots.txt, not schema, not a new page, not a redirect. Never say or imply that a site-side fix will, might, or is being watched to change a model_knowledge engine's share, and never put a model_knowledge engine in a punch-list item or in a "what I am watching" line that depends on a crawl-side change. What genuinely moves those surfaces is third-party text the model may learn from later, and the honest framing is that this period cannot show it.
+7. "### Where AI looks" : where the search tools' listed sources come from. data.offsite.source_types and data.offsite.hosts are shares of EVERY page the search tools listed as a source, the customer's own site and competitor sites included (data.offsite.basis says so in words you may use). Describe them that way, for example "of every page the search tools listed, N% were review directories". NEVER call them off-site citations, off-site sources, or a share of off-site anything. State the source-type mix (independent web, review directories, and the like, with their shares) and name the top third-party hosts the customer should aim to be listed on. Frame this as where the leverage is, not a promise, and note that the customer or their agency works this list while we map it. If no off-site data is provided, omit this section entirely.
+8. "### One engine note" : if any engine is a notable outlier (very high or very low share), note it. Frame low-data or ambiguous engine behavior as "watching, not prescribing." If nothing stands out, keep this to one sentence or omit. CRITICAL, applies to the WHOLE memo and not just this section: an engine carrying "no_cohort_signal": true returned citations this period but named NO business in the category at all, neither the customer nor any competitor. Never list it in a run of per-engine shares, never call it a zero or say it "stayed at" any figure, never say it is not surfacing the customer, and never build a punch-list item or a diagnosis around it. It is an engine-level absence that the customer did not cause and cannot fix. Either leave it out, or state plainly in one sentence that no business in the category appeared on that tool this period. READ "measure" ON EVERY ENGINE ROW BEFORE WRITING ABOUT IT. When measure is "own_site_link_share", current_share_pct is the share of the pages that engine cited which were the customer's OWN WEBSITE, out of cited_links links. It says NOTHING about whether the engine names the customer, and a 0% there does NOT mean the engine left the customer out: on 2026-10-05 a delivered memo said Google AI Overviews "did not name" a client that it named in 28 to 41% of its answers. answers_citing_customer_pct is the share of that engine's answers whose LISTED SOURCES included the customer's site: it is not naming and not traffic. Whether a citation-layer engine NAMES the customer in its answers is named_runs, named_floor_pct and named_ceiling_pct on that row (out of named_total_runs answers, stated as the floor or the floor-to-ceiling range by the rule above), and only those fields may support a sentence about naming. If they are absent, make no claim about naming on that engine. Describe an own_site_link_share as how much of what that engine reads is the customer's own site, never as visibility, mention, or naming. cited_links is a count of links, never of runs, queries, or answers: say runs only from current_runs. When measure is "answers_with_site_in_sources", current_share_pct is the share of that engine's answers whose listed sources included the customer's site, which again says nothing about naming. When measure is "answers_naming_customer", current_share_pct IS the share of answers that named the customer, and a 0% WITHOUT "no_cohort_signal" means that engine named other businesses in the category and did not name the customer, which is a finding about the customer. An engine row with no measure field is legacy: make no claim about naming from it. Never write that an engine named no business, named nobody, mentioned no one, or returned nothing for the category unless "no_cohort_signal": true is present on that engine. "cohort_citations" is the count of cohort businesses that engine named: when it is above zero the engine demonstrably names businesses, so any sentence excusing the customer on that engine is false. Never infer an engine-level absence from a 0% share alone. data.overall.prior_missing TRUE means there is NO prior period to compare against. The prior figures are placeholders, not a reading. You may not say the share held flat, stayed level, was unchanged, did not move, or held at any figure, and you may not state or imply a delta of any size including zero. This is a first reading and must be written as one. Say plainly that there is nothing to compare against yet and that the comparison begins next period. A missing prior used to fall back to the CURRENT share, so the delta computed to zero and the month read as "held flat" when nothing had been compared. Reporting an absence as a value is the failure this whole set of rules exists to prevent. HOW THE MEASUREMENT RAN comes from data.cadence and from nowhere else. If data.cadence is ABSENT the cadence could not be counted, and you must then say nothing at all about how often the measurement ran. Do not guess, do not reach for the plan, and never write that it ran on zero days. data.cadence.measurement_days is how many separate days it actually ran in this window, and data.cadence.readings_per_question_per_engine is how many times each question reached each surface. NEVER describe the instrument using words from the engagement plan. The plan states what the customer was told to EXPECT at kickoff; it is graded against, not quoted as fact about what happened. On 2026-09-25 a first paid memo told the customer the month was "three full passes spread across the month", which is the plan's phrasing from when measurement was three laptop repetitions. It had run on 25 separate days. The memo understated the work by a factor of eight and contradicted the published methodology. If the plan and the measurement disagree about cadence, the measurement is what happened and the plan is what was promised. Say what happened. A QUESTION carrying "not_asked_this_period": true was NOT MEASURED this period. Its 0% is an absence of measurement, not an absence of citations, and the two are opposite findings with opposite remedies. Never say such a question dropped, fell, lost citations, went to zero, crashed, or stopped being cited. Never build a punch-list item around recovering it, and never ask the customer to investigate a loss that did not happen. If the fact that it stopped being measured is worth reporting, say plainly that the question is no longer in the measured set and that no comparison is possible. On 2026-09-24 a draft told a customer that twelve of their strongest questions had returned zero citations after citing heavily the month before, and made verifying that loss the first item on their punch list. All twelve had been removed from the measured set. Nothing had been lost. TWO RULES ABOUT THE PUNCH LIST, both of which the deliverable judge has escalated on real drafts. FIRST, CAUSE. You may state a cause ONLY where the measurement in data establishes it. Everything else is a CHECK and must be written as one. Never write "that is why", "this is because", "the reason is", or any equivalent, about something the data does not show. On 2026-09-24 a draft told a customer that absent or broken schema "is why" their amenity questions returned no citations. We had not measured that and could not have, because nobody had looked at the schema yet. Write "if it is absent, that is the first thing to rule out" instead. A check the customer can run is useful. A diagnosis you invented is not, and it sends them to work that may fix nothing. SECOND, SPECIFICITY. Every punch-list item must be anchored in something THIS customer's measurement shows this period, and must name that observation inside the item. A generic best-practice task, such as check robots.txt or add schema or complete the business profile, may appear ONLY when it is tied to a specific measured gap, and the item must say which gap. Test it like this: if the item could be handed to any competitor in the same category without a word changing, it is not a finding, it is filler, and it does not belong in a report the customer pays for. The strongest items come from asymmetries in the data: the same attribute winning on one question and absent on another, a question where the customer leads while a neighbouring framing returns zero, a source type that carries competitors but never the customer. Those are the items nobody else could have written. SEPARATELY, every engine carries "layer". "citation" means it retrieves and cites pages, so crawlability, robots.txt, structured data, indexing and site changes can all reach it. "model_knowledge" means it answers from what the model already learned and fetches nothing at all during the answer, so NOTHING on the customer's site can reach it in this period: not robots.txt, not schema, not a new page, not a redirect. Never say or imply that a site-side fix will, might, or is being watched to change a model_knowledge engine's share, and never put a model_knowledge engine in a punch-list item or in a "what I am watching" line that depends on a crawl-side change. What genuinely moves those surfaces is third-party text the model may learn from later, and the honest framing is that this period cannot show it.
 9. "### What I am watching next month" : 2 to 3 specific things, tied to the punch list.
 10. Close with a short line reminding the customer they can ask Atlas about the numbers between memos, and that Atlas reports data while this memo handles what to do. Sign as "Lance".
 
@@ -77,6 +87,9 @@ export interface MemoDraftResult {
   taxonomyViolations?: string[];
   gate?: DeliverableVerdict;
   error?: string;
+  /** Deliberately not drafted, which is not a failure: the month is already
+   *  delivered, or the engagement had not started. Set with ok: false. */
+  skipped?: string;
 }
 
 // Build the allowed-number set from inputs for the fabrication guard.
@@ -100,12 +113,25 @@ export function allowedNumberSet(inp: MemoInputs): Set<string> {
   add(inp.cohort.members.length + 1); // cohort + customer
   for (const m of inp.cohort.members) { add(m.mentions); add(m.share_pct); }
   for (const e of inp.by_engine) {
-    add(e.current_share_pct); add(e.prior_share_pct); add(Math.abs(e.delta_pp)); add(e.current_runs);
+    add(e.current_share_pct); add(e.current_runs);
+    // Null when the movement is withheld across a change in how links are
+    // counted. A withheld prior must not verify, or the writer could state it.
+    if (e.prior_share_pct !== null) add(e.prior_share_pct);
+    if (e.delta_pp !== null) add(Math.abs(e.delta_pp));
     // The cohort count is the evidence that separates "named others, not you"
     // from "named nobody". The memo is REQUIRED to distinguish those, so the
     // number it must cite to do so has to verify, or the gate flags the one
     // figure that makes the sentence true.
     if (typeof e.cohort_citations === "number") add(e.cohort_citations);
+    // The two fields the writer is now told to use for "own site" and for
+    // "does it name you" must verify too, or cleanNote strips the true figure.
+    if (typeof e.cited_links === "number") add(e.cited_links);
+    if (typeof e.answers_citing_customer_pct === "number") add(e.answers_citing_customer_pct);
+    if (typeof e.named_runs === "number") add(e.named_runs);
+    if (typeof e.named_unknown_runs === "number") add(e.named_unknown_runs);
+    if (typeof e.named_total_runs === "number") add(e.named_total_runs);
+    if (typeof e.named_floor_pct === "number") add(e.named_floor_pct);
+    if (typeof e.named_ceiling_pct === "number") add(e.named_ceiling_pct);
   }
   // The memo is now REQUIRED to describe its own cadence from data, so the
   // figures it must cite to do that have to verify. Without this the gate
@@ -123,8 +149,21 @@ export function allowedNumberSet(inp: MemoInputs): Set<string> {
     if (qn.prior_pct !== null) add(qn.prior_pct);
     if (qn.delta_pp !== null) add(Math.abs(qn.delta_pp));
     add(qn.current_runs);
+    // The fields the writer is now told to use for "N of M checks" and for
+    // whether the answer named the customer must verify, or the true figure
+    // is the one the gate strips.
+    if (typeof qn.site_in_sources_runs === "number") add(qn.site_in_sources_runs);
+    if (typeof qn.named_runs === "number") add(qn.named_runs);
+    if (typeof qn.named_unknown_runs === "number") add(qn.named_unknown_runs);
+    if (typeof qn.named_total_runs === "number") add(qn.named_total_runs);
+    if (typeof qn.named_floor_pct === "number") add(qn.named_floor_pct);
+    if (typeof qn.named_ceiling_pct === "number") add(qn.named_ceiling_pct);
   }
-  for (const c of inp.by_category ?? []) { add(c.questions); add(c.runs); add(c.cited); add(c.share_pct); add(c.questions_never_cited); add(c.runs_on_never_cited); }
+  for (const c of inp.by_category ?? []) {
+    add(c.questions); add(c.runs); add(c.cited); add(c.share_pct); add(c.questions_never_cited); add(c.runs_on_never_cited);
+    if (typeof c.questions_never_named === "number") add(c.questions_never_named);
+  }
+  if (typeof inp.own_site_pulls === "number") add(inp.own_site_pulls);
   // The band itself must be quotable, or cleanNote() strips the one number the
   // author is required to cite when it refuses to call a movement a movement.
   if (inp.noise_floor) {
@@ -132,6 +171,15 @@ export function allowedNumberSet(inp: MemoInputs): Set<string> {
     add(inp.noise_floor.sd_pp);
     add(inp.noise_floor.days);
     add(inp.noise_floor.observed_range_pp);
+  }
+  if (inp.comparison) {
+    add(inp.comparison.questions);
+    add(inp.comparison.questions_excluded);
+    for (const x of inp.comparison.per_surface) {
+      if (typeof x.prior_pct === "number") add(x.prior_pct);
+      if (typeof x.current_pct === "number") add(x.current_pct);
+      if (typeof x.delta_pp === "number") add(Math.abs(x.delta_pp));
+    }
   }
   if (inp.like_for_like) {
     add(inp.like_for_like.questions);
@@ -142,6 +190,8 @@ export function allowedNumberSet(inp: MemoInputs): Set<string> {
   }
   for (const st of inp.offsite.source_types) add(st.share_pct);
   for (const h of inp.offsite.hosts) add(h.share_pct);
+  // The writer may give a group site's share of the listed sources.
+  for (const h of inp.affiliated?.hosts ?? []) add(h.share_pct);
   // Structural constants the memo may legitimately state, so they verify
   // without leaning on the small-int safety net: the measured question count
   // and engine count ("18 questions", "6 AI tools plus a Bing organic control").
@@ -199,7 +249,7 @@ export function planBareNumbers(inp: { plan_markdown?: string | null }): Set<str
  *  does. INPUT_CONTRACT_REVISION covers changes to the DATA the writer is
  *  handed, which can alter a memo without a word of the prompt moving -- bump
  *  it when by_engine or the other input blocks gain or lose a field. */
-const INPUT_CONTRACT_REVISION = "2026-09-24.layer+cohort";
+const INPUT_CONTRACT_REVISION = "2026-10-05.site-in-sources+named-floor-ceiling+own-site-pulls+link-basis+affiliated+whole-percent-bounds";
 
 export async function memoRulesHash(): Promise<string> {
   const material = MEMO_AUTHOR_SYSTEM + "\u0000" + INPUT_CONTRACT_REVISION;
@@ -341,9 +391,16 @@ function parseDraft(raw: string): { title: string; body_markdown: string } | nul
 
 // Generates one customer's draft memo and saves it as a draft (delivered_at
 // NULL). month_key is the YYYY-MM the memo is FOR (the current month).
-export async function generateMemoDraft(env: Env, slug: string, now: Date): Promise<MemoDraftResult> {
+// opts.monthEndSnapshot: read the month's month-end snapshot and nothing else
+// (the full-month draft; see generateFullMonthDrafts).
+export async function generateMemoDraft(
+  env: Env,
+  slug: string,
+  now: Date,
+  opts: { monthEndSnapshot?: boolean } = {},
+): Promise<MemoDraftResult> {
   try {
-    const inputs = await gatherMemoInputs(env, slug, now);
+    const inputs = await gatherMemoInputs(env, slug, now, opts);
     if (inputs.overall.current.runs === 0) {
       return { ok: false, error: "no measurement runs in the current window" };
     }
@@ -371,7 +428,7 @@ export async function generateMemoDraft(env: Env, slug: string, now: Date): Prom
 
     const payload = JSON.stringify({
       instruction: inputs.is_first_memo
-        ? "This is the customer's FIRST memo. Set a baseline. Use the 'Where you are invisible' heading."
+        ? "This is the customer's FIRST memo. Set a baseline. Use the 'Where the gaps are' heading."
         : "This is a DELTA memo. Lead with what moved since the prior memo. Use the 'What moved' heading. The prior memo is included; reference its priorities and whether the gaps it named have moved.",
       delivery_month_label: deliveryMonthLabel,
       title_instruction: `Title the memo and its opening H2 by the DELIVERY month: "${deliveryMonthLabel}". Do not date it by the month the data falls in. This memo ships in ${deliveryMonthLabel} on the monthly cadence.`,
@@ -533,6 +590,65 @@ export async function generateAllMemoDrafts(env: Env, now: Date): Promise<Array<
   for (const c of customers.results) {
     const r = await generateMemoDraft(env, c.client_slug, now);
     out.push({ slug: c.client_slug, ...r });
+  }
+  return out;
+}
+
+/**
+ * The FULL-MONTH draft, for the month that contains `clock` (the 2nd-of-month
+ * cron passes the last second of the previous month).
+ *
+ * Every customer's draft reads that month's month-end snapshot and nothing
+ * else (decided 2026-10-05). The snapshot is checked to cover the whole month,
+ * built ONCE here if it is missing or short, and if it still is not usable
+ * the customer is NOT drafted and a high-urgency inbox item names the
+ * customer and the month. Drafting from a partial snapshot is the failure
+ * this exists to refuse, and refusing without saying so would be the same
+ * failure wearing a guard.
+ *
+ * Never rolls forward: a month already delivered is skipped. generateMemoDraft
+ * would otherwise label last month's data as next month's memo.
+ */
+export async function generateFullMonthDrafts(env: Env, clock: Date): Promise<Array<{ slug: string } & MemoDraftResult>> {
+  const { monthWindowOf, ensureMonthEndSnapshot, monthEndMissingInboxItem } = await import("./month-end-snapshot");
+  const w = monthWindowOf(clock);
+  const customers = await env.DB.prepare(
+    `SELECT client_slug FROM customers WHERE status IN ('active','pilot')`
+  ).all<{ client_slug: string }>();
+  const out: Array<{ slug: string } & MemoDraftResult> = [];
+  for (const { client_slug: slug } of customers.results) {
+    try {
+      const delivered = await env.DB.prepare(
+        `SELECT 1 AS d FROM monthly_memos WHERE client_slug = ? AND month_key = ? AND delivered_at IS NOT NULL`,
+      ).bind(slug, w.monthKey).first<{ d: number }>();
+      if (delivered) {
+        out.push({ slug, ok: false, skipped: `${w.monthKey} already delivered` });
+        continue;
+      }
+      const guard = await ensureMonthEndSnapshot(env, slug, w);
+      if (!guard.ok) {
+        if (guard.reason === "not_engaged") {
+          out.push({ slug, ok: false, skipped: guard.detail });
+          continue;
+        }
+        const error = `month-end snapshot for ${w.monthKey} not usable (${guard.reason}: ${guard.detail}); not drafted from a partial month`;
+        console.log(`[memo-generator] ${slug}: ${error}`);
+        try {
+          const { addInboxItem } = await import("../admin-inbox");
+          await addInboxItem(env, monthEndMissingInboxItem({ clientSlug: slug, monthKey: w.monthKey, reason: guard.reason, detail: guard.detail }));
+        } catch (e) {
+          // Loud. The draft result below still carries the refusal into the
+          // cron's summary alert, so this is never the only record.
+          console.log(`[memo-generator] CRITICAL: inbox item not recorded for ${slug} ${w.monthKey}: ${e instanceof Error ? e.message : String(e)}`);
+        }
+        out.push({ slug, ok: false, error });
+        continue;
+      }
+      const r = await generateMemoDraft(env, slug, clock, { monthEndSnapshot: true });
+      out.push({ slug, ...r });
+    } catch (e) {
+      out.push({ slug, ok: false, error: String(e).slice(0, 300) });
+    }
   }
   return out;
 }

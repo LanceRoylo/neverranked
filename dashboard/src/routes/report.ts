@@ -169,12 +169,17 @@ export async function handleReport(clientSlug: string, monthSlug: string, user: 
   // ------------------------------------------------------------------
   // 5. CITATION DATA
   // ------------------------------------------------------------------
+  // Scoped by week_start, the month a row DESCRIBES, not created_at, the day
+  // it was written. The month-end snapshot (2026-10-05) is written on the 1st
+  // of the NEXT month and keyed at its own month's last second, so a
+  // created_at window put October's full month into November's report as
+  // November's latest figure, for the day or so before November's first row.
   const citSnapshots = (await env.DB.prepare(
-    "SELECT * FROM citation_snapshots WHERE client_slug = ? AND created_at >= ? AND created_at < ? ORDER BY week_start ASC"
+    "SELECT * FROM citation_snapshots WHERE client_slug = ? AND week_start >= ? AND week_start < ? ORDER BY week_start ASC"
   ).bind(clientSlug, bounds.startTs, bounds.endTs).all<CitationSnapshot>()).results;
 
   const priorCit = await env.DB.prepare(
-    "SELECT * FROM citation_snapshots WHERE client_slug = ? AND created_at < ? ORDER BY week_start DESC LIMIT 1"
+    "SELECT * FROM citation_snapshots WHERE client_slug = ? AND week_start < ? ORDER BY week_start DESC LIMIT 1"
   ).bind(clientSlug, bounds.startTs).first<CitationSnapshot>();
 
   const latestCit = citSnapshots.length > 0 ? citSnapshots[citSnapshots.length - 1] : null;

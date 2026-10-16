@@ -33,6 +33,7 @@ import type { Env } from "../types";
 import { engineLayer, byLayerThenShare, LAYER_UNITS_NOTE, type EngineLayer } from "./engine-layer";
 import { cohortRank, COHORT_BASIS_NOTE, type CohortRankBasis } from "./cohort-rank";
 import { isReadoutShapeSnapshot } from "./snapshot-shape";
+import { linkBasisNote } from "./link-basis";
 
 // ──────────────────────────────────────────────────────────────────
 // Public API
@@ -101,6 +102,11 @@ export interface MeasurementWindow {
     layer: EngineLayer;
   }>;
   _layers: string;
+  /** Present when the head snapshot's per-engine link totals left out
+   *  Google's own viewer links (from 2026-10-05). Says which engines, and that
+   *  their share of links is not comparable with the same figure in a memo or
+   *  snapshot from before the change. */
+  _link_counts?: string;
   weekly_snapshots: Array<{
     week_start: string;
     /** Same unit as share_of_all_cited_sources_pct above, NOT venue share. */
@@ -384,6 +390,10 @@ async function loadMeasurementWindow(
   // third-party hosts to target. Written into the snapshot's top_competitors
   // by the dryrun->D1 bridge, so Atlas can answer "where does AI cite for me".
   let offsiteOut: MeasurementWindow["offsite"] = { source_types: [], hosts: [] };
+  // The by_engine shares above come from the head snapshot. When its link
+  // totals leave out Google's viewer links and an earlier memo's did not, the
+  // two figures for the same engine are shares of different totals.
+  let linkCountsNote: string | undefined;
   // THE number the customer sees everywhere else. The dashboard headline and
   // the readout's venue chart both render htc_venue_share_pct (owned citations
   // divided by citations to ANY venue in the cohort). Atlas used to answer
@@ -395,8 +405,12 @@ async function loadMeasurementWindow(
   let venueSharePct: number | null = null;
   if (headIsReadout && headSnap?.top_competitors) {
     try {
-      const tc = JSON.parse(headSnap.top_competitors) as { htc_venue_share_pct?: number; source_types?: Record<string, { share_pct?: number }>; offsite_hosts?: Array<{ host?: string; share_pct?: number }> };
+      const tc = JSON.parse(headSnap.top_competitors) as { htc_venue_share_pct?: number; source_types?: Record<string, { share_pct?: number }>; offsite_hosts?: Array<{ host?: string; share_pct?: number }>; source_exclusions?: { wrapper_links_by_engine?: Record<string, number> } };
       if (typeof tc.htc_venue_share_pct === "number") venueSharePct = tc.htc_venue_share_pct;
+      const note = linkBasisNote(tc.source_exclusions?.wrapper_links_by_engine);
+      if (note) {
+        linkCountsNote = `${note} Memos and snapshots from before this change counted those links, so for these tools a share of links quoted in an earlier memo is a share of a different total. Never compare it with the figure here or describe a change between them.`;
+      }
       offsiteOut = {
         // absent-is-zero: harmless. A zero share is dropped by the filter below and never reaches Atlas, so absence and zero have the same visible result: nothing.
         source_types: Object.entries(tc.source_types ?? {}).map(([type, v]) => ({ type, share_pct: v.share_pct ?? 0 })).filter((s) => s.share_pct > 0).sort((a, b) => b.share_pct - a.share_pct),
@@ -437,6 +451,7 @@ async function loadMeasurementWindow(
     },
     by_engine: byEngineOut,
     _layers: LAYER_UNITS_NOTE,
+    ...(linkCountsNote ? { _link_counts: linkCountsNote } : {}),
     weekly_snapshots: dedupeByWeek(snaps.results)
       .map((s) => ({
         week_start: new Date(s.week_start * 1000).toISOString().slice(0, 10),

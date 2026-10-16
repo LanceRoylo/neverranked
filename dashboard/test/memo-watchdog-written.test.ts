@@ -24,7 +24,7 @@ test("the watchdog reads when a memo was written, not when its row appeared", ()
 });
 
 test("overdue is computed from the written timestamp", () => {
-  assert.match(block, /monthlyRefreshOverdue\(now, memo\.written, 26\)/);
+  assert.match(block, /monthlyRefreshOverdue\(now, memo\.written, MEMO_DRAFT_DAY \+ 2\)/);
 });
 
 test("a client with no memo at all is still skipped, not alerted", () => {

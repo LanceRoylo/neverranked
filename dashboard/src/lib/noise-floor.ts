@@ -116,7 +116,16 @@ export async function fetchDailyRates(
   env: { DB: D1Database },
   clientSlug: string,
   days = 21,
+  /** The window's END and FLOOR. Both used to be implicit: the window ended at
+   *  the wall clock and had no floor. A memo drafted on the 2nd for the month
+   *  before therefore measured its band partly on days AFTER the month it
+   *  reports, and a preview early in a client's first month reached back past
+   *  measurement_start into pre-engagement runs. endTs is exclusive; floorTs
+   *  is measurement_start (null when none is recorded). */
+  opts: { endTs?: number; floorTs?: number | null } = {},
 ): Promise<DailyRate[]> {
+  const end = opts.endTs ?? Math.floor(Date.now() / 1000);
+  const start = Math.max(end - days * 86400, opts.floorTs ?? 0);
   const rows = (await env.DB.prepare(
     `SELECT date(r.run_at,'unixepoch') AS day,
             COUNT(*)                  AS runs,
@@ -125,9 +134,10 @@ export async function fetchDailyRates(
        JOIN citation_keywords k ON k.id = r.keyword_id
       WHERE k.client_slug = ?
         AND k.active = 1
-        AND r.run_at >= strftime('%s','now') - ? * 86400
+        AND r.run_at >= ?
+        AND r.run_at < ?
       GROUP BY day
       ORDER BY day`,
-  ).bind(clientSlug, days).all<DailyRate>()).results;
+  ).bind(clientSlug, start, end).all<DailyRate>()).results;
   return rows ?? [];
 }
