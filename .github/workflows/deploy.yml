@@ -14,6 +14,8 @@ on:
       - 'robots.txt'
       - 'llms.txt'
       - 'citation-demo.mp4'
+      - 'explainer.mp4'
+      - 'explainer-poster.jpg'
       - '_headers'
       - '_redirects'
       # Public folders — keep this set IDENTICAL to DIRS in scripts/build.sh.
