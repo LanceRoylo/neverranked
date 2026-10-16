@@ -1901,7 +1901,9 @@ body.channel-mode #channel-cta-card{display:block}
           scan_id: reportData && reportData.scan_id ? reportData.scan_id : null,
           domain: reportData ? reportData.domain : null,
           score: reportData ? reportData.aeo_score : null,
-          consent_version: NR_CONSENT_VERSION
+          consent_version: NR_CONSENT_VERSION,
+          referrer: _ref || null,
+          utm: Object.keys(_utm).length ? _utm : undefined
         })
       }).catch(function(){});
     } catch (e) {}
@@ -3250,7 +3252,7 @@ export default {
       if (isRateLimited(ip)) {
         return Response.json({ ok: false }, { status: 429, headers: corsHeaders });
       }
-      let imp: { session_id?: string; client?: string; scan_id?: string; domain?: string; score?: number; consent_version?: string };
+      let imp: { session_id?: string; client?: string; scan_id?: string; domain?: string; score?: number; consent_version?: string; referrer?: unknown; utm?: unknown };
       try { imp = await request.json(); } catch {
         return Response.json({ ok: false }, { status: 400, headers: corsHeaders });
       }
@@ -3289,8 +3291,10 @@ export default {
             ip_hash: null,
             user_agent: cleanUa(ua),
             country: ((request as any).cf?.country as string | undefined) || null,
-            referrer: null,
-            utm: {},
+            // Same landing tags the scan and the capture carry, so the
+            // capture rate can be read per post, not only in total.
+            referrer: cleanReferrer(imp.referrer),
+            utm: cleanUtm(imp.utm),
             created_at: nowSeconds(),
           }).run();
         } catch (e) {
