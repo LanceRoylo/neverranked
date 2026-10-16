@@ -26,6 +26,8 @@ fi
 FILES=(
   index.html
   citation-demo.mp4
+  explainer.mp4
+  explainer-poster.jpg
   404.html
   og.jpg
   og-source.html
