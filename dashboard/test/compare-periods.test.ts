@@ -13,6 +13,8 @@ import assert from "node:assert/strict";
 import {
   computeComparison,
   describeMovement,
+  publicReason,
+  publicEventLine,
   type InstrumentEvent,
   type Movement,
   type SurfaceCounts,
@@ -339,4 +341,53 @@ test("a stored-answer cap change is set aside for citations, with the reason", (
   assert.equal(c.events.length, 0);
   assert.match(c.setAside[0].why, /not citation counts/);
   stated(c.perSurface[0].movement);
+});
+
+/* 2026-09-29: Perplexity changed its own answer format (answers about half as
+ * long, exactly 15 sources each). Our request had not changed since 08-23. */
+const PERPLEXITY_FORMAT: InstrumentEvent = {
+  occurred_at: Date.parse("2026-09-29T00:00:00Z") / 1000,
+  kind: "engine_behavior_changed",
+  scope: "engine",
+  engine: "perplexity",
+  detail: "Perplexity changed its answer format on its own side",
+};
+
+test("a change the tool made on its own side withholds, and is never called ours", () => {
+  const r = computeComparison({ sharedKeywords: 22, perSurface: HTC, events: [PERPLEXITY_FORMAT], ...WINDOWS });
+  const px = withheld(r.perSurface.find((s) => s.engine === "perplexity")!.movement);
+  assert.match(px.reason, /^the tool itself changed how it answers/);
+  const pub = publicReason(describeMovement({ kind: "withheld", reason: px.reason }, "Perplexity"));
+  assert.equal(pub, "Perplexity: no movement can be stated because the tool itself changed how it answers inside the window, a change on its side and not ours (listed below).");
+  assert.doesNotMatch(pub, /instrument change of ours/);
+  assert.doesNotMatch(pub, /Perplexity changed its answer format on its own side/); // internal detail stays internal
+  const pool = publicReason(describeMovement(r.pooled.citation, "Surfaces that search the web and cite sources"));
+  assert.match(pool, /one of these tools changed how it answers inside the window, a change on its side and not ours/);
+  assert.equal(publicEventLine(PERPLEXITY_FORMAT), "perplexity changed how it answers, on its own side");
+});
+
+test("a change of ours still says ours", () => {
+  const r = computeComparison({ sharedKeywords: 22, perSurface: HTC, events: [PERPLEXITY_MIGRATION], ...WINDOWS });
+  const px = withheld(r.perSurface.find((s) => s.engine === "perplexity")!.movement);
+  assert.match(publicReason(px.reason), /an instrument change of ours lands inside the window \(listed below\)/);
+});
+
+test("ours and theirs together are not passed off as the tool's alone", () => {
+  const r = computeComparison({ sharedKeywords: 22, perSurface: HTC, events: [PERPLEXITY_MIGRATION, PERPLEXITY_FORMAT], ...WINDOWS });
+  const px = withheld(r.perSurface.find((s) => s.engine === "perplexity")!.movement);
+  assert.match(publicReason(px.reason), /instrument change of ours/);
+});
+
+test("a detector step on the same engine is folded into the tool's own change, not counted as ours", () => {
+  const STEP: InstrumentEvent = {
+    occurred_at: Date.parse("2026-09-25T06:03:37Z") / 1000, kind: "unexplained_step", scope: "engine",
+    engine: "perplexity", client_slug: "hawaii-theatre", detail: "perplexity citation rate rose 34.3% to 49.3%",
+  };
+  const r = computeComparison({ sharedKeywords: 18, perSurface: HTC, events: [STEP, PERPLEXITY_FORMAT], ...WINDOWS });
+  const px = withheld(r.perSurface.find((s) => s.engine === "perplexity")!.movement);
+  assert.match(publicReason(px.reason), /the tool itself changed how it answers inside the window, a change on its side and not ours/);
+  assert.ok(r.setAside.some((x) => x.event.kind === "unexplained_step" && /on its own side/.test(x.why)));
+  // A step with no recorded explanation still withholds.
+  const alone = computeComparison({ sharedKeywords: 18, perSurface: HTC, events: [STEP], ...WINDOWS });
+  withheld(alone.perSurface.find((s) => s.engine === "perplexity")!.movement);
 });

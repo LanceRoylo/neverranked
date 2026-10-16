@@ -71,7 +71,10 @@ const DB = {
     return {
       bind(...args) {
         let i = 0;
-        return exec(sql.replace(/\?/g, () => esc(args[i++])));
+        // D1 binds both "?" (positional) and "?N" (numbered, 1-based). The
+        // comparison loader uses ?1..?5 and repeats them, so "?" alone would
+        // splice the value in front of the digit ("'prince-waikiki'1").
+        return exec(sql.replace(/\?(\d+)?/g, (_, n) => esc(n ? args[Number(n) - 1] : args[i++])));
       },
       ...exec(sql),
     };
@@ -94,6 +97,12 @@ if (i.overall.prior.runs === 0 && i.overall.share_delta_pp !== 0) {
   console.log("  !! MOVEMENT REPORTED AGAINST A WINDOW WITH ZERO RUNS -- this is the 2026-09-07 defect");
 }
 
+if (i.comparison) {
+  console.log("\nCOMPARISON (the only source of a month-over-month claim)");
+  console.log(JSON.stringify(i.comparison, null, 1).split("\n").slice(0, 80).join("\n"));
+} else {
+  console.log("\nCOMPARISON: none (the prompt then forbids any movement claim)");
+}
 console.log(`\nCOHORT   rank ${i.cohort.rank} of ${i.cohort.members.length + 1}   your citations ${i.cohort.customer_mentions}`);
 for (const m of i.cohort.members.slice(0, 6)) {
   console.log(`  ${pad(m.mentions, 6)}  ${pad(m.share_pct + "%", 7)}  ${m.label || m.domain}`);
