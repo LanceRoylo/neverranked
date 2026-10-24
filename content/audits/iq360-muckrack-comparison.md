@@ -143,7 +143,7 @@ that are directly relevant to where Muck Rack stops:
    what is happening, the Citation Tape tells you what to do
    about it via the deployment layer underneath.
 
-2. **@neverranked/mcp** — the first AEO toolchain in the official
+2. **@neverranked/mcp** — an AEO toolchain listed in the official
    MCP registry. Any AI agent built on Claude Code or Claude Desktop
    can now run AEO scoring, llms.txt audits, and agent-readiness
    checks via MCP tool calls. Free for developer use, attribution

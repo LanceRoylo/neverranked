@@ -1,7 +1,6 @@
 # @neverranked/mcp
 
-The first AEO toolchain in the AI agent ecosystem. An MCP server
-that exposes NeverRanked's three public scanners to any
+An MCP server that exposes NeverRanked's three public scanners to any
 Model Context Protocol client (Claude Desktop, Claude Code,
 Cursor, custom agents).
 

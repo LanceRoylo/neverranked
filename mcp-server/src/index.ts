@@ -3,10 +3,9 @@
  * @neverranked/mcp — Model Context Protocol server exposing NeverRanked's
  * Answer Engine Optimization (AEO) toolkit to AI agents.
  *
- * The first AEO toolchain in the agent ecosystem. Lets any MCP-aware
- * client (Claude Desktop, Claude Code, Cursor, etc.) score a website's
- * AEO readiness, audit its llms.txt, and check agent-readiness — all
- * without a NeverRanked account.
+ * Lets any MCP-aware client (Claude Desktop, Claude Code, Cursor, etc.)
+ * score a website's AEO readiness, audit its llms.txt, and check
+ * agent-readiness, all without a NeverRanked account.
  *
  * Three tools:
  *   - aeo_scan(url): full AEO score 0-100, schema coverage, signals
