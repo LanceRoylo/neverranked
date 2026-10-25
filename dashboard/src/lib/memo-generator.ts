@@ -105,8 +105,18 @@ export function allowedNumberSet(inp: MemoInputs): Set<string> {
   add(inp.overall.current.share_pct);
   add(inp.overall.prior.runs);
   add(inp.overall.prior.cited);
-  add(inp.overall.prior.share_pct);
-  add(Math.abs(inp.overall.share_delta_pp));
+  // The overall prior and delta are on the ALL-QUESTION basis. When a
+  // like-for-like comparison exists, movement may only come from it, so the
+  // overall prior and delta must not verify either, or the gate passes a
+  // sentence the rules forbid. On 2026-10-24 Prince's overall read 10% to 8%
+  // across all 30 questions while the 18 asked in both months said something
+  // else, and only a prompt instruction stood between that and a delivered
+  // readout. A missing prior is a placeholder, not a reading, and never verifies.
+  const overallMovementAllowed = !inp.comparison && !inp.like_for_like && !inp.overall.prior_missing;
+  if (overallMovementAllowed) {
+    add(inp.overall.prior.share_pct);
+    add(Math.abs(inp.overall.share_delta_pp));
+  }
   if (inp.cohort.rank) add(inp.cohort.rank);
   add(inp.cohort.customer_mentions);
   add(inp.cohort.members.length);
