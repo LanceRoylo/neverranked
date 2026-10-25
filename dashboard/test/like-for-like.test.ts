@@ -91,3 +91,34 @@ test("group facts verify, and the invented ones do not", () => {
   assert.ok(allowed.has("10") && allowed.has("764"), "the zero split must verify");
   assert.ok(!allowed.has("768"), "the computed-and-wrong total must not verify");
 });
+
+/* Prince, 2026-10-24. The overall block read 10% to 8% across all thirty
+ * questions. The like-for-like comparison is the only allowed source of
+ * movement, so the overall prior and delta must not verify when it exists. */
+test("the all-question overall prior and delta do not verify when a like-for-like basis exists", () => {
+  const prince = {
+    ...base,
+    by_question: [],
+    overall: { current: { runs: 3347, cited: 283, share_pct: 8.4 }, prior: { runs: 0, cited: 0, share_pct: 10.3 }, share_delta_pp: -1.9 },
+    like_for_like: { questions: 18, current_share_pct: 31.2, prior_share_pct: 33.7, share_delta_pp: -2.5, questions_added_since_prior: 0 },
+  };
+  const allowed = allowedNumberSet(prince);
+  assert.ok(allowed.has("8.4"), "the current overall share still verifies");
+  assert.ok(!allowed.has("10.3"), "the all-question prior must not verify");
+  assert.ok(!allowed.has("1.9"), "the all-question delta must not verify");
+  assert.ok(allowed.has("33.7") && allowed.has("2.5"), "the like-for-like movement verifies");
+});
+
+test("with no like-for-like basis, the overall prior and delta still verify", () => {
+  const allowed = allowedNumberSet({ ...base, by_question: [] });
+  assert.ok(allowed.has("40") && allowed.has("10"));
+});
+
+test("a missing prior never verifies", () => {
+  const allowed = allowedNumberSet({
+    ...base,
+    by_question: [],
+    overall: { current: { runs: 10, cited: 5, share_pct: 50 }, prior: { runs: 0, cited: 0, share_pct: 37.5 }, share_delta_pp: 12.5, prior_missing: true },
+  });
+  assert.ok(!allowed.has("37.5") && !allowed.has("12.5"));
+});
