@@ -1,8 +1,8 @@
 {
   "name": "@neverranked/mcp",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "mcpName": "io.github.LanceRoylo/mcp",
-  "description": "MCP server exposing NeverRanked's AEO scoring, llms.txt audit, and agent-readiness checks. The first AEO toolchain for AI agents.",
+  "description": "MCP server exposing NeverRanked's AEO checks to AI agents: AEO scoring, llms.txt audit, and agent-readiness.",
   "license": "MIT",
   "main": "dist/index.js",
   "bin": {
