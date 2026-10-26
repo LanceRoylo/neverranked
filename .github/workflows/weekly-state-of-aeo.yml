@@ -31,7 +31,7 @@ permissions:
 
 jobs:
   regenerate:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04  # pinned 2026-10-25: Playwright has no chromium build for ubuntu26.04 yet
     steps:
       - uses: actions/checkout@v6
         with:
