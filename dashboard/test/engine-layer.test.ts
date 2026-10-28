@@ -71,6 +71,7 @@ test("the note the chat model reads states the rule, not just the units", () => 
   // The trap is that the bigger number looks better.
   assert.match(LAYER_UNITS_NOTE, /almost always the larger number/);
   assert.match(LAYER_UNITS_NOTE, /control, not an AI tool/);
+  assert.match(LAYER_UNITS_NOTE, /Bing's regular search results, the plain list of links/);
 });
 
 test("the shared Layer 1 set is exactly the five citation-grade surfaces", () => {
