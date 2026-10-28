@@ -104,4 +104,5 @@ export const LAYER_UNITS_NOTE =
   "layer 'model_knowledge' means the surface answers from what the model already knows: share_pct is the share of ANSWERS THAT NAMED the customer, and that surface cites nothing at all. " +
   "A model-knowledge share is almost always the larger number because its denominator is smaller, so calling it the customer's 'best' or 'strongest' surface is false. " +
   "layer 'unknown' means the surface name was not recognised: report its figure only with that caveat. " +
-  "Bing search (control) is a classic-search control, not an AI tool, and never 'answers' or 'cites'.";
+  "Bing search (control) is a classic-search control, not an AI tool, and never 'answers' or 'cites'. " +
+  "To the reader, call it Bing's regular search results, the plain list of links, and never write that Bing is not an AI tool.";

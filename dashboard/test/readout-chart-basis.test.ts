@@ -135,7 +135,8 @@ test("the control is not drawn among the AI tools, and is named under the chart"
   const ownSite = html.slice(html.indexOf("How much of what AI reads is your own site"));
   const chart = ownSite.slice(0, ownSite.indexOf("</section>"));
   assert.doesNotMatch(chart, /nr-lab">Bing search \(control\)</);
-  assert.match(chart, /Bing search \(control\) is left out of this chart\. It is a classic search run as a control, not an AI tool\./);
+  assert.match(chart, /Bing search \(control\) is left out of this chart\. It is Bing's regular search results, the plain list of links, which we run as a control\./);
+  assert.doesNotMatch(html, /not an AI tool/);
 });
 
 test("a share that rounds to zero reads 'under 1%', never a claim of total absence", () => {
@@ -233,7 +234,8 @@ test("no unmeasured norms: no 'dozen or more', no 'normal range', no cross-categ
 });
 
 test("the grid caption says the last row is the control, and does not claim every day", () => {
-  assert.match(text, /Each row is one AI tool, except Bing search \(control\), a classic search run as a control/);
+  assert.match(text, /Each row is one AI tool, except Bing search \(control\), which is Bing's regular search results, the plain list of links, run as a control/);
+  assert.doesNotMatch(text, /not an AI tool/);
   assert.doesNotMatch(text, /every day/);
 });
 

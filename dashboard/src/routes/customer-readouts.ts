@@ -416,7 +416,7 @@ function renderCitationGrid(
   // one sentence, across rows that measure two different things. Each row now
   // states its own basis.
   const controlRow = engines.find((e) => isControlLabel(e));
-  const cap = `Each row is one AI tool${controlRow ? `, except ${esc(controlRow)}, a classic search run as a control` : ""}. Each numbered column is one question, listed underneath. ` +
+  const cap = `Each row is one AI tool${controlRow ? `, except ${esc(controlRow)}, which is Bing's regular search results, the plain list of links, run as a control` : ""}. Each numbered column is one question, listed underneath. ` +
     `The key above says what each square means. Columns are ordered strongest on the left, so the questions where you appear least gather at the right-hand edge ` +
     `instead of being scattered through the grid.`;
 
@@ -955,7 +955,7 @@ export function renderCharts(factsJson: string | null): string {
   // the caption does not say it a second time.
   const basisNoteShown = typeof f.linkBasisNote === "string" && f.linkBasisNote.length > 0;
   const controlNote = (controls.length
-    ? ` ${controls.map((e) => e.name).join(" and ")} is left out of this chart. It is a classic search run as a control, not an AI tool.`
+    ? ` ${controls.map((e) => e.name).join(" and ")} is left out of this chart. It is Bing's regular search results, the plain list of links, which we run as a control.`
     : "")
     + (basisNoteShown
       ? ""
