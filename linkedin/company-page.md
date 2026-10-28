@@ -10,7 +10,7 @@ Paste these fields into LinkedIn → Admin view → Edit Page.
 |---|---|
 | Page name | NeverRanked |
 | LinkedIn URL slug | `neverranked` (linkedin.com/company/neverranked) |
-| Tagline (120 char) | Citations, not rankings. AI-native SEO for the engines ChatGPT, Perplexity, Gemini, and Google AI already answer from. |
+| Tagline (120 char) | We check what AI tells your customers about you. We measure. We never sell the fix. |
 | Website | https://neverranked.com |
 | Industry (primary) | Marketing Services |
 | Industry (secondary) | Advertising Services |
@@ -22,42 +22,29 @@ Paste these fields into LinkedIn → Admin view → Edit Page.
 
 ---
 
-## About section (1,487 characters, under the 2,000 cap)
+## About section (rewritten 2026-10-25: measurement only)
 
-Rankings are over. Citations are the game.
+Your customers are asking AI who's best in town. It answers with a few names, and there's no page two.
 
-58.5% of Google clicks now end on an AI Overview. ChatGPT, Perplexity, and Gemini answer the question before your site ever gets a visit. The old playbook of keywords, backlinks, and ninety-page PDFs was built for a page of results nobody reads anymore.
+NeverRanked checks what those answers say about your business. We ask six AI tools the questions your customers ask: ChatGPT, Perplexity, Gemini, Google AI Overviews, Claude and Gemma. We ask more than once, because the answers change, and we run Bing's regular search results, the plain list of links, alongside as a control. Then we write down what came back: who gets named, and which pages the answers come from.
 
-NeverRanked is an AI-native SEO and Answer Engine Optimization agency. We get you cited by the engines that now decide who gets seen. Not ranked. Cited.
+We measure. We never sell the fix. Most AEO vendors make the changes and then grade their own work. We don't make changes, so we have no stake in the result. If you already have someone optimizing for AI, we're the independent check on whether it's working.
 
-What we actually do:
+When we get something wrong, we correct it in writing and say so. Nobody can promise AI will name you, and we won't.
 
-Full technical and content audit, delivered in 48 hours. Schema built for machine-readability, not 2018 best practice. AEO content drafted in your voice and reviewed by a human. Daily citation tracking across ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews, and Gemma. Intent mapping across classic SERPs and generative answer engines.
-
-How we work:
-
-No standing meetings. No Slack channels. No monthly PDF theatre. Email SLAs replace Slack. Loom recaps replace calls. The dashboard is the meeting. We keep the team small on purpose so the work stays sharp.
-
-Proof before pitch:
-
-We run our own AEO lab on Montaic, a real-estate AI product we built. Every technique we sell, we sell because we already made it work for ourselves. Our playbook has receipts.
-
-Start here:
-
-The $750 audit. Six deliverables. 48-hour turnaround. Fully credited toward your first month if you upgrade to a monthly tier within thirty days. Yours to keep either way.
-
-neverranked.com
-hello@neverranked.com
+Start with the free check at neverranked.com. It takes about a minute.
 
 ---
 
-## Specialties (20 tags)
+## Specialties
 
-Answer Engine Optimization, AEO, AI SEO, ChatGPT Citation, Perplexity SEO, Google AI Overviews, Schema Markup, Structured Data, Citation Monitoring, Content Strategy, AI-Native Marketing, Generative Search, SERP Strategy, Technical SEO, Intent Mapping, SEO Audit, B2B Marketing, Professional Services Marketing, Real Estate Marketing, Legal Marketing
+Answer Engine Optimization, AEO, AI Search Measurement, Independent Measurement, ChatGPT, Perplexity, Gemini, Google AI Overviews, Claude, Citation Monitoring, Generative Search, Hospitality Marketing, Local Business Marketing
 
 ---
 
-## Seed posts (5)
+## Seed posts (5): RETIRED 2026-10-25
+
+Written for the old agency positioning (schema, content, the one-time $750 audit, Montaic as proof). Do not post them. Company-page posts now reshare the personal short series in hello-momentum-agency/campaigns/neverranked/linkedin-2026-10/.
 
 Post these from the company page in order, one per weekday during launch week. Copy-paste from the `.txt` files.
 
