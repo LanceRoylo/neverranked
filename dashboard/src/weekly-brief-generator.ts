@@ -52,7 +52,7 @@ export interface WeeklyStats {
   aiSurfaceRuns: number;
   /** The Bing control's runs, given separately. */
   controlRuns: number;
-  perEngine: { engine: string; runs: number; clientCited: number }[];
+  perEngine: { engine: string; runs: number; client_cited: number }[];
   totalBotHits: number;
   topBots: { bot: string; hits: number }[];
   /** Distinct client sites that logged bot rows, and the busiest site's share
@@ -838,7 +838,7 @@ Generated content (do not publish as-is):
 ${brief.body_markdown.slice(0, 1500)}`,
       target_type: "weekly_brief",
       target_id: 0,
-      target_slug: leak.leakedSlug ?? null,
+      target_slug: leak.leakedSlug ?? undefined,
       urgency: "high",
     });
     return { ok: false, error: `anonymization check failed: leaked slug "${leak.leakedSlug}"` };
