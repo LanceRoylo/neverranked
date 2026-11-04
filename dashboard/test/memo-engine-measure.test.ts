@@ -59,14 +59,19 @@ test("the figures the writer is told to use verify against the number guard", ()
  * month-over-month memo (the paying client, October, generates 10-24). */
 test("the memo compares on the stable core, and only there", () => {
   const src = read("../src/lib/memo-inputs.ts");
-  assert.match(src, /basis: "stable_core"/);
-  assert.match(src, /loadStableCoreCounts\(env, slug, prev, cur\)/);
-  assert.match(src, /loadInstrumentEvents\(env, prev, cur, slug\)/);
+  // One loader, shared with the readout's charts (2026-11-03), so the charts
+  // cannot draw a movement on a basis the text did not use.
+  assert.match(src, /loadMonthComparison\(env, slug, prev, cur\)/);
+  const loader = read("../src/lib/compare-loader.ts");
+  assert.match(loader, /basis: "stable_core"/);
+  assert.match(loader, /loadStableCoreCounts\(env, clientSlug, prev, cur\)/);
+  assert.match(loader, /loadInstrumentEvents\(env, prev, cur, clientSlug\)/);
   // Two bases in one memo is how a correct number lands in a false sentence.
   assert.match(src, /\.\.\.\(comparison \? \{ comparison \} : like_for_like \? \{ like_for_like \} : \{\}\)/);
   // This object reaches the client: no internal event notes.
-  assert.match(src, /instrument_changes: c\.events\.map\(publicEventLine\)/);
-  assert.match(src, /statement: publicReason\(describeMovement/);
+  assert.match(src, /instrument_changes: \[\.\.\.new Set\(c\.events\.map\(\(e\) => publicEventLine\(e, label\)\)\)\]/);
+  assert.match(src, /publicSurfaceReason\(x, label\)/);
+  assert.match(src, /: publicReason\(describeMovement/);
 });
 
 test("comparison figures verify, and the writer is bound to them", () => {

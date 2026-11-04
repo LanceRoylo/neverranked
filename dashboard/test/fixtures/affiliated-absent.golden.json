@@ -331,33 +331,33 @@
    {
     "name": "Perplexity",
     "pct": 17,
-    "prev": 17
+    "prevWithheld": "Not compared with last month: the two months did not measure the same questions every day, so these figures are not like for like. The memo compares the questions measured on every day of both months."
    },
    {
     "name": "ChatGPT search",
     "pct": 25,
-    "prev": 25
+    "prevWithheld": "Not compared with last month: the two months did not measure the same questions every day, so these figures are not like for like. The memo compares the questions measured on every day of both months."
    },
    {
     "name": "Gemini grounded",
     "pct": 33,
-    "prev": 33
+    "prevWithheld": "Not compared with last month: the two months did not measure the same questions every day, so these figures are not like for like. The memo compares the questions measured on every day of both months."
    },
    {
     "name": "Google AI Overviews",
     "pct": 25,
-    "prev": 25
+    "prevWithheld": "Not compared with last month: the two months did not measure the same questions every day, so these figures are not like for like. The memo compares the questions measured on every day of both months."
    },
    {
     "name": "Bing search (control)",
     "pct": 33,
-    "prev": 33
+    "prevWithheld": "Not compared with last month: the two months did not measure the same questions every day, so these figures are not like for like. The memo compares the questions measured on every day of both months."
    },
    {
     "name": "Claude",
     "pct": 100,
     "layer": "model_knowledge",
-    "prev": 100
+    "prevWithheld": "Not compared with last month: the two months did not measure the same questions every day, so these figures are not like for like. The memo compares the questions measured on every day of both months."
    }
   ],
   "linkBasis": "google_viewer_links_excluded",
