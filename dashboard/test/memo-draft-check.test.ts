@@ -64,14 +64,14 @@ test("our words are flagged and the everyday senses are not", () => {
 
 test("a draft with no short version is flagged", () => {
   assert.equal(checkShortVersion("## November 2026: what moved\n\nBody.").length, 1);
-  assert.deepEqual(checkShortVersion("## November 2026\n\n### The short version\n\nThree paragraphs."), []);
+  assert.deepEqual(checkShortVersion("## November 2026\n\n### This month in plain words\n\nThree paragraphs."), []);
 });
 
 test("the short version comes out of the body, and the rest stays in order", () => {
-  const md = "## November 2026\n\n### The short version\n\nOne.\n\nTwo.\n\n### Where you stand\n\nThird.\n";
+  const md = "## November 2026\n\n### This month in plain words\n\nOne.\n\nTwo.\n\n### Where you stand\n\nThird.\n";
   const { note, rest } = splitShortVersion(md);
   assert.equal(note, "One.\n\nTwo.");
-  assert.doesNotMatch(rest, /short version|One\./);
+  assert.doesNotMatch(rest, /plain words|One\./);
   assert.match(rest, /^## November 2026[\s\S]*### Where you stand\n\nThird\./);
 });
 
@@ -105,5 +105,5 @@ test("the delivery gate and the generator both run these checks", () => {
   const src = fs.readFileSync(new URL("../src/lib/memo-generator.ts", import.meta.url), "utf8");
   assert.match(src, /\.\.\.memoDraftIssues\(body, inputs\)/, "vetMemoBody blocks delivery on them");
   assert.match(src, /data: writerView\(inputs\)/);
-  assert.ok(memoDraftIssues("### The short version\n\nFine.", inp).length === 0);
+  assert.ok(memoDraftIssues("### This month in plain words\n\nFine.", inp).length === 0);
 });

@@ -21,7 +21,7 @@ import type { MemoInputs } from "./memo-inputs";
 
 /** The section readouts show above the charts. The writer is told this exact
  *  heading, and the renderer lifts it out by this exact heading. */
-export const SHORT_VERSION_HEADING = "The short version";
+export const SHORT_VERSION_HEADING = "This month in plain words";
 
 /** Our words, with what to say instead. Terms with an everyday meaning only
  *  match in the sense we use them. */
@@ -52,7 +52,7 @@ export function checkPlainWords(body: string): string[] {
   return issues;
 }
 
-/** The short version is what gets read and forwarded, so it has to exist. */
+/** This month in plain words is what gets read and forwarded, so it has to exist. */
 export function checkShortVersion(body: string): string[] {
   return new RegExp(`^###\\s+${SHORT_VERSION_HEADING}\\s*$`, "m").test(body)
     ? []

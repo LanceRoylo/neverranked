@@ -61,7 +61,7 @@ function reportNo(i: number): string {
  * competitor names lifted from AI-engine output (attacker-influenceable), so a
  * `javascript:`/`data:` href must never survive. No raw HTML passthrough.
  */
-/** Lifts "### The short version" out of a memo body so it can sit on page 1,
+/** Lifts "### This month in plain words" out of a memo body so it can sit on page 1,
  *  above the charts. A body without it comes back whole: every memo delivered
  *  before 2026-11 renders exactly as it did. */
 export function splitShortVersion(md: string): { note: string | null; rest: string } {
