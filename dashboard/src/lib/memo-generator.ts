@@ -20,6 +20,7 @@ import type { Env } from "../types";
 import { gatherMemoInputs, type MemoInputs } from "./memo-inputs";
 import { checkHumanTone } from "../human-tone-guard";
 import type { DeliverableVerdict } from "./deliverable-judge";
+import { memoDraftIssues, writerView } from "./memo-draft-check";
 
 const ANTHROPIC_ENDPOINT = "https://api.anthropic.com/v1/messages";
 const ANTHROPIC_VERSION = "2023-06-01";
@@ -36,6 +37,11 @@ VOICE AND RULES (hard):
 - Never use marketing inflation: best, amazing, leverage, synergy, leading, world-class, premier, top-tier, industry-leading, unlock, elevate, game-changer, seamless.
 - No hype, no filler, no "in today's world" openers. Human, not AI.
 - Use ONLY the numbers provided in the data. Never invent a statistic, a competitor, a percentage, or a trend. If you want to make a point the data does not support, do not make it.
+- PLAIN WORDS. Every reader is new to this category. These words are ours, not theirs, and never appear in the memo: stable core (say "the questions we asked on every day of both months"), citation share or citation layer (say how often their site was among the sources), model knowledge (say tools that answer from what they already learned), surface or surfaces (say AI tools), cohort (say the hotels or venues we track), instrument or instrument change (say a change on our side, and say what it was), snapshot, noise floor or noise band (say the range this moves on its own), delta, pp (say points), AEO. Comparison statements may contain some of these: give their meaning in plain words, not their wording. Name the tools as ChatGPT search, Perplexity, Gemini, Google AI Overviews (the AI summary at the top of a Google search), Claude and Gemma. The first time each appears, say what it is in a few words.
+- A COUNT MUST MATCH WHAT IT COUNTS. A heading that says N questions sits over exactly N list items. Where the memo says how many questions the comparison covers, it is data.comparison.questions.
+- LAST MONTH'S MEMO IS FOR ITS PRIORITIES, NOT ITS FIGURES. Never compare a figure in it with a figure this month. Every item it listed under what you are watching gets answered in this memo, in plain words, and "not yet" is a full answer.
+- A NEAR TIE IS A TIE. When the customer and the business next to them in the standings are within about 5% of each other, write that they are level, not that one is ahead.
+- A RISE ON A QUESTION IS NOT A WIN WHEN A WITHHELD TOOL IS IN IT. by_question pools the tools that search the web. If data.comparison withholds any of them, say which tool drove a rise if the data shows it, and never count that rise as an improvement.
 - Address the contact ONLY by data.customer.primary_contact_first_name. If it is null, use no name at all. NEVER invent a name.
 - DO NOT CALCULATE. Every figure in the memo must be READ from the payload, never derived. Do not subtract one total from another, do not sum a list, do not convert a count into a percentage. On a real draft the author computed a subgroup total and wrote 768 where the payload's own per-question numbers summed to 764, then attached the group's six citations to the ten questions it had just said were cited zero times. Numbers that are read are right. Numbers that are worked out are a coin flip. If the figure you want is not in the payload, write the sentence without it.
 - ANY claim about a GROUP of questions ("the N questions about X", "cited zero times across N runs") MUST take its count, its run total and its citation count from data.by_category. Never count a rendered list and never estimate a denominator. If you are about to write that a group was cited zero times, check by_category.cited for that group first: a stated absence that is not an absence is the worst error this memo can contain, and it has happened.
@@ -55,9 +61,9 @@ VOICE AND RULES (hard):
 - NEVER mention Copilot (the Microsoft assistant) in any form. It is not measured and no data for it exists. The Bing channel is a classic-search CONTROL: it "returns" results, it does not cite or answer, and it is never counted among the engines or the AI tools. To the reader, describe it ONLY as "Bing's regular search results, the plain list of links". Never write that Bing "is not an AI tool": Bing has Copilot, so that sentence reads as false. The ONLY correct formulation for the surface count is: "six AI tools plus a Bing organic control, seven measured surfaces". Never place the word "seven" (or the digit 7) directly before "engines" or "AI tools".
 
 STRUCTURE (markdown, in this order):
-0. ONLY IF the payload includes plan_markdown (the frozen engagement plan set at kickoff): a "### Where we are in the plan" section directly after the headline. Two to four sentences. Name which month of the plan this is, what the plan said to expect at this point, and grade this month against that expectation plainly (on schedule, ahead, or behind, and on what specifically). Grade against what the PLAN said, not against generic hope: if the plan says an engine moves slowly, a flat reading there is ON schedule. Do not restate the plan. If plan_markdown is absent, omit this section entirely and never invent a plan.
+0. ONLY IF the payload includes plan_markdown (the frozen engagement plan set at kickoff): a "### Where we are in the plan" section directly after the short version. Two to four sentences. Name which month of the plan this is, what the plan said to expect at this point, and grade this month against that expectation plainly (on schedule, ahead, or behind, and on what specifically). Grade against what the PLAN said, not against generic hope: if the plan says an engine moves slowly, a flat reading there is ON schedule. Do not restate the plan. If plan_markdown is absent, omit this section entirely and never invent a plan.
 1. A short title line as an H2 (## ...), e.g. "## June 2026: what moved".
-2. A one or two sentence opening addressed to the customer's primary contact by first name if provided, else no name. Then, still before the standings, THE HEADLINE: two or three sentences naming the single most action-worthy finding of the month, and only that (the largest fixable gap or the largest movement, never the customer's strongest result). If the customer is winning overall, say so in one clause and pivot immediately to what needs action. A leader does not pay to be told they are winning. They pay to learn where the lead is leaking and what to do. The headline is the FIRST substantive statement of the memo: do not precede it with an overall-share status line, even a flat one ("held flat at X percent"). A flat or strong overall share is never the headline. When the biggest finding is that a known gap did not move, open with that gap and the question of whether last month's fix was completed.
+2. "### The short version" directly under the title. The reader sees this first, above the charts, and it gets forwarded on its own, so it must stand alone. Exactly three short paragraphs, 120 words at most in all, written for someone who has never heard of this category. First paragraph: open with the primary contact's first name if provided, else no name, then where they stand in one or two sentences. Second paragraph: what changed this month, including any gap on our side, and that we cannot say why when we cannot. Third paragraph: THE HEADLINE, the single most action-worthy finding of the month and the one thing to check first, written as a check and not a diagnosis (the largest fixable gap, never the customer's strongest result). If the customer is winning overall, say so in one clause and pivot immediately to what needs action. A leader does not pay to be told they are winning. They pay to learn where the lead is leaking and what to do. No overall month-over-month figure in this section, ever. When the biggest finding is that a known gap did not move, open with that gap and the question of whether last month's fix was completed.
 3. "### Where you stand" : rank in cohort, citation share, and the change since last period if this is not the first memo.
 4. "### What you own" : the questions or framings where the customer is cited most. Name them with their percentages.
 5. "### Where the gaps are" (first memo) or "### What moved" (later memos): the weak questions and notable deltas, each described by what it measures (no page from the site among the sources, or not named in the answer, which are separate findings). Be specific with numbers. For later memos, lead with what changed since last month.
@@ -85,6 +91,8 @@ export interface MemoDraftResult {
   toneViolations?: string[];
   unverifiedNumbers?: string[];
   taxonomyViolations?: string[];
+  /** What memoDraftIssues still found after the one revision pass. */
+  draftIssues?: string[];
   gate?: DeliverableVerdict;
   error?: string;
   /** Deliberately not drafted, which is not a failure: the month is already
@@ -259,7 +267,7 @@ export function planBareNumbers(inp: { plan_markdown?: string | null }): Set<str
  *  does. INPUT_CONTRACT_REVISION covers changes to the DATA the writer is
  *  handed, which can alter a memo without a word of the prompt moving -- bump
  *  it when by_engine or the other input blocks gain or lose a field. */
-const INPUT_CONTRACT_REVISION = "2026-10-05.site-in-sources+named-floor-ceiling+own-site-pulls+link-basis+affiliated+whole-percent-bounds+per-engine-withheld-reason";
+const INPUT_CONTRACT_REVISION = "2026-10-05.site-in-sources+named-floor-ceiling+own-site-pulls+link-basis+affiliated+whole-percent-bounds+per-engine-withheld-reason+writer-view";
 
 export async function memoRulesHash(): Promise<string> {
   const material = MEMO_AUTHOR_SYSTEM + "\u0000" + INPUT_CONTRACT_REVISION;
@@ -442,12 +450,25 @@ export async function generateMemoDraft(
         : "This is a DELTA memo. Lead with what moved since the prior memo. Use the 'What moved' heading. The prior memo is included; reference its priorities and whether the gaps it named have moved.",
       delivery_month_label: deliveryMonthLabel,
       title_instruction: `Title the memo and its opening H2 by the DELIVERY month: "${deliveryMonthLabel}". Do not date it by the month the data falls in. This memo ships in ${deliveryMonthLabel} on the monthly cadence.`,
-      data: inputs,
+      data: writerView(inputs),
     }, null, 2);
 
     const raw = await callClaude(env, payload);
-    const parsed = parseDraft(raw);
+    let parsed = parseDraft(raw);
     if (!parsed) return { ok: false, error: "could not parse generated draft" };
+
+    // One revision pass. The checks are code, so the writer gets told exactly
+    // what they found, and the draft reaches review with those already fixed.
+    // A revision that fails to parse or finds no fewer issues is dropped.
+    let draftIssues = memoDraftIssues(parsed.body_markdown, inputs);
+    if (draftIssues.length) {
+      const revised = parseDraft(await callClaude(env, `${payload}\n\nYOUR DRAFT:\n${parsed.body_markdown}\n\nFix each of these and change nothing else. Return the same JSON shape.\n- ${draftIssues.join("\n- ")}`));
+      const left = revised ? memoDraftIssues(revised.body_markdown, inputs) : draftIssues;
+      if (revised && left.length < draftIssues.length) {
+        parsed = revised;
+        draftIssues = left;
+      }
+    }
 
     // Lock the title to the DELIVERY month, not whatever the model chose
     // from the data window. Memos are cadence deltas dated by the cycle
@@ -553,6 +574,7 @@ export async function generateMemoDraft(
       title: parsed.title,
       toneViolations: toneViolations.length ? toneViolations : undefined,
       unverifiedNumbers: unverified.length ? unverified : undefined,
+      draftIssues: draftIssues.length ? draftIssues : undefined,
       gate,
     };
   } catch (e) {
@@ -591,7 +613,7 @@ export async function vetMemoBody(
   // a delivered draft on 2026-08-03 with every number legitimate. Absent
   // facts => no checks, so nothing changes for a memo without frozen data.
   const { checkClaims, formatClaimIssues } = await import("./claim-check");
-  const claimIssues = formatClaimIssues(checkClaims(body, factsJson));
+  const claimIssues = [...formatClaimIssues(checkClaims(body, factsJson)), ...memoDraftIssues(body, inputs)];
   return { unverifiedNumbers, toneViolations, claimIssues };
 }
 
