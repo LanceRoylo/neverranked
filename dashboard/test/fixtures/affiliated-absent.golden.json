@@ -331,33 +331,33 @@
    {
     "name": "Perplexity",
     "pct": 17,
-    "prevWithheld": "Not compared with last month: the two months did not measure the same questions every day, so these figures are not like for like. The memo compares the questions measured on every day of both months."
+    "prevWithheld": "Not compared with last month: no question was measured on every day of both months, so there is no like for like basis."
    },
    {
     "name": "ChatGPT search",
     "pct": 25,
-    "prevWithheld": "Not compared with last month: the two months did not measure the same questions every day, so these figures are not like for like. The memo compares the questions measured on every day of both months."
+    "prevWithheld": "Not compared with last month: no question was measured on every day of both months, so there is no like for like basis."
    },
    {
     "name": "Gemini grounded",
     "pct": 33,
-    "prevWithheld": "Not compared with last month: the two months did not measure the same questions every day, so these figures are not like for like. The memo compares the questions measured on every day of both months."
+    "prevWithheld": "Not compared with last month: no question was measured on every day of both months, so there is no like for like basis."
    },
    {
     "name": "Google AI Overviews",
     "pct": 25,
-    "prevWithheld": "Not compared with last month: the two months did not measure the same questions every day, so these figures are not like for like. The memo compares the questions measured on every day of both months."
+    "prevWithheld": "Not compared with last month: no question was measured on every day of both months, so there is no like for like basis."
    },
    {
     "name": "Bing search (control)",
     "pct": 33,
-    "prevWithheld": "Not compared with last month: the two months did not measure the same questions every day, so these figures are not like for like. The memo compares the questions measured on every day of both months."
+    "prevWithheld": "Not compared with last month: no question was measured on every day of both months, so there is no like for like basis."
    },
    {
     "name": "Claude",
     "pct": 100,
     "layer": "model_knowledge",
-    "prevWithheld": "Not compared with last month: the two months did not measure the same questions every day, so these figures are not like for like. The memo compares the questions measured on every day of both months."
+    "prevWithheld": "Not compared with last month: no question was measured on every day of both months, so there is no like for like basis."
    }
   ],
   "linkBasis": "google_viewer_links_excluded",

@@ -227,15 +227,22 @@ function priorMonthKey(monthKey: string): string | null {
  *  baseline month, when there is no core, or on any failure, and null means
  *  no chart may draw a movement. */
 type ReadoutComparison = Awaited<ReturnType<typeof loadMonthComparison>>;
-async function loadReadoutComparison(env: Env, slug: string, monthKey: string, measurementStart: number | null): Promise<ReadoutComparison> {
+/** The comparison, or the reason there is none. Each reason is shown to the
+ *  reader, so each must be true of the case that produced it: one shared
+ *  sentence once told a reader "the memo compares the questions measured on
+ *  every day of both months" when the memo had no comparison at all. */
+async function loadReadoutComparison(
+  env: Env, slug: string, monthKey: string, measurementStart: number | null,
+): Promise<{ cmp: ReadoutComparison; whyNone: string | null }> {
   const b = monthBounds(monthKey);
-  if (!b) return null;
-  if (measurementStart !== null && b.priorStart < measurementStart) return null;
+  if (!b) return { cmp: null, whyNone: PREV_NO_COMPARISON };
+  if (measurementStart !== null && b.priorStart < measurementStart) return { cmp: null, whyNone: PREV_PARTIAL_BASELINE };
   try {
-    return await loadMonthComparison(env, slug, { start: b.priorStart, end: b.start }, { start: b.start, end: b.end });
+    const cmp = await loadMonthComparison(env, slug, { start: b.priorStart, end: b.start }, { start: b.start, end: b.end });
+    return { cmp, whyNone: cmp ? null : PREV_NO_STABLE_CORE };
   } catch (e) {
     console.log(`[report-facts] ${slug} ${monthKey}: comparison unavailable, no movement drawn: ${e instanceof Error ? e.message : String(e)}`);
-    return null;
+    return { cmp: null, whyNone: PREV_NO_COMPARISON };
   }
 }
 
@@ -244,6 +251,22 @@ async function loadReadoutComparison(env: Env, slug: string, monthKey: string, m
 export const PREV_NOT_LIKE_FOR_LIKE =
   "Not compared with last month: the two months did not measure the same questions every day, " +
   "so these figures are not like for like. The memo compares the questions measured on every day of both months.";
+
+/** Last month began partway through, after measurement started mid-month. */
+export const PREV_PARTIAL_BASELINE =
+  "Not compared with last month: measurement began partway through last month, so it is not a full month to compare with.";
+
+/** No question was measured on every day of both months. */
+export const PREV_NO_STABLE_CORE =
+  "Not compared with last month: no question was measured on every day of both months, so there is no like for like basis.";
+
+/** The comparison could not be built. Says nothing about what it would have found. */
+export const PREV_NO_COMPARISON =
+  "Not compared with last month: the month to month comparison was not available when this report was built.";
+
+/** The comparison exists but holds no reading for this tool on the shared questions. */
+export const PREV_SURFACE_NOT_MEASURED =
+  "Not compared with last month: this tool has no readings on the questions measured on every day of both months.";
 
 
 /** Per-engine collection completeness for a window.
@@ -803,7 +826,7 @@ export async function buildReportFacts(env: Env, slug: string, monthKey: string)
   // Fetched once and shared: the dumbbell, the question movement and the grid
   // must all apply the SAME boundary and the same comparison.
   const measurementStart = await getMeasurementStart(env, slug);
-  const cmp = await loadReadoutComparison(env, slug, monthKey, measurementStart);
+  const { cmp, whyNone } = await loadReadoutComparison(env, slug, monthKey, measurementStart);
   const priorEngines = new Map<string, number>();
   let priorLabel: string | undefined;
   /** The link basis last month's frozen figures were computed on. Null when
@@ -846,19 +869,20 @@ export async function buildReportFacts(env: Env, slug: string, monthKey: string)
   // some days and not others. Then each surface needs the comparison to state
   // it, and when it does not, the reason is that surface's own.
   const likeForLike = cmp !== null && cmp.counts.excludedKeywordIds.length === 0;
+  const notComparedWhy = whyNone ?? PREV_NOT_LIKE_FOR_LIKE;
   const surfaceFor = (name: string) => {
     const key = resolveEngineKey(name);
     return cmp?.result.perSurface.find((x) => x.engine === key || READOUT_ENGINE_LABEL[x.engine] === name);
   };
   const label = (k: string) => READOUT_ENGINE_LABEL[k] ?? k;
   const prevWithheldFor = (name: string): string | null => {
-    if (!likeForLike) return PREV_NOT_LIKE_FOR_LIKE;
+    if (!likeForLike) return notComparedWhy;
     const reasons: string[] = [];
     const link = linkWithheldFor(name);
     if (link) reasons.push(link);
     const surface = surfaceFor(name);
     const why = surface ? publicSurfaceReason(surface, label) : null;
-    if (!surface) reasons.push(PREV_NOT_LIKE_FOR_LIKE);
+    if (!surface) reasons.push(PREV_SURFACE_NOT_MEASURED);
     else if (why) reasons.push(withheldSentence(why));
     return reasons.length ? reasons.join(" ") : null;
   };
@@ -1020,7 +1044,7 @@ export async function buildReportFacts(env: Env, slug: string, monthKey: string)
       excludedEngines.push({
         name: row.name,
         reason: c.underCollected
-          ? `Held out of this month's report. This surface answered ${c.questionsCovered} of ${c.questionsAsked} questions, but only ${c.observations} times against ${c.observationsExpected} for the surfaces that collected normally, and its missing runs are accounted for by recorded API refusals. We hold too little of this month to report a share we would stand behind.`
+          ? `Held out of this month's report. This surface answered ${c.questionsCovered} of ${c.questionsAsked} questions, but only ${c.observations} times against ${c.observationsExpected} for the surfaces that collected normally, and the service we collect it through refused requests this month, so at least part of that gap is collection failing on our side rather than the tool having nothing to say. We hold too little of this month to report a share we would stand behind.`
           : `Held out of this month's report. This surface answered ${c.questionsCovered} of ${c.questionsAsked} questions, below the coverage we require before publishing a share.`,
       });
       console.log(`[report-facts] ${slug} ${monthKey}: EXCLUDING ${row.name} from headline engines -- ${Math.round(c.density * 100)}% density, underCollected=${c.underCollected}.`);

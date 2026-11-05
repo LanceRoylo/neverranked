@@ -293,6 +293,8 @@ test("the memo withholds a link-share delta across the change and carries the di
   if (!d1) { t.skip("node:sqlite unavailable"); return; }
   await seed(d1);
   addRun(d1, 1, "google_ai_overview", SEP1 + 86400, ["https://www.google.com/searchviewer/1?svid=x"]);
+  // Measured in October too, so the only reason to withhold it is the link-basis change.
+  addRun(d1, 1, "google_ai_overview", OCT1 + 86400, []);
   addRun(d1, 1, "perplexity", SEP1 + 86400, ["https://example-hotel.test/x"], 1);
   addRun(d1, 1, "perplexity", OCT1 + 86400, ["https://example-hotel.test/x"], 1);
   const snap = (ws: number, aio: number, extra: Record<string, unknown>) => d1.db.prepare(`INSERT INTO citation_snapshots

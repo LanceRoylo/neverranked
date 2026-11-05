@@ -18,7 +18,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { openD1, SCHEMA, type SqliteD1 } from "./support/d1-sqlite";
-import { buildReportFacts, PREV_NOT_LIKE_FOR_LIKE } from "../src/lib/report-facts";
+import { buildReportFacts, PREV_NOT_LIKE_FOR_LIKE, PREV_NO_STABLE_CORE, PREV_PARTIAL_BASELINE, PREV_SURFACE_NOT_MEASURED } from "../src/lib/report-facts";
 import { gatherMemoInputs } from "../src/lib/memo-inputs";
 import { LINK_BASIS, LINK_MOVEMENT_WITHHELD, priorGoogleLinkEvidence } from "../src/lib/link-basis";
 
@@ -195,4 +195,61 @@ test("no stable core, no questions section", async (t) => {
   d1.db.prepare("DELETE FROM citation_runs WHERE run_at < ?").run(OCT1);
   const f = (await buildReportFacts(d1.env, SLUG, "2026-10"))!;
   assert.equal(f.questions, undefined);
+});
+
+// ── 4. Each "not compared" reason is true of its own case (2026-11-05) ───
+// One shared sentence told a reader "the memo compares the questions measured
+// on every day of both months" when there was no comparison at all.
+
+test("no stable core: the chart says so, not that the memo compares a core", async (t) => {
+  const d1 = await build();
+  if (!d1) { t.skip("node:sqlite unavailable"); return; }
+  d1.db.prepare("DELETE FROM citation_runs WHERE run_at < ?").run(OCT1);
+  const f = (await buildReportFacts(d1.env, SLUG, "2026-10"))!;
+  for (const e of f.engines) {
+    assert.equal(e.prev, undefined);
+    assert.equal(e.prevWithheld, PREV_NO_STABLE_CORE, e.name);
+  }
+});
+
+test("measurement began partway through last month: the chart says that", async (t) => {
+  const d1 = await build();
+  if (!d1) { t.skip("node:sqlite unavailable"); return; }
+  d1.db.prepare("UPDATE measurement_registry SET measurement_start = ? WHERE client_slug = ?").run(SEP_DAY, SLUG);
+  const f = (await buildReportFacts(d1.env, SLUG, "2026-10"))!;
+  for (const e of f.engines) {
+    assert.equal(e.prev, undefined);
+    assert.equal(e.prevWithheld, PREV_PARTIAL_BASELINE, e.name);
+  }
+});
+
+test("a tool with no readings on the shared questions gets its own reason", async (t) => {
+  const d1 = await build();
+  if (!d1) { t.skip("node:sqlite unavailable"); return; }
+  d1.db.prepare("DELETE FROM citation_runs WHERE engine = 'perplexity'").run();
+  const f = (await buildReportFacts(d1.env, SLUG, "2026-10"))!;
+  const p = f.engines.find((e) => e.name === "Perplexity")!;
+  assert.equal(p.prev, undefined);
+  assert.equal(p.prevWithheld, PREV_SURFACE_NOT_MEASURED);
+  assert.notEqual(f.engines.find((e) => e.name === AIO)!.prevWithheld, PREV_SURFACE_NOT_MEASURED, "only the tool that has no readings");
+});
+
+test("every reader-facing 'not compared' reason is plain and free of banned punctuation", () => {
+  for (const r of [PREV_NOT_LIKE_FOR_LIKE, PREV_NO_STABLE_CORE, PREV_PARTIAL_BASELINE, PREV_SURFACE_NOT_MEASURED]) {
+    assert.match(r, /^Not compared with last month: /);
+    assert.doesNotMatch(r, /[—;]/);
+  }
+});
+
+test("the memo withholds a surface the comparison withheld with no event behind it", async (t) => {
+  const d1 = await build();
+  if (!d1) { t.skip("node:sqlite unavailable"); return; }
+  // Perplexity has no September runs, so the comparison withholds it as not
+  // measured in the prior window. No instrument event is involved.
+  d1.db.prepare("DELETE FROM citation_runs WHERE engine = 'perplexity' AND run_at < ?").run(OCT1);
+  const inp = await gatherMemoInputs(d1.env, SLUG, new Date((NOV1 - 1) * 1000), { monthEndSnapshot: true });
+  const p = inp.by_engine.find((e) => e.engine === "Perplexity")!;
+  assert.equal(p.delta_pp, null, "the chart withholds it, so the memo must not state a delta");
+  assert.equal(p.prior_share_pct, null);
+  assert.match(p.movement_withheld ?? "", /^Not compared with last month: /);
 });

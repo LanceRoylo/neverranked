@@ -1174,8 +1174,12 @@ export async function gatherMemoInputs(
         // THIS engine's reason onto its by_engine row. The writer is told to
         // give a withheld row's reason, and an engine the comparison withholds
         // must not carry a snapshot delta across the change that withheld it.
+        // Every withheld surface, including one withheld with no instrument
+        // event behind it (not measured in the prior window, a run-volume
+        // gap): the chart withholds those too, and the memo must not state
+        // what the chart will not.
         for (const x of c.perSurface) {
-          if (x.layer === "control" || !x.withheldBy.length) continue;
+          if (x.layer === "control" || x.movement.kind !== "withheld") continue;
           const why = publicSurfaceReason(x, label);
           const row = by_engine.find((r) => r.engine === x.engine || r.engine === label(x.engine) || engineKeyForLabel(r.engine) === x.engine);
           if (!row || !why) continue;
