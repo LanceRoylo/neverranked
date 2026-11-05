@@ -22,7 +22,8 @@
  */
 import { WorkflowEntrypoint, type WorkflowEvent, type WorkflowStep } from "cloudflare:workers";
 import type { Env } from "../types";
-import { runOneKeywordCitations } from "../citations";
+import { runOneKeywordCitations, runDeferredAioRetry } from "../citations";
+import { AIO_DEFER_DELAYS_SECONDS, type DeferredAioFailure } from "../lib/aio-deferred-retry";
 
 export type CitationKeywordParams = {
   clientSlug: string;
@@ -97,14 +98,14 @@ export class CitationKeywordWorkflow extends WorkflowEntrypoint<Env, CitationKey
     // (a D1 blip, one malformed response), short of hammering seven engines
     // that are all refusing. A total outage stays loud either way, because
     // the instance fails once the attempts are spent.
-    await step.do(
+    const first = await step.do(
       `citation-${clientSlug}-${keywordId}`,
       {
         retries: { limit: 3, delay: "60 seconds", backoff: "exponential" },
         timeout: "5 minutes",
       },
       async () => {
-        const r = await runOneKeywordCitations(this.env, clientSlug, keywordId);
+        const r = await runOneKeywordCitations(this.env, clientSlug, keywordId, { deferTransientAio: spread === true });
         // The return value used to be discarded, and ok was hard-coded
         // true, so this step reported success no matter what happened inside
         // it. runOneKeywordCitations catches every engine rejection
@@ -123,7 +124,30 @@ export class CitationKeywordWorkflow extends WorkflowEntrypoint<Env, CitationKey
             `citation run wrote no rows for ${clientSlug}/keyword ${keywordId}: ${r.error ?? "unknown"}`,
           );
         }
+        return { deferredAio: r.deferredAio ?? null };
       },
     );
+
+    // Deferred Google AI Overview pass (sweep only). A transient DataForSEO
+    // failure that survived queryGoogleAIO's 2-second retry is asked again
+    // after a real pause, in its own step. Sleeping here is free and uses this
+    // instance's budget, never the 06:00 scheduled invocation's. The final
+    // pass records a still-failing call in engine_failures. See
+    // lib/aio-deferred-retry.ts.
+    let pending: DeferredAioFailure | null = first.deferredAio;
+    for (let i = 0; pending && i < AIO_DEFER_DELAYS_SECONDS.length; i++) {
+      const deferred: DeferredAioFailure = pending;
+      const finalPass = i === AIO_DEFER_DELAYS_SECONDS.length - 1;
+      await step.sleep(`aio-deferred-wait-${keywordId}-${i}`, AIO_DEFER_DELAYS_SECONDS[i] * 1000);
+      const res = await step.do(
+        `aio-deferred-${clientSlug}-${keywordId}-${i}`,
+        { retries: { limit: 2, delay: "30 seconds", backoff: "exponential" }, timeout: "2 minutes" },
+        async () => {
+          const o = await runDeferredAioRetry(this.env, clientSlug, keywordId, deferred, finalPass);
+          return { outcome: o.outcome, deferred: o.deferred ?? null };
+        },
+      );
+      pending = res.deferred;
+    }
   }
 }
