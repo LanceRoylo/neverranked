@@ -25,6 +25,7 @@ import { ENGINE_ORDER } from "../lib/engine-order";
 import { LINK_BASIS } from "../lib/link-basis";
 import { getUser } from "../auth";
 import { redirect, esc } from "../render";
+import { SHORT_VERSION_HEADING } from "../lib/memo-draft-check";
 
 interface ReportRow {
   month_key: string; // 'YYYY-MM'
@@ -60,6 +61,18 @@ function reportNo(i: number): string {
  * competitor names lifted from AI-engine output (attacker-influenceable), so a
  * `javascript:`/`data:` href must never survive. No raw HTML passthrough.
  */
+/** Lifts "### This month in plain words" out of a memo body so it can sit on page 1,
+ *  above the charts. A body without it comes back whole: every memo delivered
+ *  before 2026-11 renders exactly as it did. */
+export function splitShortVersion(md: string): { note: string | null; rest: string } {
+  const start = md.match(new RegExp(`^###\\s+${SHORT_VERSION_HEADING}\\s*$`, "m"));
+  if (!start || start.index === undefined) return { note: null, rest: md };
+  const after = start.index + start[0].length;
+  const next = md.slice(after).search(/^#{2,3}\s/m);
+  const end = next < 0 ? md.length : after + next;
+  return { note: md.slice(after, end).trim(), rest: `${md.slice(0, start.index)}${md.slice(end)}` };
+}
+
 export function renderReportMarkdown(md: string): string {
   const escHtml = (s: string) =>
     s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -1472,6 +1485,7 @@ export async function handleReadoutView(request: Request, env: Env, slug: string
     if (c?.name) clientName = c.name;
   } catch { /* fall back to the slug */ }
 
+  const short = splitShortVersion(r.body_markdown);
   const inner = `
     <div class="top">
       <span class="topnav"><a class="back" href="/c/${esc(slug)}/">&larr; Dashboard</a> &middot; <a class="back" href="/c/${esc(slug)}/plan">The plan</a> &middot; <a class="back" href="/c/${esc(slug)}/atlas">Ask Atlas &rarr;</a></span>
@@ -1480,10 +1494,11 @@ export async function handleReadoutView(request: Request, env: Env, slug: string
     <div class="print-only print-brand">NeverRanked &middot; prepared for ${esc(clientName)}</div>
     <div class="meta">Report ${reportNo(idx)} &middot; ${esc(monthLabel(monthKey))} &middot; delivered ${esc(delivered)}</div>
     <h1 class="report-title">${esc(title)}</h1>
+    ${short.note ? `<div class="nr-h">${SHORT_VERSION_HEADING}</div><div class="body">${renderReportMarkdown(short.note)}</div>` : ""}
     ${renderCharts(r.facts_json)}
     ${crossMapHtml}
     ${r.facts_json ? `<div class="nr-h">The record &middot; full readout</div>` : ""}
-    <div class="body">${renderReportMarkdown(r.body_markdown)}</div>
+    <div class="body">${renderReportMarkdown(short.rest)}</div>
     <div class="foot">This report is a frozen snapshot of what NeverRanked measured for ${esc(monthLabel(monthKey))}. Numbers do not change after delivery.<span class="print-only"> Printed copy. The current version is always at app.neverranked.com/c/${esc(slug)}/readouts/${esc(monthKey)}.</span><span class="no-print"> Newer months appear as separate reports in the selector above.</span></div>`;
 
   return new Response(shell(`${title} · Report ${reportNo(idx)}`, inner), {
