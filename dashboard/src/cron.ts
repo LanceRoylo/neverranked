@@ -876,6 +876,38 @@ export async function runCitationDispatch(env: Env): Promise<void> {
  *  ORDER IS load-BEARING and is preserved exactly: detection and health check
  *  produce alerts, dedupe collapses them to one canonical row per engine, and
  *  auto-close only ever considers that canonical row. */
+/** Did every keyword write a row? Runs on the 17:00 trigger, ahead of the
+ *  morning briefing, not with the 06:30 evaluation: the sweep writes until
+ *  about 06:41, so at 06:30 this deferred every night for six weeks.
+ *
+ *  WIRED 2026-09-14, after five nights of dispatching 78 keywords and writing
+ *  67 with no alarm anywhere. The engine checks compare an engine to its own
+ *  baseline, or to its peers, or measure its empty-response rate. One client's
+ *  eleven keywords went dark on every engine at once, so every engine stayed in
+ *  proportion to itself, the peers agreed with each other, and there were no
+ *  responses to be empty. Nothing was comparing what the planner asked for
+ *  against what came back. */
+export async function runSweepCoverageCheck(env: Env): Promise<void> {
+  try {
+    const { logCronRun } = await import("./lib/cron-log");
+    const { checkSweepCoverage, DEFERRED_DETAIL } = await import("./lib/sweep-coverage");
+    const started = Date.now();
+    const r = await checkSweepCoverage(env);
+    // A deferral judged nothing, so it must never log as a success.
+    await logCronRun(env, "sweep_coverage", r.deferred || r.darkKeywords > 0 ? "partial" : "success", Date.now() - started,
+      r.deferred
+        ? `${DEFERRED_DETAIL} alerted=${r.alerted}`
+        : `dark=${r.darkKeywords}/${r.activeKeywords} alerted=${r.alerted}${r.fullyDark.length ? ` fullyDark=${r.fullyDark.join(",")}` : ""}`);
+    console.log(`[cron] sweep_coverage: ${r.deferred ? "deferred" : `${r.darkKeywords}/${r.activeKeywords} dark`}`);
+  } catch (e) {
+    console.log(`[cron] sweep_coverage failed: ${e instanceof Error ? e.message : String(e)}`);
+    try {
+      const { logCronRun } = await import("./lib/cron-log");
+      await logCronRun(env, "sweep_coverage", "failure", undefined, e instanceof Error ? e.message : String(e));
+    } catch { /* logging is best-effort */ }
+  }
+}
+
 export async function runPostSweepEvaluation(env: Env): Promise<void> {
   // Question-set drift, FIRST, because it invalidates every comparison the
   // checks below make.
@@ -905,33 +937,6 @@ export async function runPostSweepEvaluation(env: Env): Promise<void> {
     try {
       const { logCronRun } = await import("./lib/cron-log");
       await logCronRun(env, "query_set_sweep", "failure", undefined, e instanceof Error ? e.message : String(e));
-    } catch { /* logging is best-effort */ }
-  }
-
-  // Sweep coverage, SECOND, because "did we collect it at all" is a more
-  // fundamental question than "did the engines behave", and the checks below
-  // can only reason about rows that exist.
-  //
-  // WIRED 2026-09-14, after five nights of dispatching 78 keywords and writing
-  // 67 with no alarm anywhere. The three checks below are all engine-shaped:
-  // they compare an engine to its own baseline, or to its peers, or measure its
-  // empty-response rate. One client's eleven keywords went dark on every engine
-  // at once, so every engine stayed in proportion to itself, the peers agreed
-  // with each other, and there were no responses to be empty. Nothing was
-  // comparing what the planner asked for against what came back.
-  try {
-    const { logCronRun } = await import("./lib/cron-log");
-    const { checkSweepCoverage } = await import("./lib/sweep-coverage");
-    const started = Date.now();
-    const r = await checkSweepCoverage(env);
-    await logCronRun(env, "sweep_coverage", r.darkKeywords > 0 ? "partial" : "success", Date.now() - started,
-      `dark=${r.darkKeywords}/${r.activeKeywords} alerted=${r.alerted}${r.fullyDark.length ? ` fullyDark=${r.fullyDark.join(",")}` : ""}`);
-    console.log(`[cron] sweep_coverage: ${r.darkKeywords}/${r.activeKeywords} dark`);
-  } catch (e) {
-    console.log(`[cron] sweep_coverage failed: ${e instanceof Error ? e.message : String(e)}`);
-    try {
-      const { logCronRun } = await import("./lib/cron-log");
-      await logCronRun(env, "sweep_coverage", "failure", undefined, e instanceof Error ? e.message : String(e));
     } catch { /* logging is best-effort */ }
   }
 

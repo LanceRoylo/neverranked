@@ -3918,7 +3918,8 @@ Once verified working, the user-OAuth path becomes vestigial. The legacy code st
     //   "45 6 * * *" -> month-start work: on the 1st the month-end readout
     //                   snapshots, then NVI reports on delivery day and the
     //                   monthly + annual recaps (see runMonthStartWork)
-    //   "0 17 * * *" -> 7am Pacific/Honolulu = founder inbox morning summary
+    //   "0 17 * * *" -> 7am Pacific/Honolulu = sweep coverage check, then the
+    //                   founder inbox morning summary
     // That is five, Cloudflare's cap. There is no spare trigger.
     // event.cron is undefined on manual/test triggers; fall back to hour.
     const scheduledAt = new Date(event.scheduledTime ?? Date.now());
@@ -4053,6 +4054,9 @@ Once verified working, the user-OAuth path becomes vestigial. The legacy code st
 
     if (cron === "0 17 * * *" || (cron === undefined && hour === 17)) {
       ctx.waitUntil(withCronLogging(env, "inbox_morning_summary", async () => {
+        // First, so a dark keyword is in this morning's briefing.
+        const { runSweepCoverageCheck } = await import("./cron");
+        await runSweepCoverageCheck(env);
         const { sendInboxMorningSummary, backfillContentDraftsToInbox } = await import("./admin-inbox");
         // Backfill is idempotent (UNIQUE constraint) -- safe to call every morning.
         // Once existing in_review drafts are surfaced, this is a no-op.
