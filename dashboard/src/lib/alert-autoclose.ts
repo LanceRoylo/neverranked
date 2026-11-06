@@ -66,6 +66,12 @@ interface Closer {
   describe(subject: string): string;
 }
 
+/** Failures that count as being refused. A 5xx is the provider being busy, and
+ *  Gemini returns a few every night while answering the rest, so counting them
+ *  kept its probe alerts open forever. A NULL status has no evidence either
+ *  way, so it holds the alert open with every 4xx. */
+const NOT_TRANSIENT = "(status IS NULL OR status < 500)";
+
 const CLOSERS: Record<string, Closer> = {
   // "cron:<task>:overdue | <task> last ran 48.0h ago; ..."
   anomaly_cron_overdue: {
@@ -97,11 +103,11 @@ const CLOSERS: Record<string, Closer> = {
       const row = await env.DB.prepare(
         `SELECT
            (SELECT COUNT(*) FROM citation_runs   WHERE engine = ?1 AND run_at    > ?2) AS rows_24h,
-           (SELECT COUNT(*) FROM engine_failures WHERE engine = ?1 AND failed_at > ?2) AS fails_24h`,
+           (SELECT COUNT(*) FROM engine_failures WHERE engine = ?1 AND failed_at > ?2 AND ${NOT_TRANSIENT}) AS fails_24h`,
       ).bind(engine, since).first<{ rows_24h: number; fails_24h: number }>();
       return !((row?.rows_24h ?? 0) > 0 && (row?.fails_24h ?? 0) === 0);
     },
-    describe: (engine) => `${engine} answered in the last 24h with no recorded refusals`,
+    describe: (engine) => `${engine} answered in the last 24h with no recorded refusals (5xx errors aside)`,
   },
 
   // "No response from: openai. The probe is one tiny call per engine, ..."
@@ -112,17 +118,17 @@ const CLOSERS: Record<string, Closer> = {
       const row = await env.DB.prepare(
         `SELECT
            (SELECT COUNT(*) FROM citation_runs   WHERE engine = ?1 AND run_at    > ?2) AS rows_24h,
-           (SELECT COUNT(*) FROM engine_failures WHERE engine = ?1 AND failed_at > ?2) AS fails_24h`,
+           (SELECT COUNT(*) FROM engine_failures WHERE engine = ?1 AND failed_at > ?2 AND ${NOT_TRANSIENT}) AS fails_24h`,
       ).bind(engine, since).first<{ rows_24h: number; fails_24h: number }>();
       const rows = row?.rows_24h ?? 0;
       const fails = row?.fails_24h ?? 0;
       // Cleared only when the engine is both answering AND not being
       // refused. Rows alone are not enough: openai landed 254 rows over
       // seven days while rejecting 399 calls, which is exactly the state
-      // this alert is about.
+      // this alert is about. A 5xx is not a refusal, see NOT_TRANSIENT.
       return !(rows > 0 && fails === 0);
     },
-    describe: (engine) => `${engine} answered in the last 24h with no recorded refusals`,
+    describe: (engine) => `${engine} answered in the last 24h with no recorded refusals (5xx errors aside)`,
   },
 
   // Raised per customer, in two different sentences, so the subject comes from
