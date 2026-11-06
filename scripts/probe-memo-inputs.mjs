@@ -93,7 +93,14 @@ console.log("OVERALL");
 console.log(`  current  ${pad(i.overall.current.cited, 6)} of ${i.overall.current.runs}  = ${i.overall.current.share_pct}%`);
 console.log(`  prior    ${pad(i.overall.prior.cited, 6)} of ${i.overall.prior.runs}  = ${i.overall.prior.share_pct}%`);
 console.log(`  delta    ${i.overall.share_delta_pp} pp`);
-if (i.overall.prior.runs === 0 && i.overall.share_delta_pp !== 0) {
+// On the venue-share path overall comes from the snapshots, and prior.runs is
+// 0 BY DESIGN: the prior figure is last month's snapshot share, which counts
+// citations, not runs. The 2026-09-07 defect was a prior with no reading at
+// all, which that path marks prior_missing. Only the run-based path can show
+// it as zero runs.
+if (i.venue_share_basis) {
+  console.log(`  (venue-share path: prior is last month's snapshot share, runs are not counted here${i.overall.prior_missing ? "; NO prior snapshot, first reading" : ""})`);
+} else if (i.overall.prior.runs === 0 && i.overall.share_delta_pp !== 0) {
   console.log("  !! MOVEMENT REPORTED AGAINST A WINDOW WITH ZERO RUNS -- this is the 2026-09-07 defect");
 }
 
@@ -116,6 +123,7 @@ console.log("\nBY ENGINE");
 for (const e of i.by_engine) {
   const flag = e.no_cohort_signal ? "  (no cohort signal)" : "";
   console.log(`  ${pad(e.current_share_pct + "%", 5)}  prior ${pad(e.prior_share_pct + "%", 5)}  delta ${pad(e.delta_pp, 6)}  ${e.engine}${flag}`);
+  if (e.movement_withheld) console.log(`         withheld: ${e.movement_withheld}`);
 }
 
 const weakest = i.by_question.slice(0, 5);

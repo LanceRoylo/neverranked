@@ -151,10 +151,15 @@ async function readoutDb(priorFacts: string, hook?: (sql: string) => void) {
     .run(SLUG, NOV1 - 1, tc, eb, NOV1 + 3600, NOV1 + 3600);
   d1.db.prepare("INSERT INTO monthly_memos (client_slug, month_key, title, body_markdown, delivered_at, facts_json) VALUES (?, '2026-09', 't', 'b', ?, ?)")
     .run(SLUG, OCT1 + 86400, priorFacts);
-  // September: AI Overviews listed wrappers, Perplexity did not.
-  addRun(d1, 1, "google_ai_overview", SEP1 + 86400, ["https://www.google.com/searchviewer/1?svid=x"]);
-  addRun(d1, 1, "perplexity", SEP1 + 86400, ["https://www.tripadvisor.com/x"]);
-  for (const e of ["google_ai_overview", "perplexity", "anthropic", "bing"]) for (const k of [1, 2, 3]) addRun(d1, k, e, OCT1 + k * 86400, []);
+  // September: AI Overviews listed wrappers, Perplexity did not. Every
+  // question on every measured day of both months, so the months are like for
+  // like and only the link basis can withhold a "from" dot.
+  for (const e of ["google_ai_overview", "perplexity", "anthropic", "bing"]) for (const k of [1, 2, 3]) {
+    const sept = e === "google_ai_overview" && k === 1 ? ["https://www.google.com/searchviewer/1?svid=x"]
+      : e === "perplexity" && k === 1 ? ["https://www.tripadvisor.com/x"] : [];
+    addRun(d1, k, e, SEP1 + 86400, sept);
+    addRun(d1, k, e, OCT1 + 86400, []);
+  }
   return d1;
 }
 
@@ -288,6 +293,8 @@ test("the memo withholds a link-share delta across the change and carries the di
   if (!d1) { t.skip("node:sqlite unavailable"); return; }
   await seed(d1);
   addRun(d1, 1, "google_ai_overview", SEP1 + 86400, ["https://www.google.com/searchviewer/1?svid=x"]);
+  // Measured in October too, so the only reason to withhold it is the link-basis change.
+  addRun(d1, 1, "google_ai_overview", OCT1 + 86400, []);
   addRun(d1, 1, "perplexity", SEP1 + 86400, ["https://example-hotel.test/x"], 1);
   addRun(d1, 1, "perplexity", OCT1 + 86400, ["https://example-hotel.test/x"], 1);
   const snap = (ws: number, aio: number, extra: Record<string, unknown>) => d1.db.prepare(`INSERT INTO citation_snapshots

@@ -331,33 +331,33 @@
    {
     "name": "Perplexity",
     "pct": 17,
-    "prev": 17
+    "prevWithheld": "Not compared with last month: no question was measured on every day of both months, so there is no like for like basis."
    },
    {
     "name": "ChatGPT search",
     "pct": 25,
-    "prev": 25
+    "prevWithheld": "Not compared with last month: no question was measured on every day of both months, so there is no like for like basis."
    },
    {
     "name": "Gemini grounded",
     "pct": 33,
-    "prev": 33
+    "prevWithheld": "Not compared with last month: no question was measured on every day of both months, so there is no like for like basis."
    },
    {
     "name": "Google AI Overviews",
     "pct": 25,
-    "prev": 25
+    "prevWithheld": "Not compared with last month: no question was measured on every day of both months, so there is no like for like basis."
    },
    {
     "name": "Bing search (control)",
     "pct": 33,
-    "prev": 33
+    "prevWithheld": "Not compared with last month: no question was measured on every day of both months, so there is no like for like basis."
    },
    {
     "name": "Claude",
     "pct": 100,
     "layer": "model_knowledge",
-    "prev": 100
+    "prevWithheld": "Not compared with last month: no question was measured on every day of both months, so there is no like for like basis."
    }
   ],
   "linkBasis": "google_viewer_links_excluded",
