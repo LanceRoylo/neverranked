@@ -26,7 +26,7 @@ jobs:
         working-directory: tools/reddit-tracker
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: '22'
       - run: npm test
@@ -39,7 +39,7 @@ jobs:
         working-directory: tools/citation-gap
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: '22'
       - run: npm test
@@ -52,7 +52,7 @@ jobs:
         working-directory: dashboard
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: 'npm'
