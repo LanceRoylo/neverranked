@@ -22,8 +22,8 @@
  */
 import { WorkflowEntrypoint, type WorkflowEvent, type WorkflowStep } from "cloudflare:workers";
 import type { Env } from "../types";
-import { runOneKeywordCitations, runDeferredAioRetry } from "../citations";
-import { AIO_DEFER_DELAYS_SECONDS, type DeferredAioFailure } from "../lib/aio-deferred-retry";
+import { runOneKeywordCitations, runDeferredAioRetry, recordLostAioDeferral } from "../citations";
+import { runDeferredAioPasses } from "../lib/aio-deferred-retry";
 
 export type CitationKeywordParams = {
   clientSlug: string;
@@ -134,20 +134,12 @@ export class CitationKeywordWorkflow extends WorkflowEntrypoint<Env, CitationKey
     // instance's budget, never the 06:00 scheduled invocation's. The final
     // pass records a still-failing call in engine_failures. See
     // lib/aio-deferred-retry.ts.
-    let pending: DeferredAioFailure | null = first.deferredAio;
-    for (let i = 0; pending && i < AIO_DEFER_DELAYS_SECONDS.length; i++) {
-      const deferred: DeferredAioFailure = pending;
-      const finalPass = i === AIO_DEFER_DELAYS_SECONDS.length - 1;
-      await step.sleep(`aio-deferred-wait-${keywordId}-${i}`, AIO_DEFER_DELAYS_SECONDS[i] * 1000);
-      const res = await step.do(
-        `aio-deferred-${clientSlug}-${keywordId}-${i}`,
-        { retries: { limit: 2, delay: "30 seconds", backoff: "exponential" }, timeout: "2 minutes" },
-        async () => {
-          const o = await runDeferredAioRetry(this.env, clientSlug, keywordId, deferred, finalPass);
-          return { outcome: o.outcome, deferred: o.deferred ?? null };
-        },
-      );
-      pending = res.deferred;
-    }
+    await runDeferredAioPasses(
+      step,
+      `${clientSlug}-${keywordId}`,
+      first.deferredAio,
+      (deferred, finalPass) => runDeferredAioRetry(this.env, clientSlug, keywordId, deferred, finalPass),
+      (deferred) => recordLostAioDeferral(this.env, keywordId, deferred),
+    );
   }
 }

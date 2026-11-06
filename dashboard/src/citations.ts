@@ -18,7 +18,7 @@ import { LINK_BASIS } from "./lib/link-basis";
 import { keywordRunVerdict } from "./lib/keyword-run-verdict";
 import { LAYER1_ENGINE_KEYS } from "./lib/engine-layer";
 import { recordSpend } from "./lib/engine-spend";
-import { type DeferredAioFailure, deferralIsStale, deferredFailureDetail, shouldDeferAio } from "./lib/aio-deferred-retry";
+import { type DeferredAioFailure, deferralIsStale, deferredFailureDetail, shouldDeferAio, utcDayStart } from "./lib/aio-deferred-retry";
 import { attributeVenueUrl, cohortLabelMap, matchCohortMember, pathOf, regionOf, umbrellaLabelMap, UMBRELLA_DOMAINS } from "./lib/venue-attribution";
 import { isControlEngine } from "./lib/engine-layer";
 
@@ -1956,7 +1956,10 @@ export async function runOneKeywordCitations(
 }
 
 /** One google_ai_overview reading into citation_runs. Shared by the per-keyword
- *  run and its deferred retry so the two can never write different shapes. */
+ *  run and its deferred retry so the two can never write different shapes.
+ *  With onlyIfNoRowSince the insert itself refuses a second reading, so a timed
+ *  out attempt still running cannot land one beside its retry's. Returns
+ *  whether a row was written. */
 async function insertAioRow(
   env: Env,
   keywordId: number,
@@ -1964,14 +1967,25 @@ async function insertAioRow(
   clientDomain: string,
   businessName: string | null,
   runAt: number,
-): Promise<void> {
+  onlyIfNoRowSince?: number,
+): Promise<boolean> {
   const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
   const cited = prom !== null;
-  await env.DB.prepare(
-    `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
-     VALUES (?, 'google_ai_overview', ?, ?, ?, ?, ?, ?, ?, ?, 'web')`
-  ).bind(keywordId, r.text.slice(0, RESPONSE_TEXT_CAP), JSON.stringify(r.entities), JSON.stringify(r.urls), null, JSON.stringify(r.urls), cited ? 1 : 0, prom, runAt).run();
+  const text = r.text.slice(0, RESPONSE_TEXT_CAP);
+  const entities = JSON.stringify(r.entities);
+  const res = onlyIfNoRowSince === undefined
+    ? await env.DB.prepare(
+        `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
+         VALUES (?, 'google_ai_overview', ?, ?, ?, ?, ?, ?, ?, ?, 'web')`
+      ).bind(keywordId, text, entities, JSON.stringify(r.urls), null, JSON.stringify(r.urls), cited ? 1 : 0, prom, runAt).run()
+    : await env.DB.prepare(
+        `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
+         SELECT ?, 'google_ai_overview', ?, ?, ?, ?, ?, ?, ?, ?, 'web'
+         WHERE NOT EXISTS (SELECT 1 FROM citation_runs WHERE keyword_id = ? AND engine = 'google_ai_overview' AND run_at >= ?)`
+      ).bind(keywordId, text, entities, JSON.stringify(r.urls), null, JSON.stringify(r.urls), cited ? 1 : 0, prom, runAt, keywordId, onlyIfNoRowSince).run();
+  if (res.meta.changes === 0) return false;
   await recordSpend(env, "google_ai_overview", r.usage, keywordId, runAt);
+  return true;
 }
 
 export type DeferredAioOutcome =
@@ -1979,13 +1993,31 @@ export type DeferredAioOutcome =
   | "empty"             // the call completed and Google showed no overview
   | "failed"            // still failing on the final pass, or a non-transient refusal: recorded
   | "still_deferred"    // transient again on a non-final pass: hand on, record nothing yet
-  | "already_recorded"  // a row since the first attempt exists: never write a second
+  | "already_recorded"  // a row for that UTC day exists: never write a second
   | "stale"             // the UTC day ended: recorded as a failure, not read late
   | "keyword_gone";     // deactivated in the meantime: recorded as a failure
 
+const recordDeferredFailure = (env: Env, deferred: DeferredAioFailure, status: number, detail: string) =>
+  skipReason(env, "google_ai_overview", deferred.keyword, { text: "", urls: [], entities: [], failure: { engine: "google_ai_overview", status, detail } }, false);
+
+/** Has a reading for this deferred call's UTC day already landed? */
+async function aioRowExists(env: Env, keywordId: number, deferred: DeferredAioFailure): Promise<boolean> {
+  const row = await env.DB.prepare(
+    "SELECT id FROM citation_runs WHERE keyword_id = ? AND engine = 'google_ai_overview' AND run_at >= ? LIMIT 1"
+  ).bind(keywordId, utcDayStart(deferred.firstAttemptAt)).first<{ id: number }>();
+  return row !== null;
+}
+
+/** A deferred step exhausted its retries. Writes the failure it was holding,
+ *  unless the step landed its reading before it died. */
+export async function recordLostAioDeferral(env: Env, keywordId: number, deferred: DeferredAioFailure): Promise<void> {
+  if (await aioRowExists(env, keywordId, deferred)) return;
+  await recordDeferredFailure(env, deferred, deferred.status, deferred.detail);
+}
+
 /** Deferred pass for a sweep keyword whose AIO call failed transiently. Runs
  *  in its own workflow step, minutes after the first attempt. See
- *  lib/aio-deferred-retry.ts for the guarantees this keeps. */
+ *  lib/aio-deferred-retry.ts for what this keeps and its limits. */
 export async function runDeferredAioRetry(
   env: Env,
   clientSlug: string,
@@ -1993,11 +2025,14 @@ export async function runDeferredAioRetry(
   deferred: DeferredAioFailure,
   finalPass: boolean,
 ): Promise<{ outcome: DeferredAioOutcome; deferred?: DeferredAioFailure }> {
-  const recordFailure = (status: number, detail: string) =>
-    skipReason(env, "google_ai_overview", deferred.keyword, { text: "", urls: [], entities: [], failure: { engine: "google_ai_overview", status, detail } }, false);
+  // Idempotence, first: a step that wrote its row and then threw is replayed by
+  // the workflow, and nothing below may record a failure beside a real reading.
+  // Bounded on the UTC day, not the attempt: a first-step attempt can write
+  // the row and time out, and the attempt that returned started later.
+  if (await aioRowExists(env, keywordId, deferred)) return { outcome: "already_recorded" };
 
   if (deferralIsStale(deferred.firstAttemptAt, Math.floor(Date.now() / 1000))) {
-    await recordFailure(deferred.status, deferred.detail);
+    await recordDeferredFailure(env, deferred, deferred.status, deferred.detail);
     return { outcome: "stale" };
   }
 
@@ -2005,16 +2040,18 @@ export async function runDeferredAioRetry(
     "SELECT * FROM citation_keywords WHERE id = ? AND client_slug = ? AND active = 1"
   ).bind(keywordId, clientSlug).first<CitationKeyword>();
   if (!kw) {
-    await recordFailure(deferred.status, deferred.detail);
+    await recordDeferredFailure(env, deferred, deferred.status, deferred.detail);
     return { outcome: "keyword_gone" };
   }
 
-  // Idempotence. A step that wrote its row and then threw is replayed by the
-  // workflow; this is what stops the replay writing the reading twice.
-  const existing = await env.DB.prepare(
-    "SELECT id FROM citation_runs WHERE keyword_id = ? AND engine = 'google_ai_overview' AND run_at >= ? LIMIT 1"
-  ).bind(kw.id, deferred.firstAttemptAt).first<{ id: number }>();
-  if (existing) return { outcome: "already_recorded" };
+  // Before the paid call, so a D1 error here cannot buy the reading twice.
+  const domain = await env.DB.prepare(
+    "SELECT * FROM domains WHERE client_slug = ? AND is_competitor = 0 AND active = 1 LIMIT 1"
+  ).bind(clientSlug).first<Domain>();
+  const config = await env.DB.prepare(
+    "SELECT * FROM injection_configs WHERE client_slug = ?"
+  ).bind(clientSlug).first<InjectionConfig>();
+  const businessName = await resolveBusinessName(env, clientSlug, config);
 
   const { queryGoogleAIO } = await import("./citations-google-aio");
   const r = await queryGoogleAIO(kw.keyword, env);
@@ -2023,19 +2060,13 @@ export async function runDeferredAioRetry(
     return { outcome: "still_deferred", deferred: { ...deferred, status: r.failure.status, detail: r.failure.detail } };
   }
   if (r.failure) {
-    await recordFailure(r.failure.status, deferredFailureDetail(r.failure.detail));
+    await recordDeferredFailure(env, deferred, r.failure.status, deferredFailureDetail(r.failure.detail));
     return { outcome: "failed" };
   }
   if (await skipReason(env, "google_ai_overview", kw.keyword, r, false)) return { outcome: "empty" };
 
-  const domain = await env.DB.prepare(
-    "SELECT * FROM domains WHERE client_slug = ? AND is_competitor = 0 AND active = 1 LIMIT 1"
-  ).bind(clientSlug).first<Domain>();
-  const config = await env.DB.prepare(
-    "SELECT * FROM injection_configs WHERE client_slug = ?"
-  ).bind(clientSlug).first<InjectionConfig>();
-  const businessName = await resolveBusinessName(env, clientSlug, config);
-  await insertAioRow(env, kw.id, r, domain?.domain || "", businessName, Math.floor(Date.now() / 1000));
+  const wrote = await insertAioRow(env, kw.id, r, domain?.domain || "", businessName, Math.floor(Date.now() / 1000), utcDayStart(deferred.firstAttemptAt));
+  if (!wrote) return { outcome: "already_recorded" };
   console.log(`[aio-deferred] recovered google_ai_overview for "${kw.keyword}"`);
   return { outcome: "recovered" };
 }
