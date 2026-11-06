@@ -313,6 +313,9 @@ async function skipReason(
           title: a.title,
           detail: a.detail,
           windowHours: 6,
+          // One alert per vendor: the title names the vendor, so OpenAI's
+          // unread alert no longer hides Google's or DataForSEO's.
+          dedupeOnTitle: true,
         });
       } catch (e) {
         console.log(`[engine-skip] could not raise billing alert for ${engine}: ${e instanceof Error ? e.message : e}`);
