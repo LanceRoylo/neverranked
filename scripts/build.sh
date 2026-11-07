@@ -25,6 +25,7 @@ fi
 # Root files that make up the public site
 FILES=(
   index.html
+  track.js
   citation-demo.mp4
   explainer.mp4
   explainer-poster.jpg
@@ -181,6 +182,15 @@ for d in "${DIRS[@]}"; do
     echo "  skip  $d/ (not in repo root)"
   fi
 done
+
+# ── Load the ad tags on public pages ──
+# track.js stays inert until its IDs are set. Private pitch pages, the Atlas
+# preview and the takedown page never get the script tag at all.
+while IFS= read -r f; do
+  if ! grep -q 'src="/track.js"' "$f"; then
+    perl -0pi -e 's{</head>}{<script src="/track.js" defer></script>\n</head>}i' "$f"
+  fi
+done < <(find "$DIST" -name '*.html' -not -path "$DIST/pitch/*" -not -path "$DIST/atlas-preview/*" -not -path "$DIST/takedowns/*")
 
 # ── Generate sitemap.xml from the deployed tree (single source of truth) ──
 # Emits every deployed page that is NOT noindex. Held pre-launch pages,
