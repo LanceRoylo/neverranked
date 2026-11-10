@@ -152,15 +152,31 @@
 
     <div class="layer">
       <h3>Layer 2: Model-knowledge engines (2)</h3>
-      <p>Engines that answer from training data without searching the live web. These represent the baseline of what AI says about a brand when it cannot look anything up, which is what users of Claude.ai or any Claude-powered support tool see by default.</p>
+      <p>Engines that answer from training data without searching the live web. These show what a model says about a brand when it cannot look anything up. They are not the same setup a person gets in the Claude app, which uses a different model and can search the web. See <a href="#what-we-send">exactly what we send each tool</a>.</p>
       <ul>
-        <li><strong>Claude</strong>, accessed via the Anthropic API. No native web tool is invoked, so the response reflects model knowledge plus RLHF.</li>
+        <li><strong>Claude</strong>, accessed via the Anthropic API. We measure Claude Haiku 4.5 with no web tool, so the response reflects that model's training.</li>
         <li><strong>Gemma</strong>, accessed via a model-hosting provider. Open-weight, which means the Gemma model itself is independently inspectable.</li>
       </ul>
       <p>For each query, on each engine, the response is captured and scanned for mentions of the brand name. A brand is "mentioned in model knowledge" on a query if its name appears in the response.</p>
     </div>
 
-    <p><strong>Why both layers matter.</strong> A brand invisible in citation is invisible when AI fact-checks itself before answering. A brand invisible in model knowledge is invisible at the baseline, before any search happens. These are different failure modes. Measuring only one half of the picture misses what the other half could tell you.</p>
+    <p><strong>Why both layers matter.</strong> A brand missing from citations is missing when AI checks the web before answering. A brand missing from model knowledge is missing before any search happens. These are different failure modes, and a fix for one does not fix the other.</p>
+
+
+    <h2 id="what-we-send">Exactly what we send each tool</h2>
+    <p>Added 2026-11-09. Every question goes to each AI tool with a short standing instruction. Until today this page did not say so. Here is what each tool gets, word for word. The question itself is sent exactly as written in the locked set.</p>
+    <div style="overflow-x:auto"><table>
+      <tr><th>Tool</th><th>Model</th><th>Instruction sent with every question</th><th>Other settings</th></tr>
+      <tr><td>Perplexity</td><td>sonar, through Perplexity&#x27;s Agent API with its web search tool</td><td><code>You are a helpful assistant. When recommending businesses or services, always include specific business names and their websites when available.</code></td><td>Temperature 0.3. Up to 1,024 output tokens.</td></tr><tr><td>ChatGPT search</td><td>gpt-5-search-api</td><td><code>You recommend businesses and services. Always include specific business names and the URLs you find them on. Cite your sources inline.</code></td><td>Up to 1,024 output tokens.</td></tr><tr><td>Gemini grounded</td><td>gemini-2.5-flash, with Google Search grounding</td><td><code>You recommend businesses and services. When asked for recommendations, give specific business names with their websites. Cite your sources.</code></td><td>Sent in the same message, before the question. Temperature 0.4.</td></tr><tr><td>Google AI Overviews</td><td>Google&#x27;s own, read through a search-data provider</td><td>None. We send the question as a search and read the overview Google shows.</td><td>No overview appears for many searches. Those are left out of counts.</td></tr><tr><td>Claude</td><td>Claude Haiku 4.5 (claude-haiku-4-5-20251001), no web search</td><td><code>You recommend local businesses and services. Always include specific business names and their websites when available. Respond ONLY with valid JSON in this exact format: {&quot;businesses&quot;: [{&quot;name&quot;: &quot;Business Name&quot;, &quot;url&quot;: &quot;https://example.com&quot;, &quot;reason&quot;: &quot;Why you recommend them&quot;}]}</code></td><td>Up to 1,024 output tokens.</td></tr><tr><td>Gemma</td><td>Gemma 4 31B (google/gemma-4-31B-it), through a model-hosting provider, no web search</td><td><code>You recommend local businesses and services. Always include specific business names and their websites when available. Respond ONLY with valid JSON in this exact format: {&quot;businesses&quot;: [{&quot;name&quot;: &quot;Business Name&quot;, &quot;url&quot;: &quot;https://example.com&quot;, &quot;reason&quot;: &quot;Why you recommend them&quot;}]}</code></td><td>Temperature 0. Up to 1,024 output tokens.</td></tr><tr><td>Bing organic (control)</td><td>Bing&#x27;s regular search results, the plain list of links, through a search-data provider</td><td>None. We send the question as a search.</td><td>Top five results.</td></tr>
+    </table></div>
+    <p><strong>What this means for the numbers.</strong></p>
+    <ul>
+      <li>Every instruction asks the tool to name businesses. A person typing the same question into the ChatGPT, Gemini, Perplexity or Claude app gets no such instruction. So how often we count a business as named may run higher than what a person sees.</li>
+      <li>Claude and Gemma are asked to answer as a fixed list, which a person in an app never sees.</li>
+      <li>Our Claude reading uses Claude Haiku 4.5, a smaller model released in October 2025, with no web search. Our Gemini reading uses Gemini 2.5 Flash. Neither is necessarily the model a person gets in that company's app today. Earlier wording on this page said our Claude reading was what Claude.ai users see by default. That was wrong and is corrected above.</li>
+      <li>The same instructions and models apply to every business in a category and every run, so comparisons between businesses, and from one month to the next, use one consistent instrument. Comparisons with what a person sees in an app need this caveat.</li>
+    </ul>
+    <p>We are reviewing whether to keep these instructions and which models to measure. Any change will be dated here and in client readouts, and readings from before and after a change will not be treated as one series.</p>
 
     <h2 id="query-set">Query-set discipline</h2>
     <p>Each engagement opens with a query-set design conversation. The goal is a question set that represents how the customer's buyers actually search in their category. Published category measurements use 18 questions. Customer engagements have run from 18 to 30, sized at scoping. Three rules govern the list:</p>
