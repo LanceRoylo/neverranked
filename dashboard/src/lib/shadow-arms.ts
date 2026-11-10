@@ -59,7 +59,7 @@ export const SHADOW_ARMS: readonly ShadowArm[] = [
 export const EXTRACTOR_MODEL = "claude-haiku-5-5";
 
 /** Hard spend ceiling per shadow night, USD, from rows already written. */
-export const SHADOW_NIGHTLY_CAP_USD = 4;
+export const SHADOW_NIGHTLY_CAP_USD = 5;
 
 /** Shadow nights: UTC dates 2026-12-01 to 2026-12-31 where day % 3 == 1.
  *  That is the 1st, 4th, 7th ... 31st: eleven nights. */

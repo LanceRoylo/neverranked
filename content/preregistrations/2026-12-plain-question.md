@@ -50,4 +50,4 @@ All three results, whichever way they come out, with counts and not only percent
 
 - One asking per question per night is a sample, not the full daily run.
 - The exploratory setups change the model and the instruction together, so they cannot say which change caused a difference.
-- A spending cap of $4 a night may stop a night before every question is asked. Any question cut off that way is left out of the pairs, and the number cut off is reported.
+- A spending cap of $5 a night may stop a night before every question is asked. Any question cut off that way is left out of the pairs, and the number cut off is reported.
