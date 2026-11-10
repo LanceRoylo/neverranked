@@ -87,6 +87,11 @@ export interface Env {
   // keywords (verified empirically: instance 3bf7120b 2026-05-10).
   // Per-instance dispatch trades dispatcher overhead for isolation.
   CITATION_KEYWORD_WORKFLOW: Workflow;
+  // December 2026 plain-question shadow, one instance per keyword. Writes only
+  // its own table. See lib/shadow-arms.ts.
+  SHADOW_KEYWORD_WORKFLOW: Workflow;
+  /** "1" turns the December shadow on. Anything else, or unset, is off. */
+  SHADOW_RUNS_ENABLED?: string;
 }
 
 export interface ScheduledDraft {

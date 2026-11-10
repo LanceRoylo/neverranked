@@ -78,6 +78,13 @@
       "name": "citation-keyword-workflow",
       "binding": "CITATION_KEYWORD_WORKFLOW",
       "class_name": "CitationKeywordWorkflow"
+    },
+    {
+      // December 2026 plain-question shadow. Writes only engine_shadow_runs,
+      // and does nothing unless the SHADOW_RUNS_ENABLED secret is "1".
+      "name": "shadow-keyword-workflow",
+      "binding": "SHADOW_KEYWORD_WORKFLOW",
+      "class_name": "ShadowKeywordWorkflow"
     }
   ]
 }
