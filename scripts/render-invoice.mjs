@@ -13,7 +13,22 @@
 //
 // So: generated from D1 and from the executed terms, never hand-edited.
 //
-//   node scripts/render-invoice.mjs <client-slug> <YYYY-MM> --number NR-PW-002 [--out <dir>]
+//   node scripts/render-invoice.mjs <client-slug> <YYYY-MM> --number <INV-NO> \
+//     --agreement-date <YYYY-MM-DD> [--baseline-waived <dollars>] [--includes "<text>"] [--out <dir>]
+//
+// PER-CLIENT TERMS ARE FLAGS, NOT CONSTANTS (2026-11-12). Until then the note
+// and line description were the first client's executed terms, hard-coded: its
+// agreement date, its waived baseline fee, its deliverables. Rendered for a
+// second client, the invoice would have cited an agreement that client never
+// signed and put in writing a fee that was never offered to them. The terms
+// come from the client's own executed agreement, so the person running this
+// passes them, and the script refuses to guess the one every invoice cites.
+//
+//   --agreement-date   REQUIRED. The date of the client's executed agreement.
+//   --baseline-waived  Only if THAT agreement waives a baseline-month fee.
+//                      Omit it and the invoice says nothing about one.
+//   --includes         What the monthly fee includes, in the agreement's words.
+//                      Default: the monthly readout and dashboard access.
 //
 // Read-only against D1. Refuses to overwrite an existing invoice file.
 
@@ -27,8 +42,22 @@ const numIdx = args.indexOf("--number");
 const invoiceNo = numIdx >= 0 ? args[numIdx + 1] : null;
 const outIdx = args.indexOf("--out");
 const outDir = outIdx >= 0 ? args[outIdx + 1] : process.cwd();
+const flag = (name) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : null; };
+const agreementDate = flag("--agreement-date");
+const baselineWaived = flag("--baseline-waived");
+const includes = flag("--includes") ?? "the monthly readout at a private link and dashboard access";
+const USAGE = "usage: node scripts/render-invoice.mjs <client-slug> <YYYY-MM> --number <INV-NO> " +
+  "--agreement-date <YYYY-MM-DD> [--baseline-waived <dollars>] [--includes \"<text>\"] [--out <dir>]";
 if (!slug || !/^\d{4}-\d{2}$/.test(period || "") || !invoiceNo) {
-  console.error("usage: node scripts/render-invoice.mjs <client-slug> <YYYY-MM> --number <INV-NO> [--out <dir>]");
+  console.error(USAGE);
+  process.exit(2);
+}
+if (!/^\d{4}-\d{2}-\d{2}$/.test(agreementDate || "") || Number.isNaN(Date.parse(`${agreementDate}T00:00:00Z`))) {
+  console.error(`--agreement-date is required: the date of THIS client's executed agreement.\n${USAGE}`);
+  process.exit(2);
+}
+if (baselineWaived !== null && !/^\d+(\.\d{1,2})?$/.test(baselineWaived)) {
+  console.error(`--baseline-waived takes a dollar amount, e.g. 950\n${USAGE}`);
   process.exit(2);
 }
 
@@ -64,6 +93,11 @@ const periodLabel = new Date(Date.UTC(py, pm - 1, 1)).toLocaleDateString("en-US"
 const issued = new Date(Date.UTC(py, pm - 1, 1));
 const due = new Date(Date.UTC(py, pm - 1, 1 + NET_DAYS));
 const fmt = (d) => d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
+
+const agreementLabel = fmt(new Date(`${agreementDate}T00:00:00Z`));
+const waivedSentence = baselineWaived !== null
+  ? ` The one-time $${money(Number(baselineWaived)).replace(/\.00$/, "")}\n  baseline-month fee is waived for the initial term.`
+  : "";
 
 const subtotal = c.mrr_cents / 100;
 const get = Math.round(subtotal * GET_RATE * 100) / 100;
@@ -125,8 +159,7 @@ const html = `<meta charset="utf-8"><title>${esc(c.name)} invoice ${esc(invoiceN
   <tr><td><b>Monthly measurement &middot; ${esc(periodLabel)}</b>
     <div class="desc">The locked question set measured against six AI tools plus a Bing organic
     control, seven measured surfaces in all, run repeatedly through the month against the frozen
-    baseline. Includes the monthly research memo, the prioritized punch list, the readiness
-    cross-map, and ATLAS dashboard access.</div></td>
+    baseline. Includes ${esc(includes)}.</div></td>
     <td class="r">$${money(subtotal)}</td></tr>
 </table>
 <div class="totals">
@@ -136,10 +169,9 @@ const html = `<meta charset="utf-8"><title>${esc(c.name)} invoice ${esc(invoiceN
 </div>
 <div class="note">
   <b>Initial term.</b> Three-month initial term at $${money(subtotal)} per month plus applicable
-  Hawaii GET, invoiced monthly, continuing month to month thereafter. The one-time $950
-  baseline-month fee is waived for the initial term. Fees are for the research service and are
+  Hawaii GET, invoiced monthly, continuing month to month thereafter.${waivedSentence} Fees are for the research service and are
   not contingent on any citation, ranking, traffic, or revenue outcome. See the Client Services
-  Agreement dated September 1, 2026 for full terms.
+  Agreement dated ${esc(agreementLabel)} for full terms.
 </div>
 <div class="pay">
   <div class="lbl">Payment</div>
