@@ -310,6 +310,7 @@ import { engineLayer, isControlEngine, LAYER1_ENGINE_KEYS } from "./engine-layer
 import { namedInAnswer, capForRun, wholePercentBounds } from "./answer-presence";
 import { linkBasisOf, linkBasisNote, linkMovementWithheld, priorGoogleLinkEvidence } from "./link-basis";
 import { loadAffiliatedDomains } from "./affiliated-domains";
+import { loadOwnedPathPrefix } from "./owned-path";
 import { affiliatedMatch } from "./classify-source";
 
 /** The per-question measure. See `measure` on by_question. */
@@ -1127,8 +1128,11 @@ export async function gatherMemoInputs(
 
   // Punch-list destinations. See the `destinations` comment on MemoInputs.
   const ownHost = ownDomain ? normHost(ownDomain) : null;
+  const ownedPathPrefix = ownHost ? await loadOwnedPathPrefix(env, slug) : "";
   const destinations: MemoInputs["destinations"] = {
-    own_site: ownHost ? `https://${ownHost}` : null,
+    // A client on its group's shared domain (migration 0134) links to its own
+    // pages, not the group's home page. '' leaves the host link as before.
+    own_site: ownHost ? `https://${ownHost}${ownedPathPrefix ? ownedPathPrefix + "/" : ""}` : null,
     listings: offsite.hosts.slice(0, 6).map((h) => ({
       host: h.host,
       share_pct: h.share_pct,
