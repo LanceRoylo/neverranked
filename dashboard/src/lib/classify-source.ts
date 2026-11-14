@@ -85,6 +85,12 @@ export interface AffiliatedDomain {
 
 export interface SourceContext {
   owned?: string[];
+  /** The client's own pages on a shared domain (migration 0134), e.g.
+   *  '/hawaii' when the client is one venue on its group's site. Absent or
+   *  '' : every page on an owned host is owned, exactly as before. When set,
+   *  an owned-host page outside the path falls through to affiliated,
+   *  competitor and the rules like any other host. */
+  ownedPathPrefix?: string;
   /** Absent or empty: no URL is ever "affiliated" and every other bucket is
    *  exactly what it was before the type existed. */
   affiliated?: AffiliatedDomain[];
@@ -100,6 +106,21 @@ export interface SourceContext {
  */
 export function affiliatedMatch(url: string, list: AffiliatedDomain[] | null | undefined): boolean {
   if (!list || list.length === 0) return false;
+  for (const a of list) {
+    if (hostPathMatch(url, a.domain, a.path_prefix)) return true;
+  }
+  return false;
+}
+
+/**
+ * Host (the domain or a subdomain of it) and, when a prefix is set, path (the
+ * prefix or anything below it, never a sibling). Case-insensitive, `www.` and
+ * a trailing slash ignored on both sides. Shared by affiliated and owned
+ * matching so the two can never disagree about what a path prefix means.
+ */
+function hostPathMatch(url: string, domain: string | null | undefined, pathPrefix: string | null | undefined): boolean {
+  const d = (domain || "").trim().replace(/^www\./, "").toLowerCase();
+  if (!d) return false;
   let host: string;
   let path: string;
   try {
@@ -109,13 +130,31 @@ export function affiliatedMatch(url: string, list: AffiliatedDomain[] | null | u
   } catch {
     return false;
   }
-  for (const a of list) {
-    const d = (a.domain || "").trim().replace(/^www\./, "").toLowerCase();
-    if (!d || !(host === d || host.endsWith("." + d))) continue;
-    const prefix = (a.path_prefix || "").trim().toLowerCase().replace(/\/+$/, "");
-    if (!prefix || path === prefix || path.startsWith(prefix + "/")) return true;
-  }
-  return false;
+  if (!(host === d || host.endsWith("." + d))) return false;
+  const prefix = normPathPrefix(pathPrefix);
+  return !prefix || path === prefix || path.startsWith(prefix + "/");
+}
+
+/** '' for none. Otherwise lower-case, leading slash, no trailing slash:
+ *  ' /Hawaii/ ' and 'hawaii' both become '/hawaii'. */
+export function normPathPrefix(pathPrefix: string | null | undefined): string {
+  const p = (pathPrefix || "").trim().toLowerCase().replace(/\/+$/, "");
+  if (!p) return "";
+  return p.startsWith("/") ? p : "/" + p;
+}
+
+/**
+ * Is this URL the client's OWN site? (migration 0134, 2026-11-11)
+ *
+ * Without a path prefix: the owned domain or a subdomain of it, byte-for-byte
+ * the host-only test every caller used before. With one: the page must also
+ * sit at or below the prefix. The case that prompted it is one venue of a
+ * group whose venues share a single domain (example.test/hawaii/,
+ * example.test/nyc/, ...). Host-only matching counted every venue's pages as
+ * the client's own site.
+ */
+export function ownedUrlMatch(url: string, ownedHost: string, pathPrefix?: string | null): boolean {
+  return hostPathMatch(url, ownedHost, pathPrefix);
 }
 
 /**
@@ -132,7 +171,9 @@ export function classifySource(url: string, ctx: SourceContext = {}): SourceType
   const owned = (ctx.owned || []).map(norm);
   const comp = (ctx.competitors || []).map(norm);
   const matchAny = (list: string[]) => list.some((d) => d !== "" && (h === d || h.endsWith("." + d)));
-  if (matchAny(owned)) return "owned";
+  if (normPathPrefix(ctx.ownedPathPrefix)) {
+    if (owned.some((d) => ownedUrlMatch(url, d, ctx.ownedPathPrefix))) return "owned";
+  } else if (matchAny(owned)) return "owned";
   if (affiliatedMatch(url, ctx.affiliated)) return "affiliated";
   if (matchAny(comp)) return "competitor";
   for (const [type, re] of RULES) if (re.test(h)) return type;
