@@ -64,6 +64,10 @@ export interface AlertInput {
   roadmapItemId?: number | null;
   /** Dedup window in hours. Default: 168 (7 days). Set to 0 to force. */
   windowHours?: number;
+  /** Also match on title when deduping. For one type that covers several
+   *  subjects, like a billing refusal per vendor: without it, an unread OpenAI
+   *  alert swallowed Gemini's on 2026-11-01 and nobody heard Gemini had stopped. */
+  dedupeOnTitle?: boolean;
 }
 
 export async function createAlertIfFresh(env: Env, alert: AlertInput): Promise<boolean> {
@@ -83,9 +87,9 @@ export async function createAlertIfFresh(env: Env, alert: AlertInput): Promise<b
          WHERE client_slug = ?
            AND type = ?
            AND created_at > ?
-           AND read_at IS NULL
+           AND read_at IS NULL${alert.dedupeOnTitle ? "\n           AND title = ?" : ""}
          LIMIT 1`
-    ).bind(alert.clientSlug, alert.type, since).first<{ id: number }>();
+    ).bind(alert.clientSlug, alert.type, since, ...(alert.dedupeOnTitle ? [alert.title] : [])).first<{ id: number }>();
     if (existing) return false;
   }
 
