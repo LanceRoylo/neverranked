@@ -55,10 +55,12 @@ export interface MemoInputs {
     /** NULL, with delta_pp, only when movement_withheld is set. */
     prior_share_pct: number | null;
     delta_pp: number | null;
-    /** Set when this engine's own-site link share may not be compared with
-     *  last month's: the prior figure was computed on a different link basis
-     *  (lib/link-basis.ts, decided 2026-10-05). prior_share_pct and delta_pp
-     *  are then null, not placeholders. The reason, in plain words. */
+    /** Set when this engine's figure may not be compared with last month's.
+     *  prior_share_pct and delta_pp are then null, not placeholders. The
+     *  reason, in plain words, is THIS engine's: the prior figure was computed
+     *  on a different link basis (lib/link-basis.ts, decided 2026-10-05),
+     *  and/or the comparison withholds this surface for a change that landed
+     *  inside the window. */
     movement_withheld?: string;
     current_runs: number;
     /** How many cohort businesses this engine named this period, customer
@@ -1161,22 +1163,33 @@ export async function gatherMemoInputs(
   let comparison: MemoInputs["comparison"];
   if (priorStart < curStart) {
     try {
-      const { loadStableCoreCounts, loadInstrumentEvents } = await import("./compare-loader");
-      const { computeComparison, describeMovement, publicReason, publicEventLine } = await import("./compare-periods");
+      const { loadMonthComparison } = await import("./compare-loader");
+      const { describeMovement, publicReason, publicEventLine, publicSurfaceReason, withheldSentence } = await import("./compare-periods");
       const prev = { start: priorStart, end: curStart };
       const cur = { start: curStart, end: periodEnd };
-      const counts = await loadStableCoreCounts(env, slug, prev, cur);
-      if (counts.keywordIds.length > 0) {
-        const events = await loadInstrumentEvents(env, prev, cur, slug);
-        const c = computeComparison({
-          basis: "stable_core",
-          sharedKeywords: counts.keywordIds.length,
-          perSurface: counts.perSurface,
-          prevWindow: prev,
-          curWindow: cur,
-          events,
-        });
+      const loaded = await loadMonthComparison(env, slug, prev, cur);
+      if (loaded) {
+        const { counts, result: c } = loaded;
         const label = (k: string) => READOUT_ENGINE_LABEL[k] ?? k;
+        // THIS engine's reason onto its by_engine row. The writer is told to
+        // give a withheld row's reason, and an engine the comparison withholds
+        // must not carry a snapshot delta across the change that withheld it.
+        // Every withheld surface, including one withheld with no instrument
+        // event behind it (not measured in the prior window, a run-volume
+        // gap): the chart withholds those too, and the memo must not state
+        // what the chart will not.
+        for (const x of c.perSurface) {
+          if (x.layer === "control" || x.movement.kind !== "withheld") continue;
+          const why = publicSurfaceReason(x, label);
+          const row = by_engine.find((r) => r.engine === x.engine || r.engine === label(x.engine) || engineKeyForLabel(r.engine) === x.engine);
+          if (!row || !why) continue;
+          const sentence = withheldSentence(why);
+          row.prior_share_pct = null;
+          row.delta_pp = null;
+          row.movement_withheld = row.movement_withheld && row.movement_withheld !== sentence
+            ? `${row.movement_withheld} ${sentence}`
+            : sentence;
+        }
         comparison = {
           basis: `the ${counts.keywordIds.length} questions measured on every day of both months`,
           questions: counts.keywordIds.length,
@@ -1187,7 +1200,9 @@ export async function gatherMemoInputs(
               engine: label(x.engine),
               layer: x.layer,
               stated: x.movement.kind === "stated",
-              statement: publicReason(describeMovement(x.movement, label(x.engine))),
+              statement: x.withheldBy.length
+                ? describeMovement({ kind: "withheld", reason: publicSurfaceReason(x, label)! }, label(x.engine))
+                : publicReason(describeMovement(x.movement, label(x.engine))),
               ...(x.movement.kind === "stated"
                 ? { prior_pct: +x.movement.prevRate.toFixed(1), current_pct: +x.movement.curRate.toFixed(1), delta_pp: +x.movement.deltaPp.toFixed(1) }
                 : {}),
@@ -1196,8 +1211,8 @@ export async function gatherMemoInputs(
             citation: publicReason(describeMovement(c.pooled.citation, "Surfaces that search the web and cite sources")),
             model_knowledge: publicReason(describeMovement(c.pooled.model_knowledge, "Surfaces that answer from training")),
           },
-          instrument_changes: c.events.map(publicEventLine),
-          considered_and_set_aside: c.setAside.map((x) => `${publicEventLine(x.event)}: ${x.why}`),
+          instrument_changes: [...new Set(c.events.map((e) => publicEventLine(e, label)))],
+          considered_and_set_aside: c.setAside.map((x) => `${publicEventLine(x.event, label)}: ${x.why}`),
         };
       }
     } catch (e) {

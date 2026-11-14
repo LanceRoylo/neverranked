@@ -13,7 +13,7 @@
  */
 
 import type { Env } from "../types";
-import { stableCore, type InstrumentEvent, type SurfaceCounts } from "./compare-periods";
+import { computeComparison, stableCore, type ComparisonResult, type InstrumentEvent, type SurfaceCounts } from "./compare-periods";
 
 export interface Window {
   start: number;
@@ -141,4 +141,34 @@ export async function loadInstrumentEvents(
     client_slug: r.client_slug,
     detail: r.detail,
   }));
+}
+
+/**
+ * One client's month-over-month comparison on the stable core, as the monthly
+ * memo states it. Null when there is no core (nothing measured on every day of
+ * both windows), which means there is no like-for-like comparison at all.
+ *
+ * The memo's text and the readout's charts both call this, so a chart can never
+ * draw a movement on a basis the text did not use. Until 2026-11-03 the charts
+ * drew their "from" values from the last DELIVERED memo, which for one client
+ * was two months back.
+ */
+export async function loadMonthComparison(
+  env: Env,
+  clientSlug: string,
+  prev: Window,
+  cur: Window,
+): Promise<{ counts: StableCoreCounts; result: ComparisonResult } | null> {
+  const counts = await loadStableCoreCounts(env, clientSlug, prev, cur);
+  if (counts.keywordIds.length === 0) return null;
+  const events = await loadInstrumentEvents(env, prev, cur, clientSlug);
+  const result = computeComparison({
+    basis: "stable_core",
+    sharedKeywords: counts.keywordIds.length,
+    perSurface: counts.perSurface,
+    prevWindow: prev,
+    curWindow: cur,
+    events,
+  });
+  return { counts, result };
 }
