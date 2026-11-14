@@ -1271,7 +1271,8 @@ body.channel-mode #channel-cta-card{display:block}
 }
 </style>
 
-<!-- Retargeting pixels intentionally not loaded. Add the Meta + LinkedIn tags here when paid acquisition is live. -->
+<!-- Ad tags. One file holds the IDs and stays inert until they are set. -->
+<script src="https://neverranked.com/track.js" defer></script>
 
 </head>
 <body>
@@ -1834,8 +1835,7 @@ body.channel-mode #channel-cta-card{display:block}
     renderResults(data);
 
     // Fire retargeting events on scan completion
-    if(typeof fbq==='function') fbq('track','ViewContent',{content_name:'aeo_check',value:data.aeo_score});
-    if(typeof lintrk==='function') lintrk('track',{conversion_id:0});
+    if(typeof nrTrack==='function') nrTrack('scan_complete');
 
     // Update competitor teaser bar
     var compBarYou = document.getElementById('comp-bar-you');
@@ -2050,8 +2050,7 @@ body.channel-mode #channel-cta-card{display:block}
     if(!resp.ok) throw new Error('Failed');
     setCapturedEmail(email);
     // Retargeting events
-    if(typeof fbq === 'function') fbq('track', 'Lead');
-    if(typeof lintrk === 'function') lintrk('track', {conversion_id: 0});
+    if(typeof nrTrack === 'function') nrTrack('lead');
   }
 
   async function submitGateEmail(){
