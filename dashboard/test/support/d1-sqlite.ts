@@ -79,5 +79,5 @@ CREATE TABLE monthly_memos (
   id INTEGER PRIMARY KEY, client_slug TEXT, month_key TEXT, title TEXT, body_markdown TEXT, rules_hash TEXT,
   delivered_at INTEGER, created_at INTEGER, updated_at INTEGER, facts_json TEXT, UNIQUE (client_slug, month_key));
 CREATE TABLE instrument_events (id INTEGER PRIMARY KEY, occurred_at INTEGER, kind TEXT, scope TEXT, engine TEXT, client_slug TEXT, detail TEXT);
-CREATE TABLE engine_failures (id INTEGER PRIMARY KEY, engine TEXT, failed_at INTEGER);
+CREATE TABLE engine_failures (id INTEGER PRIMARY KEY, engine TEXT, status INTEGER, failed_at INTEGER);
 `;

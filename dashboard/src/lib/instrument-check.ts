@@ -39,11 +39,29 @@ import { createAlertIfFresh } from "../admin-alerts";
 /** version === null means the probe RAN and FAILED. That is a signal, not
  *  an absence: it is how a dead key, a retired model or an exhausted spend
  *  limit shows up here. It must never be silently discarded. */
-export type ProbeResult = { engine: string; version: string | null };
+export type ProbeResult = {
+  engine: string;
+  version: string | null;
+  /** Why it failed, in words safe to store. Set only when version is null. */
+  failure?: string;
+  /** The provider was busy or timed out, as opposed to refusing us. */
+  transient?: boolean;
+};
 
 const TIMEOUT_MS = 30_000;
 
-async function post(url: string, headers: Record<string, string>, body: unknown): Promise<Record<string, unknown> | null> {
+/** Google answered this probe with 503s on three nights running at the moment
+ *  the sweep started, while the sweep on the same key and model collected 58
+ *  of 63. One wait and one more try tells a busy provider from a dead key. */
+const RETRY_WAIT_MS = 5_000;
+
+type Posted = { json: Record<string, unknown> | null; failure?: string; transient?: boolean };
+
+/** Provider error text can echo the request, and Gemini's key is in the URL. */
+const scrub = (t: string) => t.replace(/key=[^&\s"']+/g, "key=***").replace(/\s+/g, " ").trim().slice(0, 160);
+
+async function attempt(url: string, headers: Record<string, string>, body: unknown): Promise<Posted> {
+  const host = new URL(url).host;
   try {
     const resp = await fetch(url, {
       method: "POST",
@@ -52,14 +70,31 @@ async function post(url: string, headers: Record<string, string>, body: unknown)
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
     if (!resp.ok) {
-      console.log(`[instrument-probe] ${url} -> HTTP ${resp.status}: ${(await resp.text()).slice(0, 200)}`);
-      return null;
+      const failure = `HTTP ${resp.status}: ${scrub(await resp.text())}`;
+      console.log(`[instrument-probe] ${host} -> ${failure}`);
+      return { json: null, failure, transient: resp.status >= 500 };
     }
-    return (await resp.json()) as Record<string, unknown>;
+    return { json: (await resp.json()) as Record<string, unknown> };
   } catch (e) {
-    console.log(`[instrument-probe] ${url} threw: ${e instanceof Error ? e.message : String(e)}`);
-    return null;
+    const failure = `no response: ${scrub(e instanceof Error ? e.message : String(e))}`;
+    console.log(`[instrument-probe] ${host} ${failure}`);
+    return { json: null, failure, transient: true };
   }
+}
+
+async function post(url: string, headers: Record<string, string>, body: unknown, retryWaitMs: number): Promise<Posted> {
+  const first = await attempt(url, headers, body);
+  if (!first.transient) return first;
+  await new Promise((r) => setTimeout(r, retryWaitMs));
+  const second = await attempt(url, headers, body);
+  return second.failure ? { ...second, failure: `${second.failure} (after one retry)` } : second;
+}
+
+/** The result of a probe, reading its version from the named field. */
+function read(engine: string, r: Posted, field: string): ProbeResult {
+  const v = r.json?.[field];
+  if (typeof v === "string") return { engine, version: v };
+  return { engine, version: null, failure: r.failure ?? `answered with no ${field} field`, transient: r.transient ?? false };
 }
 
 /** Minimal probes. Prompts are one word and outputs capped tiny: the point
@@ -75,7 +110,7 @@ async function post(url: string, headers: Record<string, string>, body: unknown)
  *  06:00 UTC sweep. The engine health check reads D1 only, so it can report a
  *  stale verdict with total confidence. A live call is the only thing that
  *  answers "is this surface actually reachable right now". */
-export async function probeAll(env: Env): Promise<ProbeResult[]> {
+export async function probeAll(env: Env, retryWaitMs = RETRY_WAIT_MS): Promise<ProbeResult[]> {
   const probes: Promise<ProbeResult>[] = [];
 
   if (env.OPENAI_API_KEY) {
@@ -89,21 +124,24 @@ export async function probeAll(env: Env): Promise<ProbeResult[]> {
       // Dropping the cap just removes one variable from a call whose only
       // job is to read the `model` field off the envelope.
       { model: "gpt-5-search-api", messages: [{ role: "user", content: "hi" }] },
-    ).then((r) => ({ engine: "openai", version: typeof r?.model === "string" ? r.model : null })));
+      retryWaitMs,
+    ).then((r) => read("openai", r, "model")));
   }
 
   if (env.ANTHROPIC_API_KEY) {
     probes.push(post("https://api.anthropic.com/v1/messages",
       { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01" },
       { model: "claude-haiku-4-5-20251001", max_tokens: 8, messages: [{ role: "user", content: "hi" }] },
-    ).then((r) => ({ engine: "anthropic", version: typeof r?.model === "string" ? r.model : null })));
+      retryWaitMs,
+    ).then((r) => read("anthropic", r, "model")));
   }
 
   if (env.PERPLEXITY_API_KEY) {
     probes.push(post("https://api.perplexity.ai/v1/agent",
       { Authorization: `Bearer ${env.PERPLEXITY_API_KEY}` },
       { model: "perplexity/sonar", input: "hi", max_output_tokens: 16 },
-    ).then((r) => ({ engine: "perplexity", version: typeof r?.model === "string" ? r.model : null })));
+      retryWaitMs,
+    ).then((r) => read("perplexity", r, "model")));
   }
 
   if (env.GEMINI_API_KEY) {
@@ -111,7 +149,8 @@ export async function probeAll(env: Env): Promise<ProbeResult[]> {
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${env.GEMINI_API_KEY}`,
       {},
       { contents: [{ parts: [{ text: "hi" }] }], generationConfig: { maxOutputTokens: 8 } },
-    ).then((r) => ({ engine: "gemini", version: typeof r?.modelVersion === "string" ? r.modelVersion : null })));
+      retryWaitMs,
+    ).then((r) => read("gemini", r, "modelVersion")));
   }
 
   // Host comes from the SAME resolver the runner uses. This block used to
@@ -127,10 +166,23 @@ export async function probeAll(env: Env): Promise<ProbeResult[]> {
       // different model than the runner measures would record the wrong
       // instrument.
       { model: "google/gemma-4-31B-it", max_tokens: 8, messages: [{ role: "user", content: "hi" }] },
-    ).then((r) => ({ engine: "gemma", version: typeof r?.model === "string" ? r.model : null })));
+      retryWaitMs,
+    ).then((r) => read("gemma", r, "model")));
   }
 
   return Promise.all(probes);
+}
+
+/** The alert's words. A busy provider and a refusal send the reader to
+ *  different places, and the text used to call every failure a refusal. The
+ *  leading "No response from:" is parsed by alert-autoclose. */
+export function probeFailureDetail(failures: ProbeResult[]): string {
+  const names = failures.map((f) => f.engine).join(", ");
+  const reasons = failures.map((f) => `${f.engine}: ${f.failure ?? "no reason recorded"}.`).join(" ");
+  const meaning = failures.every((f) => f.transient)
+    ? `Each failure was the provider being busy or timing out, not a refusal, so on its own this does not point at a key or credit problem. Check whether last night's rows landed for ${failures.length === 1 ? "this surface" : "these surfaces"} before acting.`
+    : `At least one was a refusal, which usually means a dead or rotated key, a retired model id, an exhausted credit balance, or a monthly spend or rate limit. Measurement there is very likely degraded right now, and a client readout covering today will omit it from the grid and question movement.`;
+  return `No response from: ${names}. ${reasons} ${meaning}`;
 }
 
 export async function checkInstrumentVersions(env: Env): Promise<void> {
@@ -138,17 +190,14 @@ export async function checkInstrumentVersions(env: Env): Promise<void> {
   const now = Math.floor(Date.now() / 1000);
   const all = await probeAll(env);
   const results = all.filter((r): r is { engine: string; version: string } => r.version !== null);
-  const failed = all.filter((r) => r.version === null).map((r) => r.engine);
+  const failures = all.filter((r) => r.version === null);
+  const failed = failures.map((r) => r.engine);
 
   // A probe that fails writes no row, so the ABSENCE of a row is the finding.
   // On 2026-08-30 openai was the only surface missing from instrument_versions
   // while it was serving a quarter of its normal volume, and nothing said so.
   if (failed.length) {
-    const detail =
-      `No response from: ${failed.join(", ")}. The probe is one tiny call per engine, so a failure here means the ` +
-      `API refused us -- dead or rotated key, retired model id, exhausted credit balance, or a monthly spend / rate ` +
-      `limit reached. Measurement on ${failed.length === 1 ? "this surface" : "these surfaces"} is very likely ` +
-      `degraded right now, and a client readout covering today will omit it from the grid and question movement.`;
+    const detail = probeFailureDetail(failures);
     console.log(`[instrument-probe] FAILED: ${detail}`);
     await createAlertIfFresh(env, {
       clientSlug: "_system",

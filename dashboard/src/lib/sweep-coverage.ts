@@ -26,7 +26,7 @@
  * So this one does not look at engines at all. It starts from the keywords the
  * planner selected and asks which of them are silent everywhere.
  *
- * ON THE WINDOW. 24 hours ending now, run at 06:30 UTC against a sweep that
+ * ON THE WINDOW. 24 hours ending now, run at 17:00 UTC against a sweep that
  * dispatches at 06:00. Yesterday's rows fall outside it, so one missed night
  * is caught on the first morning rather than after five.
  *
@@ -41,15 +41,25 @@
  * A guard that cries wolf gets skimmed, and skimming it is how the real one
  * gets missed -- which is the precise failure this file was written to close.
  * So it now DETECTS completion rather than assuming it, and defers when the
- * sweep is still writing. Deferring is safe: the check runs every morning, so
- * a genuinely dark keyword is caught on the next pass, which is still far
- * inside the five nights that went unnoticed before this existed.
+ * sweep is still writing.
+ *
+ * ON WHEN IT RUNS. Deferring was called safe because "the check runs every
+ * morning". That stopped being true on 2026-09-26: the sweep began spreading
+ * over 40 minutes, so at 06:30 it was still writing every single night, the
+ * next pass deferred the same way, and this logged success with dark=0/0 for
+ * 42 nights without judging one. The 06:45 trigger would not have fixed it:
+ * the last rows land around 06:40:45, inside the five minute quiet period. So
+ * it runs at 17:00, ahead of the morning briefing, ten hours clear of the
+ * sweep. A deferral now logs as a deferral, and a second one in a row alerts.
  */
 
 import type { Env } from "../types";
 
 const WINDOW_SECONDS = 24 * 60 * 60;
 const ALERT_TYPE = "sweep_keywords_dark";
+const DEFERRED_ALERT_TYPE = "sweep_coverage_deferred";
+/** Starts a cron_runs detail when the check judged nothing. */
+export const DEFERRED_DETAIL = "deferred: sweep still writing, no night judged";
 
 /** One active keyword and how many rows it wrote in the window. */
 export interface KeywordCoverage {
@@ -162,6 +172,8 @@ export async function fetchSweepCoverage(env: Env, nowSecs: number): Promise<Key
 
 export interface SweepCoverageResult extends SweepCoverageSummary {
   alerted: boolean;
+  /** True when it judged nothing because the sweep was still writing. */
+  deferred?: boolean;
 }
 
 /**
@@ -175,13 +187,48 @@ export interface SweepCoverageResult extends SweepCoverageSummary {
 const QUIESCENCE_SECONDS = 5 * 60;
 
 /** Is the sweep still writing right now? A keyword it has not reached yet is
- *  not dark, and must never be reported as such. */
+ *  not dark, and must never be reported as such.
+ *
+ *  Google AI Overviews is left out. A keyword is dark only when no engine
+ *  wrote for it, so rows from one engine arriving late say nothing about
+ *  keywords the sweep has not reached, and deferred AI Overviews retries write
+ *  well after every other engine has finished. */
 export async function sweepInFlight(env: Env, now: number): Promise<boolean> {
   const row = await env.DB.prepare(
-    "SELECT MAX(run_at) AS ts FROM citation_runs",
+    "SELECT MAX(run_at) AS ts FROM citation_runs WHERE engine != 'google_ai_overview'",
   ).first<{ ts: number | null }>();
   if (!row?.ts) return false;
   return now - row.ts < QUIESCENCE_SECONDS;
+}
+
+/** A deferral is safe once. Twice in a row means nobody has judged a night,
+ *  and a guard that silently stops judging is the failure this file exists to
+ *  prevent, so it says so. This run's own row is not written yet: the last
+ *  logged run is the previous one. */
+async function alertIfDeferredAgain(env: Env, now: number): Promise<boolean> {
+  try {
+    const last = await env.DB.prepare(
+      "SELECT detail FROM cron_runs WHERE task_name = 'sweep_coverage' ORDER BY ran_at DESC LIMIT 1",
+    ).first<{ detail: string | null }>();
+    if (!last?.detail?.startsWith("deferred")) return false;
+    const dupe = await env.DB.prepare(
+      "SELECT 1 AS one FROM admin_alerts WHERE type = ? AND read_at IS NULL LIMIT 1",
+    ).bind(DEFERRED_ALERT_TYPE).first<{ one: number }>();
+    if (dupe) return false;
+    await env.DB.prepare(
+      "INSERT INTO admin_alerts (client_slug, type, title, detail, created_at) VALUES (?, ?, ?, ?, ?)",
+    ).bind(
+      "_system",
+      DEFERRED_ALERT_TYPE,
+      "Sweep coverage has deferred twice in a row: no night judged",
+      "The check that catches keywords writing nothing found citation_runs still being written on two runs in a row, so it judged neither. Dark keywords would go unreported until this clears. Check whether the sweep now runs past the check, or is stuck writing.",
+      now,
+    ).run();
+    return true;
+  } catch (e) {
+    console.log(`[sweep-coverage] CRITICAL: repeated deferral not alerted: ${e instanceof Error ? e.message : String(e)}`);
+    return false;
+  }
 }
 
 export async function checkSweepCoverage(env: Env): Promise<SweepCoverageResult> {
@@ -191,7 +238,7 @@ export async function checkSweepCoverage(env: Env): Promise<SweepCoverageResult>
   try {
     if (await sweepInFlight(env, now)) {
       console.log("[sweep-coverage] sweep still writing; deferring to the next run rather than reporting unreached keywords as dark.");
-      return { ...summarizeCoverage([]), alerted: false };
+      return { ...summarizeCoverage([]), alerted: await alertIfDeferredAgain(env, now), deferred: true };
     }
   } catch (e) {
     // If we cannot tell, behave as before rather than going silent.

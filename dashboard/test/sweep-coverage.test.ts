@@ -155,3 +155,67 @@ test("an in-flight check that fails proceeds instead of going silent", async () 
   const i = src.indexOf("in-flight check failed");
   assert.ok(i > 0, "a failure to determine flight state must not suppress the guard");
 });
+
+/* 2026-11-06: the check deferred every night from 2026-09-26, logged success
+ * with dark=0/0, and judged nothing for 42 nights. */
+const ALERTS = "CREATE TABLE admin_alerts (id INTEGER PRIMARY KEY, client_slug TEXT, type TEXT, title TEXT, detail TEXT, read_at INTEGER, created_at INTEGER);";
+
+async function deferringDb() {
+  const { openD1, SCHEMA } = await import("./support/d1-sqlite");
+  const d1 = await openD1(SCHEMA + ALERTS);
+  if (!d1) return null;
+  // Written a moment ago, as if the sweep were still running.
+  d1.db.prepare("INSERT INTO citation_runs (keyword_id, engine, client_cited, cited_urls, cited_entities, response_text, run_at) VALUES (1, 'openai', 0, '[]', '[]', 'x', ?)")
+    .run(Math.floor(Date.now() / 1000) - 30);
+  return d1;
+}
+
+test("late AI Overviews rows do not read as a running sweep", async (t) => {
+  const { openD1, SCHEMA } = await import("./support/d1-sqlite");
+  const { sweepInFlight } = await import("../src/lib/sweep-coverage");
+  const d1 = await openD1(SCHEMA);
+  if (!d1) { t.skip("node:sqlite unavailable"); return; }
+  const now = 1_790_000_000;
+  const add = (engine: string, at: number) => d1.db.prepare("INSERT INTO citation_runs (keyword_id, engine, client_cited, cited_urls, cited_entities, response_text, run_at) VALUES (1, ?, 0, '[]', '[]', 'x', ?)").run(engine, at);
+  add("openai", now - 35 * 60);
+  add("google_ai_overview", now - 30);
+  assert.equal(await sweepInFlight(d1.env, now), false, "a deferred retry 35 minutes after the sweep ended");
+  add("perplexity", now - 30);
+  assert.equal(await sweepInFlight(d1.env, now), true, "any other engine still writing is a running sweep");
+});
+
+test("a deferral logs as a deferral, never as a success", async (t) => {
+  const d1 = await deferringDb();
+  if (!d1) { t.skip("node:sqlite unavailable"); return; }
+  const { runSweepCoverageCheck } = await import("../src/cron");
+  await runSweepCoverageCheck(d1.env);
+  const row = d1.db.prepare("SELECT status, detail FROM cron_runs WHERE task_name = 'sweep_coverage'").get() as { status: string; detail: string };
+  assert.equal(row.status, "partial");
+  assert.match(row.detail, /^deferred/);
+  assert.equal((d1.db.prepare("SELECT COUNT(*) AS n FROM admin_alerts").get() as { n: number }).n, 0, "one deferral is allowed");
+});
+
+test("a second deferral in a row alerts, once", async (t) => {
+  const d1 = await deferringDb();
+  if (!d1) { t.skip("node:sqlite unavailable"); return; }
+  const { runSweepCoverageCheck } = await import("../src/cron");
+  const alerts = () => d1.db.prepare("SELECT type FROM admin_alerts").all() as Array<{ type: string }>;
+  await runSweepCoverageCheck(d1.env);
+  await new Promise((r) => setTimeout(r, 1100)); // cron_runs orders by whole seconds
+  await runSweepCoverageCheck(d1.env);
+  assert.deepEqual(alerts().map((a) => a.type), ["sweep_coverage_deferred"]);
+  await new Promise((r) => setTimeout(r, 1100));
+  await runSweepCoverageCheck(d1.env);
+  assert.equal(alerts().length, 1, "an unread alert is not repeated");
+});
+
+test("the check runs after the sweep, ahead of the briefing", async () => {
+  const fs = await import("node:fs");
+  const index = fs.readFileSync(new URL("../src/index.ts", import.meta.url), "utf8");
+  const branch = index.indexOf('if (cron === "0 17 * * *"');
+  assert.ok(index.indexOf("runSweepCoverageCheck", branch) > branch);
+  assert.ok(index.indexOf("runSweepCoverageCheck", branch) < index.indexOf("maybeSendAutomationDigest", branch));
+  const cron = fs.readFileSync(new URL("../src/cron.ts", import.meta.url), "utf8");
+  const body = cron.slice(cron.indexOf("export async function runPostSweepEvaluation"));
+  assert.ok(!body.slice(0, 6000).includes("checkSweepCoverage"), "at 06:30 the sweep is still writing");
+});
