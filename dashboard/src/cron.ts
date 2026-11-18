@@ -1705,6 +1705,21 @@ export async function runDailyMaintenance(env: Env): Promise<void> {
   } catch (e) {
     console.log(`[cron] readout_seen_watch failed: ${e instanceof Error ? e.message : String(e)}`);
   }
+  // Memo-unsent watch. Last month's memo is finished, but is it marked sent?
+  // In 2026-11 one readout went out as a PDF and was never marked delivered,
+  // and another sat in Gmail Drafts for twelve days. See lib/memo-unsent-watch.ts.
+  try {
+    const { logCronRun } = await import("./lib/cron-log");
+    const { watchMemosUnsent } = await import("./lib/memo-unsent-watch");
+    const started = Date.now();
+    const r = await watchMemosUnsent(env);
+    await logCronRun(env, "memo_unsent_watch", "success", Date.now() - started,
+      `month=${r.month ?? "before-day"} checked=${r.checked} unsent=${r.unsent.length} raised=${r.raised} resolved=${r.resolved}`);
+  } catch (e) {
+    const { logCronRun } = await import("./lib/cron-log");
+    await logCronRun(env, "memo_unsent_watch", "failure", 0, e instanceof Error ? e.message : String(e));
+    console.log(`[cron] memo_unsent_watch failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
 
 
   // Step detector. Writes instrument_events, which is the ONLY thing
