@@ -1405,7 +1405,7 @@ export async function runDailyMaintenance(env: Env): Promise<void> {
     const dayOfMonth = new Date().getUTCDate();
     const isPreview = dayOfMonth === 15;
     if (isPreview || dayOfMonth === MEMO_DRAFT_DAY) {
-      const { generateAllMemoDrafts, generateFullMonthDrafts } = await import("./lib/memo-generator");
+      const { generateAllMemoDrafts, generateFullMonthDrafts, describeMemoFailure } = await import("./lib/memo-generator");
       const clock = isPreview ? new Date() : endOfPreviousMonthUTC(new Date());
       const results = isPreview
         ? await generateAllMemoDrafts(env, clock)
@@ -1423,7 +1423,7 @@ export async function runDailyMaintenance(env: Env): Promise<void> {
             ? `PREVIEW: ${ok.length} memo draft(s) at /admin/memos for this month to date, so the prose can be read while there is still time to fix it. These are regenerated on the ${MEMO_DRAFT_DAY}nd of next month with the full month, so edit the DATA or the code, not the draft text.`
             : `${ok.length} memo draft(s) ready for review at /admin/memos.`,
           flagged.length ? `${flagged.length} have figures or tone to double-check.` : ``,
-          failed.length ? `${failed.length} could not be drafted: ${failed.map((f) => `${f.slug} (${f.error})`).join(", ")}` : ``,
+          failed.length ? `${failed.length} could not be drafted: ${failed.map((f) => `${f.slug} (${describeMemoFailure(f)})`).join(", ")}` : ``,
           skipped.length ? `Skipped: ${skipped.map((f) => `${f.slug} (${f.skipped})`).join(", ")}` : ``,
         ].filter(Boolean);
         await createAlert(env, {
