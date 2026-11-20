@@ -89,7 +89,8 @@ export async function watchInvoices(env: Env, nowSec?: number): Promise<InvoiceW
         body:
           `${c.name} is active at ${money(c.mrr_cents)} per month. No client_invoices row exists for ${period}.\n\n` +
           `Generate it with:\n` +
-          `  node scripts/render-invoice.mjs ${c.client_slug} ${period} --number <NEXT-NO>\n\n` +
+          `  node scripts/render-invoice.mjs ${c.client_slug} ${period} --number <NEXT-NO> --agreement-date <YYYY-MM-DD>\n` +
+          `  (add --baseline-waived or --includes only if ${c.name}'s own agreement says so)\n\n` +
           `then record the row so this stops asking.`,
         target_type: "invoice_missing",
         // Stable per CLIENT, deliberately not per period. Without a target_id
