@@ -245,3 +245,30 @@ test("too little history to judge is not evidence of recovery", async () => {
   });
   assert.equal((await autoCloseAlerts(env, 1788912000)).closed, 0);
 });
+
+// 2026-11-06: Gemini answers 58 of 63 a night and returns a few 503s doing it,
+// so its probe alerts could never close. Real SQL: the mock above cannot see
+// which failures the query counts.
+async function probeAlertOnRealDb(failures: Array<number | null>) {
+  const { openD1, SCHEMA } = await import("./support/d1-sqlite");
+  const d1 = await openD1(`${SCHEMA}CREATE TABLE admin_alerts (id INTEGER PRIMARY KEY, client_slug TEXT, type TEXT, title TEXT, detail TEXT, read_at INTEGER, created_at INTEGER);`);
+  if (!d1) return null;
+  d1.db.prepare("INSERT INTO admin_alerts (client_slug, type, title, detail, created_at) VALUES ('_system', 'instrument_probe_failed', 't', 'No response from: gemini. gemini: HTTP 503.', 1)").run();
+  d1.db.prepare("INSERT INTO citation_runs (keyword_id, engine, client_cited, cited_urls, cited_entities, response_text, run_at) VALUES (1, 'gemini', 0, '[]', '[]', 'x', ?)").run(NOW - 3600);
+  for (const status of failures) d1.db.prepare("INSERT INTO engine_failures (engine, status, failed_at) VALUES ('gemini', ?, ?)").run(status, NOW - 3600);
+  return d1;
+}
+
+test("an engine that answers clears its probe alert through 5xx errors", async (t) => {
+  const d1 = await probeAlertOnRealDb([503, 503, 524]);
+  if (!d1) { t.skip("node:sqlite unavailable"); return; }
+  assert.equal((await autoCloseAlerts(d1.env, NOW)).closed, 1);
+});
+
+test("a refusal holds the probe alert open even among 5xx errors", async (t) => {
+  for (const refusal of [401, 402, 429, null]) {
+    const d1 = await probeAlertOnRealDb([503, refusal]);
+    if (!d1) { t.skip("node:sqlite unavailable"); return; }
+    assert.equal((await autoCloseAlerts(d1.env, NOW)).closed, 0, String(refusal));
+  }
+});
