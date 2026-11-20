@@ -92,3 +92,38 @@ test("a task with no search results stays a genuine empty answer", async () => {
   assert.equal(r.failure, undefined);
   assert.equal(r.urls.length, 0);
 });
+
+test("one vendor's unread billing alert does not swallow another vendor's", async () => {
+  // 2026-11-01: OpenAI and Gemini both ran dry the same night. Dedupe matched
+  // on type only, so Gemini's alert was dropped behind OpenAI's unread one.
+  const { createAlertIfFresh } = await import("../src/admin-alerts");
+  const rows: { client_slug: string; type: string; title: string }[] = [];
+  const env = {
+    DB: {
+      prepare(sql: string) {
+        return {
+          bind(...args: unknown[]) {
+            return {
+              async first() {
+                const [slug, type, , title] = args as string[];
+                return rows.find((r) => r.client_slug === slug && r.type === type && (!/title = \?/.test(sql) || r.title === title)) ?? null;
+              },
+              async run() {
+                const [client_slug, type, title] = args as string[];
+                rows.push({ client_slug, type, title });
+                return {};
+              },
+            };
+          },
+        };
+      },
+    },
+  } as unknown as Env;
+  const openai = billingAlert("openai", "You have no credits remaining");
+  const gemini = billingAlert("gemini", "Your prepayment credits are depleted.");
+  const base = { clientSlug: "_system", type: "engine_quota_exhausted", windowHours: 6, dedupeOnTitle: true };
+  assert.equal(await createAlertIfFresh(env, { ...base, ...openai }), true);
+  assert.equal(await createAlertIfFresh(env, { ...base, ...openai }), false, "same vendor still dedupes");
+  assert.equal(await createAlertIfFresh(env, { ...base, ...gemini }), true, "a second vendor gets its own alert");
+  assert.equal(rows.length, 2);
+});
