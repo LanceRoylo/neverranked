@@ -18,6 +18,8 @@
  * cost of being wrong, and widening it would change retry behaviour.
  */
 
+import { stripRetryPrefix } from "./dataforseo-status";
+
 export interface Vendor {
   name: string;
   /** Where a person goes to pay. Named, not linked: billing URLs move. */
@@ -82,7 +84,9 @@ const BILLING_WORDING = new RegExp(
 export function isBillingFailure(status: number | null | undefined, detail: string): boolean {
   if (status === 402) return true;
   // DataForSEO reports in its own code space inside a 200; 402xx is payment.
-  if (/^DataForSEO 402\d\d\b/.test(detail)) return true;
+  // Its cost-limit and account-paused messages carry no billing wording, so a
+  // retry prefix in front of the code used to lose those two alerts.
+  if (/^DataForSEO 402\d\d\b/.test(stripRetryPrefix(detail))) return true;
   return BILLING_WORDING.test(detail);
 }
 
