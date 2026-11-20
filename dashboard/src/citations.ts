@@ -12,8 +12,9 @@ import { READOUT_ENGINE_LABEL } from "./lib/readout-engine-labels";
 import { resolveGroundingUrls } from "./gemini-resolver";
 import { detectAndRecordAlerts } from "./lib/citation-alerts";
 import { isReadoutShapeSnapshot } from "./lib/snapshot-shape";
-import { classifySource, classifyGoogleLink, hostOf, affiliatedMatch } from "./lib/classify-source";
+import { classifySource, classifyGoogleLink, hostOf, affiliatedMatch, ownedUrlMatch } from "./lib/classify-source";
 import { loadAffiliatedDomains } from "./lib/affiliated-domains";
+import { loadOwnedPathPrefix } from "./lib/owned-path";
 import { LINK_BASIS } from "./lib/link-basis";
 import { keywordRunVerdict } from "./lib/keyword-run-verdict";
 import { LAYER1_ENGINE_KEYS } from "./lib/engine-layer";
@@ -1085,23 +1086,23 @@ export function nameMatches(entityName: string, businessName: string): boolean {
 
 // Exported for test/link-basis.test.ts: run-level client_cited is decided
 // here, from the client's own domain, and a Google wrapper link can never be it.
+//
+// ownedPathPrefix (migration 0134, 2026-11-11): for a client that is one venue
+// on its group's shared domain, only pages at or below the prefix are its own
+// site. '' (the default, and every client without a row) is host-only
+// matching, exactly as before.
 export function computeProminence(
   entities: CitedEntity[],
   urls: string[],
   clientDomain: string,
   businessName: string | null,
+  ownedPathPrefix = "",
 ): number | null {
-  const domainNorm = clientDomain.replace(/^www\./, "").toLowerCase();
-
   // Check URL list first (most reliable -- domain match is unambiguous).
+  // Malformed URLs never match.
   for (let i = 0; i < urls.length; i++) {
-    try {
-      const host = new URL(urls[i]).hostname.replace(/^www\./, "").toLowerCase();
-      if (host === domainNorm || host.endsWith("." + domainNorm)) {
-        return Math.min(i + 1, 10);
-      }
-    } catch {
-      // skip malformed
+    if (ownedUrlMatch(urls[i], clientDomain, ownedPathPrefix)) {
+      return Math.min(i + 1, 10);
     }
   }
 
@@ -1171,6 +1172,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
 
     const clientDomain = domain?.domain || "";
     const businessName = await resolveBusinessName(env, clientSlug, config);
+    const ownedPathPrefix = await loadOwnedPathPrefix(env, clientSlug);
 
     let totalQueries = 0;
     let clientCitations = 0;
@@ -1197,7 +1199,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
         // Skip-on-empty: an API failure must not become a row. See the
         // runOpenAI comment below for the 2026-07-24 incident.
         if (await skipReason(env, "perplexity", kw.keyword, r, false)) return;
-        const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
+        const prom = computeProminence(r.entities, r.urls, clientDomain, businessName, ownedPathPrefix);
         const cited = prom !== null;
         if (cited) {
           kwCited = true;
@@ -1230,7 +1232,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
         // while the heartbeat counted rows and reported the engine
         // active. Same guard runGemini has carried all along.
         if (await skipReason(env, "openai", kw.keyword, r, false)) return;
-        const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
+        const prom = computeProminence(r.entities, r.urls, clientDomain, businessName, ownedPathPrefix);
         const cited = prom !== null;
         if (cited) {
           kwCited = true;
@@ -1260,7 +1262,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
         // quota error or transient 5xx. Empty rows would poison the
         // citation rate denominator with non-runs.
         if (await skipReason(env, "gemini", kw.keyword, r, false)) return;
-        const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
+        const prom = computeProminence(r.entities, r.urls, clientDomain, businessName, ownedPathPrefix);
         const cited = prom !== null;
         if (cited) {
           kwCited = true;
@@ -1291,7 +1293,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
         // the 2026-05-11 incident (53/53 empty rows); this path never
         // got it.
         if (await skipReason(env, "anthropic", kw.keyword, r, true)) return;
-        const prom = computeProminence(r.entities, [], clientDomain, businessName);
+        const prom = computeProminence(r.entities, [], clientDomain, businessName, ownedPathPrefix);
         const cited = prom !== null;
         if (cited) {
           kwCited = true;
@@ -1323,7 +1325,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
         // AIO doesn't render for many queries -- skip the INSERT so we
         // don't poison the citation rate denominator with non-runs.
         if (await skipReason(env, "google_ai_overview", kw.keyword, r, false)) return;
-        const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
+        const prom = computeProminence(r.entities, r.urls, clientDomain, businessName, ownedPathPrefix);
         const cited = prom !== null;
         if (cited) {
           kwCited = true;
@@ -1351,7 +1353,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
         const { queryBing } = await import("./citations-bing");
         const r = await queryBing(kw.keyword, env);
         if (await skipReason(env, "bing", kw.keyword, r, false)) return;
-        const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
+        const prom = computeProminence(r.entities, r.urls, clientDomain, businessName, ownedPathPrefix);
         const cited = prom !== null;
         if (cited) {
           kwCited = true;
@@ -1386,7 +1388,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
         // calls on network errors (measured July 2026); a drop is not a
         // measurement.
         if (await skipReason(env, "gemma", kw.keyword, r, true)) return;
-        const prom = computeProminence(r.entities, [], clientDomain, businessName);
+        const prom = computeProminence(r.entities, [], clientDomain, businessName, ownedPathPrefix);
         const cited = prom !== null;
         if (cited) {
           kwCited = true;
@@ -1765,6 +1767,7 @@ export async function runOneKeywordCitations(
 
   const clientDomain = domain?.domain || "";
   const businessName = await resolveBusinessName(env, clientSlug, config);
+  const ownedPathPrefix = await loadOwnedPathPrefix(env, clientSlug);
 
   const engines: Record<string, number> = {};
   const rejected: string[] = [];
@@ -1783,7 +1786,7 @@ export async function runOneKeywordCitations(
     if (!env.PERPLEXITY_API_KEY) return;
     const r = await queryPerplexity(kw.keyword, env.PERPLEXITY_API_KEY);
     if (await skipReason(env, "perplexity", kw.keyword, r, false)) return; // failure, not a measurement
-    const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
+    const prom = computeProminence(r.entities, r.urls, clientDomain, businessName, ownedPathPrefix);
     const cited = prom !== null;
     await env.DB.prepare(
       `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
@@ -1800,7 +1803,7 @@ export async function runOneKeywordCitations(
     // This runner produced the 330 empty rows of 2026-07-25..08-02
     // (OpenAI credits exhausted; every failure mapped to empty-but-ok).
     if (await skipReason(env, "openai", kw.keyword, r, false)) return;
-    const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
+    const prom = computeProminence(r.entities, r.urls, clientDomain, businessName, ownedPathPrefix);
     const cited = prom !== null;
     await env.DB.prepare(
       `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
@@ -1815,7 +1818,7 @@ export async function runOneKeywordCitations(
     if (!env.GEMINI_API_KEY) return;
     const r = await queryGemini(kw.keyword, env.GEMINI_API_KEY, env);
     if (await skipReason(env, "gemini", kw.keyword, r, false)) return; // 429/empty
-    const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
+    const prom = computeProminence(r.entities, r.urls, clientDomain, businessName, ownedPathPrefix);
     const cited = prom !== null;
     await env.DB.prepare(
       `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
@@ -1836,7 +1839,7 @@ export async function runOneKeywordCitations(
     // because most calls returned response_text=""). Matches the
     // skip-on-empty pattern Gemini / AIO / Bing already use.
     if (await skipReason(env, "anthropic", kw.keyword, r, true)) return;
-    const prom = computeProminence(r.entities, [], clientDomain, businessName);
+    const prom = computeProminence(r.entities, [], clientDomain, businessName, ownedPathPrefix);
     const cited = prom !== null;
     await env.DB.prepare(
       `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
@@ -1852,7 +1855,7 @@ export async function runOneKeywordCitations(
     const { queryGoogleAIO } = await import("./citations-google-aio");
     const r = await queryGoogleAIO(kw.keyword, env);
     if (await skipReason(env, "google_ai_overview", kw.keyword, r, false)) return; // AIO didn't render
-    const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
+    const prom = computeProminence(r.entities, r.urls, clientDomain, businessName, ownedPathPrefix);
     const cited = prom !== null;
     await env.DB.prepare(
       `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
@@ -1868,7 +1871,7 @@ export async function runOneKeywordCitations(
     const { queryBing } = await import("./citations-bing");
     const r = await queryBing(kw.keyword, env);
     if (await skipReason(env, "bing", kw.keyword, r, false)) return;
-    const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
+    const prom = computeProminence(r.entities, r.urls, clientDomain, businessName, ownedPathPrefix);
     const cited = prom !== null;
     await env.DB.prepare(
       `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
@@ -1891,7 +1894,7 @@ export async function runOneKeywordCitations(
     // Skip empty results to keep the snapshot aggregator clean. Same
     // pattern as the other training-mode engines.
     if (await skipReason(env, "gemma", kw.keyword, r, true)) return;
-    const prom = computeProminence(r.entities, [], clientDomain, businessName);
+    const prom = computeProminence(r.entities, [], clientDomain, businessName, ownedPathPrefix);
     const cited = prom !== null;
     await env.DB.prepare(
       `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, cited_urls_strict, retrieved_urls, client_cited, prominence, run_at, grounding_mode)
@@ -1984,6 +1987,8 @@ export interface ReplicatePlanItem {
   engine: string;
   clientDomain: string;
   businessName: string | null;
+  /** Migration 0134. Absent on a plan built before it existed: host-only. */
+  ownedPathPrefix?: string;
 }
 
 export async function planReplicateSweep(env: Env, weekIndex: number): Promise<ReplicatePlanItem[]> {
@@ -2002,7 +2007,7 @@ export async function planReplicateSweep(env: Env, weekIndex: number): Promise<R
   if (env.OPENAI_API_KEY) engines.push("openai");
   if (env.GEMINI_API_KEY) engines.push("gemini");
 
-  const ctx = new Map<string, { domain: string; name: string | null }>();
+  const ctx = new Map<string, { domain: string; name: string | null; ownedPathPrefix: string }>();
   const out: ReplicatePlanItem[] = [];
   for (const pick of chosen) {
     if (!ctx.has(pick.clientSlug)) {
@@ -2015,6 +2020,7 @@ export async function planReplicateSweep(env: Env, weekIndex: number): Promise<R
       ctx.set(pick.clientSlug, {
         domain: domain?.domain || "",
         name: await resolveBusinessName(env, pick.clientSlug, config),
+        ownedPathPrefix: await loadOwnedPathPrefix(env, pick.clientSlug),
       });
     }
     const c = ctx.get(pick.clientSlug)!;
@@ -2022,7 +2028,7 @@ export async function planReplicateSweep(env: Env, weekIndex: number): Promise<R
     if (!kw || !c.domain) continue;
     for (const engine of engines) {
       if ((out.length + 1) * REPLICATES > MAX_CALLS_PER_RUN) return out;
-      out.push({ batchId, keywordId: kw.keywordId, keyword: kw.keyword, engine, clientDomain: c.domain, businessName: c.name });
+      out.push({ batchId, keywordId: kw.keywordId, keyword: kw.keyword, engine, clientDomain: c.domain, businessName: c.name, ownedPathPrefix: c.ownedPathPrefix });
     }
   }
   return out;
@@ -2054,7 +2060,7 @@ export async function runReplicateGroup(env: Env, item: ReplicatePlanItem): Prom
     const ts = Math.floor(Date.now() / 1000);
     await recordSpend(env, item.engine, r.usage, item.keywordId, ts);
     if (await skipReason(env, item.engine, item.keyword, r, false)) continue;
-    const prom = computeProminence(r.entities, r.urls, item.clientDomain, item.businessName);
+    const prom = computeProminence(r.entities, r.urls, item.clientDomain, item.businessName, item.ownedPathPrefix ?? "");
     try {
       await env.DB.prepare(
         `INSERT OR IGNORE INTO replicate_runs
@@ -2623,9 +2629,18 @@ export async function buildReadoutSnapshot(
   // migration is applied) or no rows leaves `affiliated` empty, and every
   // branch below is then exactly what it was before this existed.
   const affiliated = await loadAffiliatedDomains(env, clientSlug);
-  const ctx = affiliated.length
-    ? { owned: [ownedHost], affiliated, competitors: competitorHosts }
-    : { owned: [ownedHost], competitors: competitorHosts };
+  // OWNED PATH (migration 0134, 2026-11-11): for a client that is one venue on
+  // its group's shared domain, only pages at or below the prefix are its own
+  // site. '' (no row, or no table) is host-only matching, exactly as before,
+  // and leaves ctx without the key so classifySource sees what it always did.
+  const ownedPathPrefix = await loadOwnedPathPrefix(env, clientSlug);
+  const isOwnedUrl = (u: string): boolean => ownedUrlMatch(u, ownedHost, ownedPathPrefix);
+  const ctx = {
+    owned: [ownedHost],
+    ...(ownedPathPrefix ? { ownedPathPrefix } : {}),
+    ...(affiliated.length ? { affiliated } : {}),
+    competitors: competitorHosts,
+  };
 
   // Which region the customer competes in, read from their own domain and
   // business name. Used ONLY to drop chain properties on other islands.
@@ -2696,7 +2711,7 @@ export async function buildReadoutSnapshot(
       for (const u of urls) {
         const h = hostOf(u);
         if (!h) continue;
-        const inOwned = h === ownedHost || h.endsWith("." + ownedHost);
+        const inOwned = isOwnedUrl(u);
         // Owned wins, then affiliated, then competitor: a group page is never
         // the client's own site and never a competitor's citation.
         const inAffiliated = !inOwned && affiliated.length > 0 && affiliatedMatch(u, affiliated);
@@ -2810,7 +2825,7 @@ export async function buildReadoutSnapshot(
           if (compHit) {
             sawCohort = true;
             (venueEngines[compHit] ??= new Set()).add(label);
-          } else if (h === ownedHost || h.endsWith("." + ownedHost)) {
+          } else if (isOwnedUrl(e.url || "")) {
             mentioned = true;
           }
         }
