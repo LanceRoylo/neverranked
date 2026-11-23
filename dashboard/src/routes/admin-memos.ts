@@ -322,7 +322,7 @@ function renderDeliveryBlocked(
 // ── Generate on demand ───────────────────────────────────────────────
 
 export async function handleMemoGenerate(user: User, env: Env, fullMonth = false): Promise<Response> {
-  const { generateAllMemoDrafts, generateFullMonthDrafts } = await import("../lib/memo-generator");
+  const { generateAllMemoDrafts, generateFullMonthDrafts, describeMemoFailure } = await import("../lib/memo-generator");
   // fullMonth: last month in full, through the same guarded path the cron
   // runs on the 2nd (month-end snapshot checked, rebuilt once, refused loudly).
   // This is the recovery step a month_end_snapshot_missing item points to.
@@ -336,7 +336,7 @@ export async function handleMemoGenerate(user: User, env: Env, fullMonth = false
     <ul style="line-height:1.8">
       ${results.map((r) => `<li>${esc(r.slug)}: ${r.skipped ? `<span style="color:var(--dim)">skipped: ${esc(r.skipped)}</span>` : r.ok
         ? `drafted${r.unverifiedNumbers ? ` — <span style="color:#e8c767">check figures: ${esc(r.unverifiedNumbers.join(", "))}</span>` : ""}${r.toneViolations ? ` — <span style="color:#e8a0a0">tone: ${esc(r.toneViolations.join(", "))}</span>` : ""}${r.gate ? ` — <span style="color:${r.gate.would_ship ? "#7bdca0" : "#9aa0e8"}">gate: ${r.gate.would_ship ? "would ship" : "would escalate"} (judge ${esc(r.gate.judge_verdict)}${r.gate.verifier_objected ? ", verifier objected" : r.gate.judge_verdict === "ship" ? ", verifier clear" : ""})${r.gate.judge_reasons && r.gate.judge_reasons.length ? ": " + esc(r.gate.judge_reasons[0]) : ""}</span>` : ""}`
-        : `<span style="color:#e8a0a0">failed: ${esc(r.error || "unknown")}</span>`}</li>`).join("")}
+        : `<span style="color:#e8a0a0">failed: ${esc(describeMemoFailure(r))}</span>`}</li>`).join("")}
     </ul>
     <p style="margin-top:20px"><a href="/admin/memos" style="color:var(--gold)">Review the queue &rarr;</a></p>
   `;

@@ -100,6 +100,17 @@ export interface MemoDraftResult {
   skipped?: string;
 }
 
+// One line naming WHY a draft was refused, for the cron alert and the admin
+// page. The 2026-11-15 preview refused a client's draft and both surfaces
+// printed only "taxonomy/identity gate refused the draft": the violations were
+// computed, returned, and dropped, so the reason could be recovered only by
+// paying for another generation. Every refusal now carries its own reasons.
+export function describeMemoFailure(r: Pick<MemoDraftResult, "error" | "taxonomyViolations" | "toneViolations">): string {
+  const reasons = [...(r.taxonomyViolations ?? []), ...(r.toneViolations ?? [])];
+  const base = r.error || "unknown";
+  return reasons.length ? `${base}: ${reasons.join(" | ")}` : base;
+}
+
 // Build the allowed-number set from inputs for the fabrication guard.
 export function allowedNumberSet(inp: MemoInputs): Set<string> {
   const s = new Set<string>();
