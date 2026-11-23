@@ -124,7 +124,14 @@ export function renderReportMarkdown(md: string): string {
   const lines = md.split(/\r?\n/);
   const out: string[] = [];
   let inUl = false;
-  const flushUl = () => { if (inUl) { out.push("</ul>"); inUl = false; } };
+  let inOl = false;
+  // Ordered lists render as <ol> since 2026-11-22: page 1's three actions and
+  // the punch list are numbered, and a number in a paragraph does not read as
+  // a list. Markdown numbering is kept as written via value=, never renumbered.
+  const flushUl = () => {
+    if (inUl) { out.push("</ul>"); inUl = false; }
+    if (inOl) { out.push("</ol>"); inOl = false; }
+  };
   const isTableSep = (s: string) => /^\|(\s*:?-{2,}:?\s*\|)+\s*$/.test(s.trim());
   const cells = (s: string) => s.trim().replace(/^\|/, "").replace(/\|\s*$/, "").split("|").map((c) => c.trim());
   for (let i = 0; i < lines.length; i++) {
@@ -147,7 +154,14 @@ export function renderReportMarkdown(md: string): string {
     if ((m = line.match(/^#\s+(.*)$/)))   { flushUl(); out.push(`<h2>${inline(m[1])}</h2>`); continue; }
     if ((m = line.match(/^##\s+(.*)$/)))  { flushUl(); out.push(`<h2>${inline(m[1])}</h2>`); continue; }
     if ((m = line.match(/^###\s+(.*)$/))) { flushUl(); out.push(`<h3>${inline(m[1])}</h3>`); continue; }
+    if ((m = line.match(/^(\d+)\.\s+(.*)$/))) {
+      if (inUl) flushUl();
+      if (!inOl) { out.push("<ol>"); inOl = true; }
+      out.push(`<li value="${Number(m[1])}">${inline(m[2])}</li>`);
+      continue;
+    }
     if ((m = line.match(/^[*-]\s+(.*)$/))) {
+      if (inOl) flushUl();
       if (!inUl) { out.push("<ul>"); inUl = true; }
       out.push(`<li>${inline(m[1])}</li>`);
       continue;
@@ -1172,7 +1186,7 @@ export function shell(title: string, inner: string): string {
   .body h2 { font-family:Georgia,"Times New Roman",serif; font-weight:400; font-size:23px; margin:36px 0 12px; color:#f2efe6; letter-spacing:-.01em; }
   .body h3 { font-weight:600; font-size:15px; letter-spacing:.02em; text-transform:uppercase; color:#b7b1a3; margin:26px 0 8px; }
   .body p { margin:0 0 14px; color:#dcd8d0; }
-  .body ul { margin:0 0 16px; padding-left:22px; }
+  .body ul, .body ol { margin:0 0 16px; padding-left:22px; }
   .body li { margin:0 0 7px; color:#dcd8d0; }
   .body a { color:#d4c596; }
   .body code { background:#1a1916; padding:1px 5px; border-radius:4px; font-size:13px; }

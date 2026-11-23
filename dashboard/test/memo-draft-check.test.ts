@@ -105,5 +105,7 @@ test("the delivery gate and the generator both run these checks", () => {
   const src = fs.readFileSync(new URL("../src/lib/memo-generator.ts", import.meta.url), "utf8");
   assert.match(src, /\.\.\.memoDraftIssues\(body, inputs\)/, "vetMemoBody blocks delivery on them");
   assert.match(src, /data: writerView\(inputs\)/);
-  assert.ok(memoDraftIssues("### This month in plain words\n\nFine.", inp).length === 0);
+  // Since 2026-11-22 page 1 has a required shape (memo-page-one.test.ts), so
+  // a one-line summary is no longer a finished page 1.
+  assert.ok(memoDraftIssues("### This month in plain words\n\nFine.", inp).some((i) => /Page 1 has no/.test(i)));
 });

@@ -129,10 +129,129 @@ export function checkUnbasedMovement(body: string, inp: Pick<MemoInputs, "compar
   return issues;
 }
 
+// ── Page 1: the action memo (2026-11-22) ─────────────────────────────
+// A client ended its engagement on 2026-11-21 saying the reporting showed it
+// where to improve, and that it now had to work out a plan "with our current
+// resources". It understood the findings and could not turn them into work.
+// So page 1 is three actions a named role can do, sized, each with what we
+// will watch, and nothing a newcomer has to decode. These checks hold the
+// shape. Spec: neverranked-docs/strategy/MEMO-V2-ACTION-MEMO-SPEC-2026-11.md.
+
+export const PAGE_ONE_LABELS = {
+  stand: "Where you stand",
+  actions: "Three things to do this month",
+  last: "Last month's actions",
+  question: "One question for you",
+} as const;
+
+/** Who does it: a role the reader recognises, never a person we guessed. */
+export const PAGE_ONE_WHO = ["front desk", "marketing", "whoever manages your listings", "your web developer", "you"] as const;
+/** How long it takes, in the reader's terms. */
+export const PAGE_ONE_TIME = ["under an hour", "half a day", "a developer task"] as const;
+export const PAGE_ONE_MAX_WORDS = 300;
+export const PAGE_ONE_MAX_FIGURES = 6;
+
+/** Words that are fine further down for the reader who wants detail, but not
+ *  on the page that gets read and forwarded. */
+export const PAGE_ONE_WORDS: Array<{ re: RegExp; say: string }> = [
+  { re: /\bAtlas\b/, say: "leave it for the detail" },
+  { re: /\blike[- ]for[- ]like\b/i, say: "the same questions in both months" },
+  { re: /\bpooled\b/i, say: "together" },
+  { re: /\bbasis\b/i, say: "what we compared" },
+  { re: /\breadings?\b/i, say: "checks" },
+  { re: /\bpunch list\b/i, say: "three things to do" },
+  { re: /\bcitations?\b/i, say: "used your site as a source, or named you" },
+];
+
+/** The text of the page-1 section, without its heading, or null. */
+export function pageOneText(body: string): string | null {
+  const start = body.match(new RegExp(`^###\\s+${SHORT_VERSION_HEADING}\\s*$`, "m"));
+  if (!start || start.index === undefined) return null;
+  const after = start.index + start[0].length;
+  const next = body.slice(after).search(/^#{2,3}\s/m);
+  return body.slice(after, next < 0 ? body.length : after + next).trim();
+}
+
+const MONTHS = "January|February|March|April|May|June|July|August|September|October|November|December";
+
+/** The lines under a bold label, up to the next bold label. */
+function block(page: string, label: string): string[] | null {
+  const lines = page.split(/\r?\n/);
+  const i = lines.findIndex((l) => l.trim() === `**${label}**`);
+  if (i < 0) return null;
+  const out: string[] = [];
+  for (let j = i + 1; j < lines.length && !/^\*\*[^*]+\*\*\s*$/.test(lines[j].trim()); j++) {
+    if (lines[j].trim()) out.push(lines[j].trim());
+  }
+  return out;
+}
+
+/** Figures as a reader counts them: "7 of 10" and "1 in 6" are one figure each, a list number
+ *  and a year are none. */
+export function countFigures(text: string): number {
+  const t = text
+    .replace(/^\s*\d+\.\s/gm, "")
+    .replace(new RegExp(`\\b(?:${MONTHS})\\s+\\d{4}\\b`, "g"), "")
+    .replace(/\b(?:19|20)\d{2}\b/g, "")
+    .replace(/\b\d+(?:\.\d+)?\s+(?:(?:out\s+)?of|in)\s+\d+(?:\.\d+)?\b/gi, " FIG ");
+  return (t.match(/\bFIG\b|\d+(?:\.\d+)?/g) ?? []).length;
+}
+
+export function checkPageOne(body: string): string[] {
+  const page = pageOneText(body);
+  if (page === null) return []; // checkShortVersion reports the missing section
+  const issues: string[] = [];
+
+  for (const label of Object.values(PAGE_ONE_LABELS)) {
+    if (block(page, label) === null) issues.push(`Page 1 has no "**${label}**" part.`);
+  }
+
+  const words = page.replace(/\*\*/g, "").split(/\s+/).filter(Boolean).length;
+  if (words > PAGE_ONE_MAX_WORDS) issues.push(`Page 1 is ${words} words. Keep it to ${PAGE_ONE_MAX_WORDS}.`);
+  const figures = countFigures(page);
+  if (figures > PAGE_ONE_MAX_FIGURES) issues.push(`Page 1 carries ${figures} figures. Keep it to ${PAGE_ONE_MAX_FIGURES}, and write "N of M" as one.`);
+
+  for (const { re, say } of PAGE_ONE_WORDS) {
+    const m = page.match(re);
+    if (m) issues.push(`Page 1 uses ${quote(m[0])}. Say: ${say}.`);
+  }
+
+  // Page 1 states levels. Movement needs its basis said with it, and that
+  // belongs in the detail, where the comparison is laid out.
+  const moved = page.match(/\b(?:up|down)\s+from\s+\d|\bfrom\s+\d+(?:\.\d+)?\s*%?\s+to\s+\d|\b\d+(?:\.\d+)?\s*(?:percentage\s+)?points?\b/i);
+  if (moved) issues.push(`Page 1 states a change, ${quote(moved[0])}. Page 1 gives where they stand. Changes go in What moved, with what was compared.`);
+
+  const actions = block(page, PAGE_ONE_LABELS.actions);
+  if (actions) {
+    const items = actions.filter((l) => /^\d+\.\s/.test(l));
+    if (items.length !== 3) issues.push(`"${PAGE_ONE_LABELS.actions}" has ${items.length} numbered items, not 3.`);
+    let developer = 0;
+    items.forEach((item, n) => {
+      const who = item.match(/\bWho:\s*([^.]+)\./);
+      const time = item.match(/\bTime:\s*([^.]+)\./);
+      const watch = item.match(/\bWe will watch:\s*(.+)$/);
+      if (!who) issues.push(`Action ${n + 1} has no "Who:".`);
+      else if (!(PAGE_ONE_WHO as readonly string[]).includes(who[1].trim().toLowerCase())) {
+        issues.push(`Action ${n + 1} "Who: ${who[1].trim()}" is not one of: ${PAGE_ONE_WHO.join(", ")}.`);
+      }
+      if (!time) issues.push(`Action ${n + 1} has no "Time:".`);
+      else if (!(PAGE_ONE_TIME as readonly string[]).includes(time[1].trim().toLowerCase())) {
+        issues.push(`Action ${n + 1} "Time: ${time[1].trim()}" is not one of: ${PAGE_ONE_TIME.join(", ")}.`);
+      }
+      if (!watch) issues.push(`Action ${n + 1} has no "We will watch:".`);
+      else if (!new RegExp(`\\b(?:${MONTHS})\\b`).test(watch[1])) issues.push(`Action ${n + 1} does not say which month we will be able to tell.`);
+      if (/your web developer/i.test(who?.[1] ?? "") || /a developer task/i.test(time?.[1] ?? "")) developer++;
+    });
+    if (developer > 1) issues.push(`${developer} of the three actions need a developer. At most one may.`);
+  }
+  return issues;
+}
+
 /** Every check, for a body that claims to be a finished draft. */
 export function memoDraftIssues(body: string, inp: Pick<MemoInputs, "comparison" | "by_question">): string[] {
   return [
     ...checkShortVersion(body),
+    ...checkPageOne(body),
     ...checkPlainWords(body),
     ...checkHeadingCounts(body),
     ...checkComparedQuestionCount(body, inp),
