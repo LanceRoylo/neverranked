@@ -1,46 +1,44 @@
 # Retargeting Pixel Setup
 
-Pixel placeholders are installed on the main site and check tool. Replace the placeholder IDs with real ones to activate.
+All ad tags live in one file: `/track.js` at the repo root. It loads on public
+neverranked.com pages (the build adds the script tag) and on
+check.neverranked.com. It stays inert, with no network call and no cookie, until
+an ID is set.
 
 ---
 
-## Meta Pixel (Facebook/Instagram Ads)
+## Turning them on
 
-1. Go to Meta Events Manager: https://business.facebook.com/events_manager2
-2. Create a new pixel (or use existing)
-3. Copy the Pixel ID (numeric string like "123456789012345")
-4. Replace `YOUR_PIXEL_ID` in these files:
-   - `/index.html` (main site) -- 2 occurrences
-   - `/tools/schema-check/src/index.ts` (check tool HTML) -- 2 occurrences
-5. After replacing, copy index.html to dist/index.html and redeploy both Workers
+1. Meta Pixel ID: Meta Events Manager, Data Sources. Paste it into
+   `META_PIXEL_ID` in `/track.js`.
+2. LinkedIn Partner ID: Campaign Manager, Data, Insight Tag. Paste it into
+   `LINKEDIN_PARTNER_ID` in `/track.js`.
+3. LinkedIn conversions: create "Free check result", "Free check email" and
+   "Answer check checkout" in Campaign Manager, then paste the three numeric IDs
+   into `LINKEDIN_CONVERSIONS` in `/track.js`.
+4. Merge to main. The site deploy ships it. The check tool picks it up from
+   neverranked.com, so it needs no redeploy.
 
-**Events firing:**
-- `PageView` -- every page load (main site + check tool)
-- `ViewContent` -- when a user completes a scan (check tool, includes AEO score)
-- `Lead` -- when a user submits their email for report (check tool)
+**Keep Automatic Advanced Matching OFF** in Meta Events Manager, and leave
+LinkedIn's email-based enhanced matching off. The privacy page says we do not
+send either company an email address.
 
-**Audience suggestions:**
-- All visitors (PageView) -- broad retargeting
-- Scan completers (ViewContent) -- engaged, high intent
-- Email submitters (Lead) -- hottest leads, exclude from prospecting, use for lookalike
+## Events
 
----
+| Event | Meta | LinkedIn | When |
+|---|---|---|---|
+| Page view | PageView | automatic | Every public page |
+| `scan_complete` | ViewContent | conversion | Free check result shows |
+| `lead` | Lead | conversion | Email captured on the free check |
+| `pricing_view` | ViewContent | none | /pricing/ loads |
+| `checkout` | InitiateCheckout, $249 | conversion | Click on the $249 Stripe link |
 
-## LinkedIn Insight Tag
+## What is never sent
 
-1. Go to LinkedIn Campaign Manager: https://www.linkedin.com/campaignmanager/
-2. Go to Account Assets > Insight Tag
-3. Copy the Partner ID (numeric string like "1234567")
-4. Replace `YOUR_PARTNER_ID` in the same files listed above -- 2 occurrences each
-5. In Campaign Manager, set up conversion tracking:
-   - "Scan Complete" -- fires on check tool scan result
-   - "Lead" -- fires on email capture
-6. Update `conversion_id: 0` in the check tool JS (2 places) with your actual conversion IDs
-
-**Audience suggestions:**
-- Website visitors (all pages) -- B2B retargeting
-- Check tool users -- high intent segment
-- Matched audiences from email list
+No email, no checked site, no score. The tags do not load on a URL with an
+unknown query string, on pitch pages, the Atlas preview or takedown pages, or
+when the browser sends Global Privacy Control or Do Not Track. On the check page
+`?url=` is removed from the address before any tag reads it.
 
 ---
 

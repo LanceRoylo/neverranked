@@ -6,6 +6,7 @@ on:
     paths:
       # Root files — keep in sync with FILES in scripts/build.sh
       - 'index.html'
+      - 'track.js'
       - '404.html'
       - 'og.jpg'
       - 'og-source.html'
