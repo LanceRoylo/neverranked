@@ -19,6 +19,9 @@ import { resolveBusinessName, nameMatches } from "../citations";
 import { buildPresenceSql, toEnginePresence, wholePercentBounds, type EnginePresence } from "./answer-presence";
 import { LINK_BASIS, linkBasisOf, linkBasisNote, linkMovementWithheld, priorGoogleLinkEvidence } from "./link-basis";
 import { isControlEngine } from "./engine-layer";
+import { loadMonthComparison } from "./compare-loader";
+import { publicSurfaceReason, withheldSentence } from "./compare-periods";
+import { READOUT_ENGINE_LABEL } from "./readout-engine-labels";
 import type { InjectionConfig } from "../types";
 
 /** Did a model-knowledge run NAME the business? Reads the entities the model
@@ -211,6 +214,60 @@ function monthBounds(monthKey: string): { start: number; end: number; priorStart
   };
 }
 
+/** "2026-09" for "2026-10". */
+function priorMonthKey(monthKey: string): string | null {
+  const [y, m] = monthKey.split("-").map(Number);
+  if (!y || !m || m < 1 || m > 12) return null;
+  const d = new Date(Date.UTC(y, m - 2, 1));
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+
+/** The report month against the month before it, on the stable core: the
+ *  basis the memo's text states its movement on (compare-loader). Null for a
+ *  baseline month, when there is no core, or on any failure, and null means
+ *  no chart may draw a movement. */
+type ReadoutComparison = Awaited<ReturnType<typeof loadMonthComparison>>;
+/** The comparison, or the reason there is none. Each reason is shown to the
+ *  reader, so each must be true of the case that produced it: one shared
+ *  sentence once told a reader "the memo compares the questions measured on
+ *  every day of both months" when the memo had no comparison at all. */
+async function loadReadoutComparison(
+  env: Env, slug: string, monthKey: string, measurementStart: number | null,
+): Promise<{ cmp: ReadoutComparison; whyNone: string | null }> {
+  const b = monthBounds(monthKey);
+  if (!b) return { cmp: null, whyNone: PREV_NO_COMPARISON };
+  if (measurementStart !== null && b.priorStart < measurementStart) return { cmp: null, whyNone: PREV_PARTIAL_BASELINE };
+  try {
+    const cmp = await loadMonthComparison(env, slug, { start: b.priorStart, end: b.start }, { start: b.start, end: b.end });
+    return { cmp, whyNone: cmp ? null : PREV_NO_STABLE_CORE };
+  } catch (e) {
+    console.log(`[report-facts] ${slug} ${monthKey}: comparison unavailable, no movement drawn: ${e instanceof Error ? e.message : String(e)}`);
+    return { cmp: null, whyNone: PREV_NO_COMPARISON };
+  }
+}
+
+/** Why a chart draws no "from" value when the two months did not measure the
+ *  same questions every day. Shown to the reader. */
+export const PREV_NOT_LIKE_FOR_LIKE =
+  "Not compared with last month: the two months did not measure the same questions every day, " +
+  "so these figures are not like for like. The memo compares the questions measured on every day of both months.";
+
+/** Last month began partway through, after measurement started mid-month. */
+export const PREV_PARTIAL_BASELINE =
+  "Not compared with last month: measurement began partway through last month, so it is not a full month to compare with.";
+
+/** No question was measured on every day of both months. */
+export const PREV_NO_STABLE_CORE =
+  "Not compared with last month: no question was measured on every day of both months, so there is no like for like basis.";
+
+/** The comparison could not be built. Says nothing about what it would have found. */
+export const PREV_NO_COMPARISON =
+  "Not compared with last month: the month to month comparison was not available when this report was built.";
+
+/** The comparison exists but holds no reading for this tool on the shared questions. */
+export const PREV_SURFACE_NOT_MEASURED =
+  "Not compared with last month: this tool has no readings on the questions measured on every day of both months.";
+
 
 /** Per-engine collection completeness for a window.
  *
@@ -402,9 +459,18 @@ async function getMeasurementStart(env: Env, slug: string): Promise<number | nul
  *  late-emitted or backfilled report reflects the month it is labeled. Requires
  *  runs in BOTH windows (a baseline month has no prior window, so this returns
  *  undefined and the section never renders). */
-async function buildQuestionMovement(env: Env, slug: string, monthKey: string, measurementStart: number | null): Promise<ReportFacts["questions"]> {
+async function buildQuestionMovement(env: Env, slug: string, monthKey: string, measurementStart: number | null, cmp: ReadoutComparison): Promise<ReportFacts["questions"]> {
   const b = monthBounds(monthKey);
   if (!b) return undefined;
+  // THE MEMO'S BASIS, OR NOTHING (2026-11-03). Flips are counted only on the
+  // stable core and only on surfaces the comparison states. October's chart
+  // counted every question in both months, so a question measured on a few
+  // days of one month "appeared", and five ChatGPT "wins" came from a surface
+  // whose comparison was withheld for an outage. No core means no
+  // like-for-like basis, so no section.
+  if (!cmp) return undefined;
+  const core = new Set(cmp.counts.keywordIds);
+  const stated = new Set(cmp.result.perSurface.filter((x) => x.movement.kind === "stated").map((x) => x.engine));
   // A prior month that predates the engagement is not a prior month. Returning
   // undefined here is the CORRECT answer for a client's first month: it is a
   // baseline, and a baseline has nothing to have moved from.
@@ -413,10 +479,10 @@ async function buildQuestionMovement(env: Env, slug: string, monthKey: string, m
     return undefined;
   }
   const runs = await env.DB.prepare(
-    `SELECT cr.engine, cr.client_cited, cr.run_at, ck.keyword
+    `SELECT cr.engine, cr.client_cited, cr.run_at, ck.keyword, cr.keyword_id
        FROM citation_runs cr JOIN citation_keywords ck ON ck.id = cr.keyword_id
       WHERE ck.client_slug = ? AND cr.run_at >= ? AND cr.run_at < ?`,
-  ).bind(slug, Math.max(b.priorStart, measurementStart ?? 0), b.end).all<{ engine: string; client_cited: number; run_at: number; keyword: string }>();
+  ).bind(slug, Math.max(b.priorStart, measurementStart ?? 0), b.end).all<{ engine: string; client_cited: number; run_at: number; keyword: string; keyword_id: number }>();
 
   // Movement compares two windows, so an engine must have collected
   // adequately in BOTH. An engine healthy last month and collapsed this
@@ -461,6 +527,10 @@ async function buildQuestionMovement(env: Env, slug: string, monthKey: string, m
   let curCount = 0, priCount = 0;
   for (const r of runs.results) {
     if (!trust(r.engine)) continue; // under-collected: no claim either way
+    // The control is not an AI tool, and a flip in Bing's plain links is not
+    // a question won or lost.
+    if (isControlEngine(r.engine)) continue;
+    if (!core.has(Number(r.keyword_id)) || !stated.has(r.engine)) continue;
     const key = `${r.keyword}\u0000${r.engine}`;
     const m = r.run_at >= b.start ? (curCount++, cur) : (priCount++, pri);
     m.set(key, (m.get(key) || false) || r.client_cited === 1);
@@ -740,12 +810,23 @@ export async function buildReportFacts(env: Env, slug: string, monthKey: string)
   const cust = await env.DB.prepare(`SELECT name FROM customers WHERE client_slug = ?`).bind(slug).first<{ name: string }>();
   const customerName = cust?.name || "You";
 
-  // Prior delivered report's engine values, for the dumbbell's "from" dots.
-  const prior = await env.DB.prepare(
+  // Last month's delivered report's engine values, for the dumbbell's "from"
+  // dots. LAST MONTH ONLY (2026-11-03). This used to take the most recent
+  // delivered report of any month, so a client whose September memo was never
+  // delivered had October drawn against August, a model-knowledge surface
+  // "rising" from 14% to 65% across a change of question set. The memo's text
+  // compares October with September, and the chart now compares the same
+  // months or draws nothing.
+  const priorKey = priorMonthKey(monthKey);
+  const prior = priorKey ? await env.DB.prepare(
     `SELECT month_key, facts_json FROM monthly_memos
-       WHERE client_slug = ? AND delivered_at IS NOT NULL AND month_key < ? AND facts_json IS NOT NULL
-       ORDER BY month_key DESC LIMIT 1`,
-  ).bind(slug, monthKey).first<{ month_key: string; facts_json: string }>();
+       WHERE client_slug = ? AND delivered_at IS NOT NULL AND month_key = ? AND facts_json IS NOT NULL
+       LIMIT 1`,
+  ).bind(slug, priorKey).first<{ month_key: string; facts_json: string }>() : null;
+  // Fetched once and shared: the dumbbell, the question movement and the grid
+  // must all apply the SAME boundary and the same comparison.
+  const measurementStart = await getMeasurementStart(env, slug);
+  const { cmp, whyNone } = await loadReadoutComparison(env, slug, monthKey, measurementStart);
   const priorEngines = new Map<string, number>();
   let priorLabel: string | undefined;
   /** The link basis last month's frozen figures were computed on. Null when
@@ -772,7 +853,7 @@ export async function buildReportFacts(env: Env, slug: string, monthKey: string)
     const pb = monthBounds(prior.month_key);
     priorEvidence = pb ? await priorGoogleLinkEvidence(env, slug, pb.start, pb.end) : null;
   }
-  const prevWithheldFor = (name: string): string | null => {
+  const linkWithheldFor = (name: string): string | null => {
     if (priorLinkBasis === null || engineLayer(name) === "model_knowledge" || isControlEngine(name)) return null;
     return linkMovementWithheld({
       curBasis: curLinkBasis,
@@ -781,6 +862,29 @@ export async function buildReportFacts(env: Env, slug: string, monthKey: string)
       curExcluded: excludedByEngine[name] ?? 0,
       priorEvidence: priorEvidence === null ? null : (priorEvidence.get(name) ?? 0),
     });
+  };
+  // LIKE FOR LIKE WITH THE MEMO'S TEXT (2026-11-03). The dumbbell's values are
+  // snapshot shares over EVERY question, so last month's frozen value is
+  // comparable only when the stable core IS every question: none measured on
+  // some days and not others. Then each surface needs the comparison to state
+  // it, and when it does not, the reason is that surface's own.
+  const likeForLike = cmp !== null && cmp.counts.excludedKeywordIds.length === 0;
+  const notComparedWhy = whyNone ?? PREV_NOT_LIKE_FOR_LIKE;
+  const surfaceFor = (name: string) => {
+    const key = resolveEngineKey(name);
+    return cmp?.result.perSurface.find((x) => x.engine === key || READOUT_ENGINE_LABEL[x.engine] === name);
+  };
+  const label = (k: string) => READOUT_ENGINE_LABEL[k] ?? k;
+  const prevWithheldFor = (name: string): string | null => {
+    if (!likeForLike) return notComparedWhy;
+    const reasons: string[] = [];
+    const link = linkWithheldFor(name);
+    if (link) reasons.push(link);
+    const surface = surfaceFor(name);
+    const why = surface ? publicSurfaceReason(surface, label) : null;
+    if (!surface) reasons.push(PREV_SURFACE_NOT_MEASURED);
+    else if (why) reasons.push(withheldSentence(why));
+    return reasons.length ? reasons.join(" ") : null;
   };
 
   // Is this client's snapshot written by the sweep? Decides whether an absent
@@ -854,9 +958,6 @@ export async function buildReportFacts(env: Env, slug: string, monthKey: string)
     .filter((h) => h && typeof h.host === "string")
     .map((h) => ({ host: String(h.host), pct: n(h.share_pct) }));
 
-  // Fetched once and shared: both builders must apply the SAME boundary, or
-  // the grid renders a month the movement section refuses to compare.
-  const measurementStart = await getMeasurementStart(env, slug);
 
   // Coverage for the report month, computed ONCE and shared with the grid.
   //
@@ -914,7 +1015,7 @@ export async function buildReportFacts(env: Env, slug: string, monthKey: string)
 
   // Question-level appeared/disappeared (defensive: absent on any failure).
   let questions: ReportFacts["questions"];
-  try { questions = await buildQuestionMovement(env, slug, monthKey, measurementStart); } catch { questions = undefined; }
+  try { questions = await buildQuestionMovement(env, slug, monthKey, measurementStart, cmp); } catch { questions = undefined; }
 
   // Per-engine x per-question citation grid (defensive: absent on any failure).
   let grid: ReportFacts["grid"];
@@ -943,7 +1044,7 @@ export async function buildReportFacts(env: Env, slug: string, monthKey: string)
       excludedEngines.push({
         name: row.name,
         reason: c.underCollected
-          ? `Held out of this month's report. This surface answered ${c.questionsCovered} of ${c.questionsAsked} questions, but only ${c.observations} times against ${c.observationsExpected} for the surfaces that collected normally, and its missing runs are accounted for by recorded API refusals. We hold too little of this month to report a share we would stand behind.`
+          ? `Held out of this month's report. This surface answered ${c.questionsCovered} of ${c.questionsAsked} questions, but only ${c.observations} times against ${c.observationsExpected} for the surfaces that collected normally, and the service we collect it through refused requests this month, so at least part of that gap is collection failing on our side rather than the tool having nothing to say. We hold too little of this month to report a share we would stand behind.`
           : `Held out of this month's report. This surface answered ${c.questionsCovered} of ${c.questionsAsked} questions, below the coverage we require before publishing a share.`,
       });
       console.log(`[report-facts] ${slug} ${monthKey}: EXCLUDING ${row.name} from headline engines -- ${Math.round(c.density * 100)}% density, underCollected=${c.underCollected}.`);

@@ -84,6 +84,11 @@ export interface SurfaceComparison extends SurfaceCounts {
   movement: Movement;
   /** Fractional change in this surface's own run count. Mix, not performance. */
   runSkew: number;
+  /** The events that withheld THIS surface, empty unless they did. A client
+   *  document names these, not the window's whole event list: on 2026-10-31
+   *  ChatGPT search was withheld for an engine outage and both October drafts
+   *  gave it Google AI Overviews' link-counting reason instead. */
+  withheldBy: InstrumentEvent[];
 }
 
 /**
@@ -318,6 +323,7 @@ export function computeComparison(input: ComparisonInput): ComparisonResult {
     const own = eventsFor(s.engine, events);
 
     let movement: Movement;
+    let withheldBy: InstrumentEvent[] = [];
     if (noSharedBasis) {
       movement = { kind: "withheld", reason: "no question was measured in both windows" };
     } else if (prevRate === null || curRate === null) {
@@ -328,6 +334,7 @@ export function computeComparison(input: ComparisonInput): ComparisonResult {
         reason: `not measured in ${prevRate === null ? "the prior" : "this"} window, so it has no rate there`,
       };
     } else if (own.length > 0) {
+      withheldBy = own;
       movement = {
         kind: "withheld",
         reason: engineSide(own)
@@ -338,7 +345,7 @@ export function computeComparison(input: ComparisonInput): ComparisonResult {
       movement = { kind: "stated", prevRate, curRate, deltaPp: curRate - prevRate };
     }
 
-    return { ...s, layer, movement, runSkew };
+    return { ...s, layer, movement, runSkew, withheldBy };
   });
 
   const nonControl = perSurface.filter((s) => s.layer !== "control");
@@ -475,12 +482,37 @@ export function publicReason(text: string): string {
     );
 }
 
-/** An instrument event as a client-facing document (the weekly brief, the monthly memo) may describe it: kind and scope, no notes. */
-export function publicEventLine(e: { kind: string; scope: string; engine?: string | null }): string {
-  if (ENGINE_SIDE_KINDS.includes(e.kind) && e.engine) return `${e.engine} changed how it answers, on its own side`;
+/** An instrument event as a client-facing document (the weekly brief, the monthly memo) may describe it: kind and scope, no notes.
+ *  `label` turns a raw engine key ("openai") into the name the document uses. */
+export function publicEventLine(e: { kind: string; scope: string; engine?: string | null }, label: (engine: string) => string = (x) => x): string {
+  if (ENGINE_SIDE_KINDS.includes(e.kind) && e.engine) return `${label(e.engine)} changed how it answers, on its own side`;
   const what = e.kind.replace(/_/g, " ");
   const where = e.scope === "engine" && e.engine
-    ? ` on ${e.engine}`
+    ? ` on ${label(e.engine)}`
     : e.scope === "client" ? " for one tracked client" : " across all measurement";
   return `${what}${where}`;
+}
+
+/**
+ * Why ONE surface's movement is withheld, in words a client document may show,
+ * naming the changes that withheld that surface and no other. Null when its
+ * movement is stated.
+ *
+ * publicReason() leaves "(listed below)", pointing at the window's whole list.
+ * A writer handed that and a second, specific reason from another block took
+ * the specific one, which belonged to a different tool.
+ */
+export function publicSurfaceReason(s: SurfaceComparison, label: (engine: string) => string = (x) => x): string | null {
+  if (s.movement.kind !== "withheld") return null;
+  if (!s.withheldBy.length) return publicReason(s.movement.reason);
+  const lines = [...new Set(s.withheldBy.map((e) => publicEventLine(e, label)))];
+  const list = lines.length === 1 ? lines[0] : `${lines.slice(0, -1).join(", ")} and ${lines[lines.length - 1]}`;
+  return engineSide(s.withheldBy)
+    ? `the tool itself changed how it answers inside the window, a change on its side and not ours (${list})`
+    : `an instrument change of ours lands inside the window (${list})`;
+}
+
+/** A withheld reason as the sentence a row or a chart note carries. */
+export function withheldSentence(reason: string): string {
+  return `Not compared with last month: ${reason}.`;
 }
