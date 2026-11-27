@@ -1,11 +1,12 @@
 import { test } from "node:test";
 import assert from "node:assert";
-import { buildReportFacts, emitReportFacts } from "../src/lib/report-facts.ts";
+import { buildReportFacts, emitReportFacts, PREV_NOT_LIKE_FOR_LIKE } from "../src/lib/report-facts.ts";
+import { comparisonResults, withKeywordIds, type FakeRun } from "./support/fake-comparison.ts";
 
 // Fake env whose first() returns the right row per query (by SQL shape).
 // gridRuns (optional) are returned ONLY for the citation-grid query (its SELECT
 // omits cr.run_at); the question-movement query gets [] so it stays absent.
-function fakeEnv(snap: any, cust: any, prior: any, gridRuns: any[] = []) {
+function fakeEnv(snap: any, cust: any, prior: any, gridRuns: any[] = [], cmp?: { runs: FakeRun[]; monthKey: string }) {
   return {
     DB: {
       prepare(sql: string) {
@@ -19,6 +20,8 @@ function fakeEnv(snap: any, cust: any, prior: any, gridRuns: any[] = []) {
                 return null;
               },
               async all() {
+                const c = cmp ? comparisonResults(sql, cmp.runs, cmp.monthKey) : null;
+                if (c) return c;
                 // buildQuestionMovement selects "cr.run_at, ck.keyword"; the grid
                 // query does not. Route run rows to the grid query only.
                 if (/cr\.run_at, ck\.keyword/.test(sql)) return { results: [] };
@@ -46,7 +49,10 @@ test("buildReportFacts derives all four chart datasets from snapshot + prior fac
     measured_at: Math.floor(Date.UTC(2026, 6, 15) / 1000), // Jul 15, 2026
   };
   const prior = { month_key: "2026-06", facts_json: JSON.stringify({ engines: [{ name: "Claude", pct: 14 }, { name: "Microsoft Copilot", pct: 0 }] }) };
-  const facts = await buildReportFacts(fakeEnv(snap, { name: "Hawaii Theatre Center" }, prior), "hawaii-theatre", "2026-07");
+  // Both months measured the same question on every measured day: like for like.
+  const jun = Math.floor(Date.UTC(2026, 5, 15) / 1000), jul = Math.floor(Date.UTC(2026, 6, 15) / 1000);
+  const lfl = ["anthropic", "bing"].flatMap((engine) => [jun, jul].map((run_at) => ({ engine, client_cited: 0, run_at, keyword: "q1" })));
+  const facts = await buildReportFacts(fakeEnv(snap, { name: "Example Theatre" }, prior, [], { runs: lfl, monthKey: "2026-07" }), "example-theatre", "2026-07");
   assert.ok(facts);
   assert.equal(facts!.period_label, "Jul 2026");
   assert.equal(facts!.prior_label, "Jun 2026");
@@ -55,7 +61,7 @@ test("buildReportFacts derives all four chart datasets from snapshot + prior fac
   assert.equal(claude.prev, 14); // prev pulled from prior report
   const copilot = facts!.engines.find((e) => e.name === "Microsoft Copilot")!;
   assert.equal(copilot.prev, 0); // off zero comparison preserved
-  assert.equal(facts!.venue.rows[0].label, "Hawaii Theatre Center");
+  assert.equal(facts!.venue.rows[0].label, "Example Theatre");
   assert.equal(facts!.venue.rows[0].you, true);
   assert.equal(facts!.venue.rows[0].pct, 48);
   const own = facts!.sources.find((s) => s.own)!;
@@ -286,14 +292,16 @@ test("an undelivered report still gets its facts written", async () => {
 });
 
 test("question-movement chips carry engine LABELS, not raw keys", async () => {
-  // citation_runs.engine holds "bing"; the grid in the same report renders
+  // citation_runs.engine holds "openai"; the grid in the same report renders
   // the canonical label from those very rows. A readout must not say both.
+  // (This used the Bing control until 2026-11-03, when the control stopped
+  // counting as a question won or lost at all.)
   const prior = Math.floor(Date.UTC(2026, 6, 15) / 1000); // July
   const curr = Math.floor(Date.UTC(2026, 7, 15) / 1000);  // August
-  const runs = [
-    { engine: "bing", client_cited: 0, run_at: prior, keyword: "waikiki hotels" },
-    { engine: "bing", client_cited: 1, run_at: curr, keyword: "waikiki hotels" },
-  ];
+  const runs = withKeywordIds([
+    { engine: "openai", client_cited: 0, run_at: prior, keyword: "example hotels" },
+    { engine: "openai", client_cited: 1, run_at: curr, keyword: "example hotels" },
+  ]);
   const env: any = {
     DB: {
       prepare(sql: string) {
@@ -303,15 +311,15 @@ test("question-movement chips carry engine LABELS, not raw keys", async () => {
             if (/FROM customers/.test(sql)) return { name: "X" };
             return null;
           },
-          async all() { return { results: /cr\.run_at/.test(sql) ? runs : [] }; },
+          async all() { return comparisonResults(sql, runs, "2026-08") ?? { results: /cr\.run_at/.test(sql) ? runs : [] }; },
         }; } };
       },
     },
   };
   const facts = await buildReportFacts(env, "x", "2026-08");
   const chips = facts?.questions?.appeared?.flatMap((a: any) => a.engines) ?? [];
-  assert.ok(chips.includes("Bing search (control)"), `expected the canonical label, got ${JSON.stringify(chips)}`);
-  assert.ok(!chips.includes("bing"), "raw key must not reach a customer-facing chip");
+  assert.ok(chips.includes("ChatGPT"), `expected the canonical label, got ${JSON.stringify(chips)}`);
+  assert.ok(!chips.includes("openai"), "raw key must not reach a customer-facing chip");
 });
 
 // ---------------------------------------------------------------------------
@@ -362,6 +370,7 @@ test("coverage guard: a collapsed engine does not render as LOST VISIBILITY", as
     // Pre-guard this rendered as "q1 disappeared from ChatGPT". It did not.
     { engine: "openai", client_cited: 0, run_at: curr, keyword: "q1" },
   ];
+  const withIds = withKeywordIds(runs);
   const env: any = {
     DB: {
       prepare(sql: string) {
@@ -371,7 +380,7 @@ test("coverage guard: a collapsed engine does not render as LOST VISIBILITY", as
             if (/FROM customers/.test(sql)) return { name: "X" };
             return null;
           },
-          async all() { return { results: /cr\.run_at/.test(sql) ? runs : [] }; },
+          async all() { return comparisonResults(sql, withIds, "2026-08") ?? { results: /cr\.run_at/.test(sql) ? withIds : [] }; },
         }; } };
       },
     },
@@ -427,6 +436,7 @@ function preEngagementEnv(measurementStart: number | null) {
       { engine: "perplexity", client_cited: keyword === "q3" ? 0 : 1, run_at: real, keyword },
     ]),
   ];
+  const withIds = withKeywordIds(runs);
   return {
     DB: {
       prepare(sql: string) {
@@ -437,7 +447,7 @@ function preEngagementEnv(measurementStart: number | null) {
             if (/FROM customers/.test(sql)) return { name: "X" };
             return null;
           },
-          async all() { return { results: /cr\.run_at/.test(sql) ? runs : [] }; },
+          async all() { return comparisonResults(sql, withIds, "2026-09") ?? { results: /cr\.run_at/.test(sql) ? withIds : [] }; },
         }; } };
       },
     },

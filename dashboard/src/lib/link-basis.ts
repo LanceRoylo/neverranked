@@ -28,6 +28,7 @@
 
 import type { Env } from "../types";
 import { READOUT_ENGINE_LABEL } from "./readout-engine-labels";
+import { classifyGoogleLink } from "./classify-source";
 
 /** Recorded on every snapshot (top_competitors.link_basis) and every set of
  *  readout facts (linkBasis) computed with Google's viewer links left out of
@@ -79,15 +80,22 @@ export function linkMovementWithheld(a: {
 }
 
 /**
- * Per engine (display label), how many runs in [start, end) listed a link on
- * a bare Google host. A superset of runs with a wrapper link: classifyGoogleLink
- * only ever calls a link a wrapper when its host is google.<tld> or
- * www.google.<tld>, and LIKE is case-insensitive. Zero proves the period had
- * no wrapper in any link total. Null when the evidence could not be read,
- * which the caller treats as "may have".
+ * Per engine (display label), how many runs in [start, end) listed a Google
+ * link that the new basis treats differently: one classifyGoogleLink does not
+ * call a page. Zero proves the period had no wrapper in any link total. Null
+ * when the evidence could not be read, which the caller treats as "may have".
  *
- * COUNT only, nothing transferred. It scans the cited_urls of one client's
- * month, the same rows a snapshot build reads.
+ * The LIKE is a prefilter only. classifyGoogleLink only ever calls a link a
+ * wrapper when its host is google.<tld> or www.google.<tld>, and LIKE is
+ * case-insensitive, so nothing it drops could have counted. It used to be the
+ * whole test, and it called every Maps link a viewer link: ChatGPT search
+ * lists google.com/maps pages, so in October its comparison was withheld for
+ * Google AI Overviews' reason when its links had never been counted
+ * differently at all. Each prefiltered link is now classified by the same
+ * function the snapshot build uses to leave wrappers out.
+ *
+ * It reads the cited_urls of the prefiltered rows of one client's month, a
+ * subset of the rows a snapshot build reads.
  */
 export async function priorGoogleLinkEvidence(
   env: Env,
@@ -97,14 +105,24 @@ export async function priorGoogleLinkEvidence(
 ): Promise<Map<string, number> | null> {
   try {
     const rows = (await env.DB.prepare(
-      `SELECT cr.engine AS engine, COUNT(*) AS n
+      `SELECT cr.engine AS engine, cr.cited_urls AS cited_urls
          FROM citation_runs cr JOIN citation_keywords ck ON ck.id = cr.keyword_id
         WHERE ck.client_slug = ? AND cr.run_at >= ? AND cr.run_at < ?
-          AND (cr.cited_urls LIKE '%://google.%' OR cr.cited_urls LIKE '%://www.google.%')
-        GROUP BY cr.engine`,
-    ).bind(slug, start, end).all<{ engine: string; n: number }>()).results;
+          AND (cr.cited_urls LIKE '%://google.%' OR cr.cited_urls LIKE '%://www.google.%')`,
+    ).bind(slug, start, end).all<{ engine: string; cited_urls: string | null }>()).results;
     const out = new Map<string, number>();
-    for (const r of rows) out.set(READOUT_ENGINE_LABEL[r.engine] ?? r.engine, Number(r.n) || 0);
+    for (const r of rows) {
+      let urls: unknown;
+      // Unparseable is "may have": it passed the prefilter, so count it.
+      try { urls = JSON.parse(r.cited_urls || "[]"); } catch { urls = null; }
+      const touched = !Array.isArray(urls) || urls.some((u) => {
+        const s = typeof u === "string" ? u : (u as { url?: unknown } | null)?.url;
+        return typeof s === "string" && classifyGoogleLink(s).kind !== "page";
+      });
+      if (!touched) continue;
+      const label = READOUT_ENGINE_LABEL[r.engine] ?? r.engine;
+      out.set(label, (out.get(label) ?? 0) + 1);
+    }
     return out;
   } catch (e) {
     console.log(`[link-basis] ${slug}: prior Google-link evidence unreadable, withholding link-share movement: ${e instanceof Error ? e.message : String(e)}`);

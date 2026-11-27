@@ -25,6 +25,7 @@ import { ENGINE_ORDER } from "../lib/engine-order";
 import { LINK_BASIS } from "../lib/link-basis";
 import { getUser } from "../auth";
 import { redirect, esc } from "../render";
+import { SHORT_VERSION_HEADING } from "../lib/memo-draft-check";
 
 interface ReportRow {
   month_key: string; // 'YYYY-MM'
@@ -60,6 +61,18 @@ function reportNo(i: number): string {
  * competitor names lifted from AI-engine output (attacker-influenceable), so a
  * `javascript:`/`data:` href must never survive. No raw HTML passthrough.
  */
+/** Lifts "### This month in plain words" out of a memo body so it can sit on page 1,
+ *  above the charts. A body without it comes back whole: every memo delivered
+ *  before 2026-11 renders exactly as it did. */
+export function splitShortVersion(md: string): { note: string | null; rest: string } {
+  const start = md.match(new RegExp(`^###\\s+${SHORT_VERSION_HEADING}\\s*$`, "m"));
+  if (!start || start.index === undefined) return { note: null, rest: md };
+  const after = start.index + start[0].length;
+  const next = md.slice(after).search(/^#{2,3}\s/m);
+  const end = next < 0 ? md.length : after + next;
+  return { note: md.slice(after, end).trim(), rest: `${md.slice(0, start.index)}${md.slice(end)}` };
+}
+
 export function renderReportMarkdown(md: string): string {
   const escHtml = (s: string) =>
     s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -111,7 +124,14 @@ export function renderReportMarkdown(md: string): string {
   const lines = md.split(/\r?\n/);
   const out: string[] = [];
   let inUl = false;
-  const flushUl = () => { if (inUl) { out.push("</ul>"); inUl = false; } };
+  let inOl = false;
+  // Ordered lists render as <ol> since 2026-11-22: page 1's three actions and
+  // the punch list are numbered, and a number in a paragraph does not read as
+  // a list. Markdown numbering is kept as written via value=, never renumbered.
+  const flushUl = () => {
+    if (inUl) { out.push("</ul>"); inUl = false; }
+    if (inOl) { out.push("</ol>"); inOl = false; }
+  };
   const isTableSep = (s: string) => /^\|(\s*:?-{2,}:?\s*\|)+\s*$/.test(s.trim());
   const cells = (s: string) => s.trim().replace(/^\|/, "").replace(/\|\s*$/, "").split("|").map((c) => c.trim());
   for (let i = 0; i < lines.length; i++) {
@@ -134,7 +154,14 @@ export function renderReportMarkdown(md: string): string {
     if ((m = line.match(/^#\s+(.*)$/)))   { flushUl(); out.push(`<h2>${inline(m[1])}</h2>`); continue; }
     if ((m = line.match(/^##\s+(.*)$/)))  { flushUl(); out.push(`<h2>${inline(m[1])}</h2>`); continue; }
     if ((m = line.match(/^###\s+(.*)$/))) { flushUl(); out.push(`<h3>${inline(m[1])}</h3>`); continue; }
+    if ((m = line.match(/^(\d+)\.\s+(.*)$/))) {
+      if (inUl) flushUl();
+      if (!inOl) { out.push("<ol>"); inOl = true; }
+      out.push(`<li value="${Number(m[1])}">${inline(m[2])}</li>`);
+      continue;
+    }
     if ((m = line.match(/^[*-]\s+(.*)$/))) {
+      if (inOl) flushUl();
       if (!inUl) { out.push("<ul>"); inUl = true; }
       out.push(`<li>${inline(m[1])}</li>`);
       continue;
@@ -1159,7 +1186,7 @@ export function shell(title: string, inner: string): string {
   .body h2 { font-family:Georgia,"Times New Roman",serif; font-weight:400; font-size:23px; margin:36px 0 12px; color:#f2efe6; letter-spacing:-.01em; }
   .body h3 { font-weight:600; font-size:15px; letter-spacing:.02em; text-transform:uppercase; color:#b7b1a3; margin:26px 0 8px; }
   .body p { margin:0 0 14px; color:#dcd8d0; }
-  .body ul { margin:0 0 16px; padding-left:22px; }
+  .body ul, .body ol { margin:0 0 16px; padding-left:22px; }
   .body li { margin:0 0 7px; color:#dcd8d0; }
   .body a { color:#d4c596; }
   .body code { background:#1a1916; padding:1px 5px; border-radius:4px; font-size:13px; }
@@ -1472,6 +1499,7 @@ export async function handleReadoutView(request: Request, env: Env, slug: string
     if (c?.name) clientName = c.name;
   } catch { /* fall back to the slug */ }
 
+  const short = splitShortVersion(r.body_markdown);
   const inner = `
     <div class="top">
       <span class="topnav"><a class="back" href="/c/${esc(slug)}/">&larr; Dashboard</a> &middot; <a class="back" href="/c/${esc(slug)}/plan">The plan</a> &middot; <a class="back" href="/c/${esc(slug)}/atlas">Ask Atlas &rarr;</a></span>
@@ -1480,10 +1508,11 @@ export async function handleReadoutView(request: Request, env: Env, slug: string
     <div class="print-only print-brand">NeverRanked &middot; prepared for ${esc(clientName)}</div>
     <div class="meta">Report ${reportNo(idx)} &middot; ${esc(monthLabel(monthKey))} &middot; delivered ${esc(delivered)}</div>
     <h1 class="report-title">${esc(title)}</h1>
+    ${short.note ? `<div class="nr-h">${SHORT_VERSION_HEADING}</div><div class="body">${renderReportMarkdown(short.note)}</div>` : ""}
     ${renderCharts(r.facts_json)}
     ${crossMapHtml}
     ${r.facts_json ? `<div class="nr-h">The record &middot; full readout</div>` : ""}
-    <div class="body">${renderReportMarkdown(r.body_markdown)}</div>
+    <div class="body">${renderReportMarkdown(short.rest)}</div>
     <div class="foot">This report is a frozen snapshot of what NeverRanked measured for ${esc(monthLabel(monthKey))}. Numbers do not change after delivery.<span class="print-only"> Printed copy. The current version is always at app.neverranked.com/c/${esc(slug)}/readouts/${esc(monthKey)}.</span><span class="no-print"> Newer months appear as separate reports in the selector above.</span></div>`;
 
   return new Response(shell(`${title} · Report ${reportNo(idx)}`, inner), {
