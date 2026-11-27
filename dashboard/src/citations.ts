@@ -153,7 +153,8 @@ const TOGETHER_ENDPOINT = "https://api.together.xyz/v1/chat/completions";
 // DeepInfra hosts the same open-weight Gemma build behind an OpenAI-compatible
 // surface, so the request body below is byte-identical across both.
 const DEEPINFRA_ENDPOINT = "https://api.deepinfra.com/v1/openai/chat/completions";
-const GEMMA_MODEL = "google/gemma-4-31B-it";
+// Exported so the December shadow (lib/shadow-arms.ts) measures the same model.
+export const GEMMA_MODEL = "google/gemma-4-31B-it";
 
 /**
  * Which host serves Gemma. Together AI is deprecating the serverless Gemma

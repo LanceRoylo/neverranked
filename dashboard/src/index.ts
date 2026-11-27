@@ -116,6 +116,7 @@ export { ScanDomainWorkflow } from "./workflows/scan-domain";
 export { WeeklyExtrasWorkflow } from "./workflows/weekly-extras";
 export { SendDigestWorkflow } from "./workflows/send-digest";
 export { CitationKeywordWorkflow } from "./workflows/citation-keyword";
+export { ShadowKeywordWorkflow } from "./workflows/shadow-keyword";
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -3977,6 +3978,22 @@ Once verified working, the user-OAuth path becomes vestigial. The legacy code st
           await runPostSweepEvaluation(env);
         }).catch((e) => {
           console.log(`[cron 06:30] post_sweep_evaluation failed: ${e instanceof Error ? e.message : e}`);
+        }),
+      );
+
+      // December 2026 plain-question shadow. Dispatch only: each keyword's
+      // workflow sleeps until 07:15 UTC, after the production sweep has
+      // finished. Off unless SHADOW_RUNS_ENABLED is "1", and only on shadow
+      // nights. Deliberately NOT wrapped in withCronLogging: cron_runs feeds
+      // the cadence and overdue watchdogs, and a shadow must never look like
+      // a production task to them. Writes only its own table (lib/shadow-runner.ts).
+      ctx.waitUntil(
+        (async () => {
+          const { dispatchShadowRuns } = await import("./lib/shadow-runner");
+          const r = await dispatchShadowRuns(env, scheduledAt);
+          if (r.dispatched > 0) console.log(`[shadow] dispatched ${r.dispatched}`);
+        })().catch((e) => {
+          console.log(`[shadow] dispatch failed: ${e instanceof Error ? e.message : e}`);
         }),
       );
 
