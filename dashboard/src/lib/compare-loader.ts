@@ -104,7 +104,9 @@ export async function loadStableCoreCounts(
 }
 
 /**
- * Instrument events that overlap the span from prev.start to cur.end.
+ * Instrument events inside the span from prev.start to cur.end. An event at
+ * exactly prev.start is outside it: every run in both windows came after the
+ * change, so nothing compared crosses it.
  *
  * With a clientSlug: global events, engine events that are not tied to some
  * OTHER client (the step detector writes engine events per client), and this
@@ -125,7 +127,7 @@ export async function loadInstrumentEvents(
   const rows = (await env.DB.prepare(
     `SELECT occurred_at, kind, scope, engine, client_slug, detail
        FROM instrument_events
-      WHERE occurred_at >= ?1 AND occurred_at < ?2
+      WHERE occurred_at > ?1 AND occurred_at < ?2
         AND (?3 IS NULL OR client_slug IS NULL OR client_slug = ?3)
       ORDER BY occurred_at, id`,
   ).bind(prev.start, cur.end, clientSlug ?? null)

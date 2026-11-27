@@ -13,6 +13,12 @@ export function isNoResults(code: number | undefined, message: string | undefine
 /** Pause before the single retry. Long enough for a search-engine hiccup to clear. */
 export const DFS_RETRY_DELAY_MS = 2000;
 
+/** Retry prefixes our own code adds to a DataForSEO failure. Every check that
+ *  anchors on "DataForSEO" has to see past them. */
+export function stripRetryPrefix(detail: string): string {
+  return detail.replace(/^(?:after retry: |deferred retry: )+/, "");
+}
+
 /**
  * A failure worth one more attempt: a network error, an HTTP 5xx, unparseable
  * JSON, or DataForSEO's own internal / search-engine error codes (40101,
